@@ -133,16 +133,16 @@ Proof: `pnpm vitest run test/repo/catalog.test.ts -t "categories and deprecated 
 
 ### S4 - Compatibilidade de descoberta · 5 files · ~5 KB · ~2k
 
-**C39** - `marketplace.json` e `plugin.json` têm a forma da door 5 (`name: "mass-solutions"`, plugin `mass-solutions-skills`, `source: "./"`, `skills: ["./skills/"]`) (DISC-01, AC 39)
+**C39** ✅ - `marketplace.json` e `plugin.json` têm a forma da door 5 (`name: "mass-solutions"`, plugin `mass-solutions-skills`, `source: "./"`, `skills: ["./skills/"]`) (DISC-01, AC 39)
 Proof: `pnpm vitest run test/repo/marketplace.test.ts -t "marketplace shape"`
 
-**C40** - `npx skills add ./ --list` na raiz lista exatamente as 5 skills `mass-*` (DISC-01, AC 40)
+**C40** ✅ - `npx skills add ./ --list` na raiz lista exatamente as 5 skills `mass-*` (DISC-01, AC 40)
 Proof: `bash tools/spike/npx-skills-list.sh`
 
-**C41** - `claude plugin validate .` sai com `0` (DISC-01, AC 41)
+**C41** ✅ - `claude plugin validate .` sai com `0` (DISC-01, AC 41)
 Proof: `bash tools/spike/claude-plugin-validate.sh`
 
-**C42** - `claude plugin marketplace add ./` + `claude plugin install mass-solutions-skills@mass-solutions` deixam as 5 pastas no diretório instalado; o script remove o plugin e o marketplace ao final (DISC-01, AC 42)
+**C42** ✅ - `claude plugin marketplace add ./` + `claude plugin install mass-solutions-skills@mass-solutions` deixam as 5 pastas no diretório instalado; o script remove o plugin e o marketplace ao final (DISC-01, AC 42)
 Proof: `bash tools/spike/claude-plugin-install.sh`
 
 ### S5 - CLI `mass-skills` · ~25 files · ~80 KB · ~20k

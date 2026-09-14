@@ -1,0 +1,21 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "mass-solutions",
+  "description": "Mass Solutions skills for coding agents: validated, versioned and reviewed",
+  "owner": {
+    "name": "Mass Solutions",
+    "url": "https://github.com/maiconsouza89"
+  },
+  "plugins": [
+    {
+      "name": "mass-solutions-skills",
+      "source": "./",
+      "skills": ["./skills/"],
+      "description": "The whole Mass Solutions skills catalog",
+      "version": "0.1.0",
+      "license": "CC-BY-4.0",
+      "homepage": "https://maiconsouza89.github.io/mass-solutions-skills/",
+      "repository": "https://github.com/maiconsouza89/mass-solutions-skills"
+    }
+  ]
+}
