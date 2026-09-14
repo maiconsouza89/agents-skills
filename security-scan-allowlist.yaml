@@ -1,0 +1,6 @@
+# Accepted Snyk Agent Scan findings. Every entry needs `expiresAt`; an expired entry fails CI.
+# - risk: <snyk risk name>
+#   skill: <skill name>
+#   reason: <why this is a false positive>
+#   expiresAt: "YYYY-MM-DD"
+[]

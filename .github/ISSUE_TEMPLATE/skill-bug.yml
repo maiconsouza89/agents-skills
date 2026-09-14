@@ -1,0 +1,52 @@
+name: Skill bug
+description: A skill behaves wrongly, fails to install or fails validation.
+title: "[bug] mass-"
+labels: ["skill-bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Security vulnerabilities must **not** be reported here. Use the private security advisory described in SECURITY.md.
+  - type: input
+    id: skill
+    attributes:
+      label: Skill
+      placeholder: mass-commit-message
+    validations:
+      required: true
+  - type: dropdown
+    id: agent
+    attributes:
+      label: Agent
+      options:
+        - claude-code
+        - cursor
+        - codex
+        - github-copilot
+        - opencode
+        - windsurf
+        - gemini-cli
+        - cline
+        - other
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Installed version
+      description: From `mass-skills doctor` or the `metadata.version` of the installed SKILL.md.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected
+    validations:
+      required: true
+  - type: textarea
+    id: observed
+    attributes:
+      label: Observed
+      description: What happened instead, with the exact output.
+    validations:
+      required: true

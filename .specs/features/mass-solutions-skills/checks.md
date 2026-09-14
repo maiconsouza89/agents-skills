@@ -25,31 +25,31 @@ Proof: `pnpm vitest run test/repo/new-skill.test.ts -t "scaffolds a skill that v
 **C4** ✅ - `pnpm new-skill` com nome fora de `^mass-[a-z0-9]+(-[a-z0-9]+)*$` sai com `2`, imprime a regra e não cria arquivo (GOV-01, AC 4)
 Proof: `pnpm vitest run test/repo/new-skill.test.ts -t "rejects an invalid name with exit 2"`
 
-**C5** - `LICENSE` é MIT, `skills/LICENSE` é CC-BY-4.0, e ambos os READMEs declaram a divisão (GOV-02, AC 5)
+**C5** ✅ - `LICENSE` é MIT, `skills/LICENSE` é CC-BY-4.0, e ambos os READMEs declaram a divisão (GOV-02, AC 5)
 Proof: `pnpm vitest run test/repo/docs.test.ts -t "licenses"`
 
-**C6** - `README.md` e `README.pt-br.md` têm as seções na ordem: o que é, instalação com três caminhos e aviso de hash, skills, contribuição, segurança, licença (GOV-02, AC 6)
+**C6** ✅ - `README.md` e `README.pt-br.md` têm as seções na ordem: o que é, instalação com três caminhos e aviso de hash, skills, contribuição, segurança, licença (GOV-02, AC 6)
 Proof: `pnpm vitest run test/repo/docs.test.ts -t "readme sections in order"`
 
-**C7** - `CONTRIBUTING.md` contém issue-first, o fluxo `new-skill` → `check` → PR, conventional commits e a regra de `metadata.reviewed` (GOV-02, AC 7)
+**C7** ✅ - `CONTRIBUTING.md` contém issue-first, o fluxo `new-skill` → `check` → PR, conventional commits e a regra de `metadata.reviewed` (GOV-02, AC 7)
 Proof: `pnpm vitest run test/repo/docs.test.ts -t "contributing"`
 
-**C8** - `SECURITY.md` aponta `/security/advisories/new`, veta issue pública, descreve validador + Snyk e a allowlist com `expiresAt` (GOV-02, AC 8)
+**C8** ✅ - `SECURITY.md` aponta `/security/advisories/new`, veta issue pública, descreve validador + Snyk e a allowlist com `expiresAt` (GOV-02, AC 8)
 Proof: `pnpm vitest run test/repo/docs.test.ts -t "security policy"`
 
-**C9** - `.github/CODEOWNERS` contém exatamente as linhas `* @maiconsouza89` e `/skills/ @maiconsouza89` (GOV-03, AC 9)
+**C9** ✅ - `.github/CODEOWNERS` contém exatamente as linhas `* @maiconsouza89` e `/skills/ @maiconsouza89` (GOV-03, AC 9)
 Proof: `pnpm vitest run test/repo/github.test.ts -t "codeowners"`
 
-**C10** - Os dois issue forms existem, são YAML válido com `name`, `description`, `body`, e trazem os campos listados no AC (GOV-03, AC 10)
+**C10** ✅ - Os dois issue forms existem, são YAML válido com `name`, `description`, `body`, e trazem os campos listados no AC (GOV-03, AC 10)
 Proof: `pnpm vitest run test/repo/github.test.ts -t "issue templates"`
 
-**C11** - `PULL_REQUEST_TEMPLATE.md` tem "Issue vinculada: #" e o checklist com `pnpm check` e `metadata.reviewed` (GOV-03, AC 11)
+**C11** ✅ - `PULL_REQUEST_TEMPLATE.md` tem "Issue vinculada: #" e o checklist com `pnpm check` e `metadata.reviewed` (GOV-03, AC 11)
 Proof: `pnpm vitest run test/repo/github.test.ts -t "pull request template"`
 
-**C12** - `dependabot.yml` declara `npm` e `github-actions`, ambos `weekly` (GOV-03, AC 12)
+**C12** ✅ - `dependabot.yml` declara `npm` e `github-actions`, ambos `weekly` (GOV-03, AC 12)
 Proof: `pnpm vitest run test/repo/github.test.ts -t "dependabot"`
 
-**C13** - `AGENTS.md` traz as regras do catálogo e o bloco `## tlc-spec-lean` com `profile: standard` e `budget: 150k`; `CLAUDE.md` aponta para `AGENTS.md` e mantém a regra de idioma (GOV-03, AC 13)
+**C13** ✅ - `AGENTS.md` traz as regras do catálogo e o bloco `## tlc-spec-lean` com `profile: standard` e `budget: 150k`; `CLAUDE.md` aponta para `AGENTS.md` e mantém a regra de idioma (GOV-03, AC 13)
 Proof: `pnpm vitest run test/repo/docs.test.ts -t "agents and claude"`
 
 **C14** ✅ - `.gitignore` cobre `.claude/skills/`, `skills-lock.json`, `node_modules/`, `apps/site/dist/`, `.astro/`, e `git ls-files` não retorna nada sob `.claude/skills/` (GOV-03, AC 14)
