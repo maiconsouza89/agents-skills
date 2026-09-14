@@ -17,9 +17,9 @@
 ## Handoff
 
 **Feature**: mass-solutions-skills
-**Where**: plan.md escrito e validado (`validate_plan.py` 0 erros); aguardando revisão humana
+**Where**: batch B1 (S1-S4, C1-C42 + C81) fechado e verde; B2 (S5, CLI) e B3 (S6-S8) pendentes
 **In progress**: nada
-**Next step**: usuário confirma o plano, o perfil e a assumption sobre `.claude/skills/`; então derivar `checks.md`
+**Next step**: despachar o builder B2 com `checks.md` e o diff `c18c7f5..HEAD`; B2 cria `packages/cli/src` com `run(argv, {cwd, env, stdout, stderr})`, lê `MASS_SKILLS_BASE_URL`, importa `@mass-solutions/skills-core` (alias do vitest aponta para o src)
 **Blockers**: open questions 1-4 (go-live) não bloqueiam o build local
-**Uncommitted**: `.specs/features/mass-solutions-skills/plan.md`, `.specs/STATE.md`
+**Uncommitted**: nada
 **Branch**: main

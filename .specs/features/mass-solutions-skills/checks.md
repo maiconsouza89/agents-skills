@@ -13,136 +13,136 @@ Runner: `vitest` 5 na raiz (workspace), invocado como `pnpm vitest run <arquivo>
 
 ### S1 - Repositório, governança e documentos · ~30 files · ~45 KB · ~11k
 
-**C1** ✅ - `pnpm install --frozen-lockfile` resolve `packages/core`, `packages/cli` e `apps/site` como workspaces e `pnpm-workspace.yaml` os declara (GOV-01, AC 1)
+**C1** - ✅ `pnpm install --frozen-lockfile` resolve `packages/core`, `packages/cli` e `apps/site` como workspaces e `pnpm-workspace.yaml` os declara (GOV-01, AC 1)
 Proof: `pnpm install --frozen-lockfile && pnpm vitest run test/repo/workspace.test.ts -t "workspace declares the three packages"`
 
-**C2** ✅ - `package.json` da raiz expõe `check`, `validate`, `registry`, `build`, `test`, `scan`, `new-skill` e `stale`, e `check` encadeia `validate`, `registry --check` e `test` (GOV-01, AC 2)
+**C2** - ✅ `package.json` da raiz expõe `check`, `validate`, `registry`, `build`, `test`, `scan`, `new-skill` e `stale`, e `check` encadeia `validate`, `registry --check` e `test` (GOV-01, AC 2)
 Proof: `pnpm vitest run test/repo/workspace.test.ts -t "root scripts"`
 
-**C3** ✅ - `pnpm new-skill mass-exemplo` cria `SKILL.md` com frontmatter completo (description na fórmula, `version: "0.1.0"`, `reviewed` = hoje) e `README.md`, e o resultado passa em `validateSkill` (GOV-01, AC 3)
+**C3** - ✅ `pnpm new-skill mass-exemplo` cria `SKILL.md` com frontmatter completo (description na fórmula, `version: "0.1.0"`, `reviewed` = hoje) e `README.md`, e o resultado passa em `validateSkill` (GOV-01, AC 3)
 Proof: `pnpm vitest run test/repo/new-skill.test.ts -t "scaffolds a skill that validates"`
 
-**C4** ✅ - `pnpm new-skill` com nome fora de `^mass-[a-z0-9]+(-[a-z0-9]+)*$` sai com `2`, imprime a regra e não cria arquivo (GOV-01, AC 4)
+**C4** - ✅ `pnpm new-skill` com nome fora de `^mass-[a-z0-9]+(-[a-z0-9]+)*$` sai com `2`, imprime a regra e não cria arquivo (GOV-01, AC 4)
 Proof: `pnpm vitest run test/repo/new-skill.test.ts -t "rejects an invalid name with exit 2"`
 
-**C5** ✅ - `LICENSE` é MIT, `skills/LICENSE` é CC-BY-4.0, e ambos os READMEs declaram a divisão (GOV-02, AC 5)
+**C5** - ✅ `LICENSE` é MIT, `skills/LICENSE` é CC-BY-4.0, e ambos os READMEs declaram a divisão (GOV-02, AC 5)
 Proof: `pnpm vitest run test/repo/docs.test.ts -t "licenses"`
 
-**C6** ✅ - `README.md` e `README.pt-br.md` têm as seções na ordem: o que é, instalação com três caminhos e aviso de hash, skills, contribuição, segurança, licença (GOV-02, AC 6)
+**C6** - ✅ `README.md` e `README.pt-br.md` têm as seções na ordem: o que é, instalação com três caminhos e aviso de hash, skills, contribuição, segurança, licença (GOV-02, AC 6)
 Proof: `pnpm vitest run test/repo/docs.test.ts -t "readme sections in order"`
 
-**C7** ✅ - `CONTRIBUTING.md` contém issue-first, o fluxo `new-skill` → `check` → PR, conventional commits e a regra de `metadata.reviewed` (GOV-02, AC 7)
+**C7** - ✅ `CONTRIBUTING.md` contém issue-first, o fluxo `new-skill` → `check` → PR, conventional commits e a regra de `metadata.reviewed` (GOV-02, AC 7)
 Proof: `pnpm vitest run test/repo/docs.test.ts -t "contributing"`
 
-**C8** ✅ - `SECURITY.md` aponta `/security/advisories/new`, veta issue pública, descreve validador + Snyk e a allowlist com `expiresAt` (GOV-02, AC 8)
+**C8** - ✅ `SECURITY.md` aponta `/security/advisories/new`, veta issue pública, descreve validador + Snyk e a allowlist com `expiresAt` (GOV-02, AC 8)
 Proof: `pnpm vitest run test/repo/docs.test.ts -t "security policy"`
 
-**C9** ✅ - `.github/CODEOWNERS` contém exatamente as linhas `* @maiconsouza89` e `/skills/ @maiconsouza89` (GOV-03, AC 9)
+**C9** - ✅ `.github/CODEOWNERS` contém exatamente as linhas `* @maiconsouza89` e `/skills/ @maiconsouza89` (GOV-03, AC 9)
 Proof: `pnpm vitest run test/repo/github.test.ts -t "codeowners"`
 
-**C10** ✅ - Os dois issue forms existem, são YAML válido com `name`, `description`, `body`, e trazem os campos listados no AC (GOV-03, AC 10)
+**C10** - ✅ Os dois issue forms existem, são YAML válido com `name`, `description`, `body`, e trazem os campos listados no AC (GOV-03, AC 10)
 Proof: `pnpm vitest run test/repo/github.test.ts -t "issue templates"`
 
-**C11** ✅ - `PULL_REQUEST_TEMPLATE.md` tem "Issue vinculada: #" e o checklist com `pnpm check` e `metadata.reviewed` (GOV-03, AC 11)
+**C11** - ✅ `PULL_REQUEST_TEMPLATE.md` tem "Issue vinculada: #" e o checklist com `pnpm check` e `metadata.reviewed` (GOV-03, AC 11)
 Proof: `pnpm vitest run test/repo/github.test.ts -t "pull request template"`
 
-**C12** ✅ - `dependabot.yml` declara `npm` e `github-actions`, ambos `weekly` (GOV-03, AC 12)
+**C12** - ✅ `dependabot.yml` declara `npm` e `github-actions`, ambos `weekly` (GOV-03, AC 12)
 Proof: `pnpm vitest run test/repo/github.test.ts -t "dependabot"`
 
-**C13** ✅ - `AGENTS.md` traz as regras do catálogo e o bloco `## tlc-spec-lean` com `profile: standard` e `budget: 150k`; `CLAUDE.md` aponta para `AGENTS.md` e mantém a regra de idioma (GOV-03, AC 13)
+**C13** - ✅ `AGENTS.md` traz as regras do catálogo e o bloco `## tlc-spec-lean` com `profile: standard` e `budget: 150k`; `CLAUDE.md` aponta para `AGENTS.md` e mantém a regra de idioma (GOV-03, AC 13)
 Proof: `pnpm vitest run test/repo/docs.test.ts -t "agents and claude"`
 
-**C14** ✅ - `.gitignore` cobre `.claude/skills/`, `skills-lock.json`, `node_modules/`, `apps/site/dist/`, `.astro/`, e `git ls-files` não retorna nada sob `.claude/skills/` (GOV-03, AC 14)
+**C14** - ✅ `.gitignore` cobre `.claude/skills/`, `skills-lock.json`, `node_modules/`, `apps/site/dist/`, `.astro/`, e `git ls-files` não retorna nada sob `.claude/skills/` (GOV-03, AC 14)
 Proof: `pnpm vitest run test/repo/gitignore.test.ts -t "tooling skills are untracked"`
 
 ### S2 - Core, validador e registry · ~20 files · ~70 KB · ~18k
 
-**C15** ✅ - `validateCatalog(root)` percorre só `skills/*/SKILL.md`, ignora `.claude/`, `node_modules/`, `packages/`, `apps/`, e `pnpm validate` sai com `0` sobre o catálogo (CORE-01, AC 15)
+**C15** - ✅ `validateCatalog(root)` percorre só `skills/*/SKILL.md`, ignora `.claude/`, `node_modules/`, `packages/`, `apps/`, e `pnpm validate` sai com `0` sobre o catálogo (CORE-01, AC 15)
 Proof: `pnpm vitest run packages/core/test/validate.test.ts -t "walks only the catalog"` · `pnpm validate`
 
-**C16** ✅ - Um achado é impresso como `<rule-id> <path>:<line> <mensagem>` e o processo sai com `1` (CORE-01, AC 16)
+**C16** - ✅ Um achado é impresso como `<rule-id> <path>:<line> <mensagem>` e o processo sai com `1` (CORE-01, AC 16)
 Proof: `pnpm vitest run packages/core/test/validate-bin.test.ts -t "prints one line per finding and exits 1"`
 
-**C17** ✅ - Chave fora das 6 do spec gera `frontmatter/unknown-key` (CORE-01, AC 17)
+**C17** - ✅ Chave fora das 6 do spec gera `frontmatter/unknown-key` (CORE-01, AC 17)
 Proof: `pnpm vitest run packages/core/test/rules.test.ts -t "unknown key"`
 
-**C18** ✅ - `name` diferente da pasta, fora do regex `mass-`, ou acima de 64 chars gera `frontmatter/name` (3 casos) (CORE-01, AC 18)
+**C18** - ✅ `name` diferente da pasta, fora do regex `mass-`, ou acima de 64 chars gera `frontmatter/name` (3 casos) (CORE-01, AC 18)
 Proof: `pnpm vitest run packages/core/test/rules.test.ts -t "name rule"`
 
-**C19** ✅ - `description` vazia, acima de 1024 ou fora da fórmula gera `frontmatter/description` (3 casos) (CORE-01, AC 19)
+**C19** - ✅ `description` vazia, acima de 1024 ou fora da fórmula gera `frontmatter/description` (3 casos) (CORE-01, AC 19)
 Proof: `pnpm vitest run packages/core/test/rules.test.ts -t "description rule"`
 
-**C20** ✅ - `frontmatter/metadata` cobre os 9 casos: `license` ≠ `CC-BY-4.0`, ausência de `author`/`version`/`category`/`tags`/`reviewed`, `version` não semver, `category` fora de `_categories.json`, `reviewed` futuro, valor não string (CORE-01, AC 20)
+**C20** - ✅ `frontmatter/metadata` cobre os 9 casos: `license` ≠ `CC-BY-4.0`, ausência de `author`/`version`/`category`/`tags`/`reviewed`, `version` não semver, `category` fora de `_categories.json`, `reviewed` futuro, valor não string (CORE-01, AC 20)
 Proof: `pnpm vitest run packages/core/test/rules.test.ts -t "metadata rule"`
 
-**C21** ✅ - `compatibility` acima de 500 chars gera `frontmatter/compatibility` (CORE-01, AC 21)
+**C21** - ✅ `compatibility` acima de 500 chars gera `frontmatter/compatibility` (CORE-01, AC 21)
 Proof: `pnpm vitest run packages/core/test/rules.test.ts -t "compatibility rule"`
 
-**C22** ✅ - Byte `0x00` nos primeiros 8192 bytes gera `content/binary` (CORE-02, AC 22)
+**C22** - ✅ Byte `0x00` nos primeiros 8192 bytes gera `content/binary` (CORE-02, AC 22)
 Proof: `pnpm vitest run packages/core/test/rules.test.ts -t "binary rule"`
 
-**C23** ✅ - Cada um dos 4 padrões de segredo gera `security/secret` (CORE-02, AC 23)
+**C23** - ✅ Cada um dos 4 padrões de segredo gera `security/secret` (CORE-02, AC 23)
 Proof: `pnpm vitest run packages/core/test/rules.test.ts -t "secret patterns"`
 
-**C24** ✅ - Cada um dos 5 padrões de shell perigoso gera `security/shell` (CORE-02, AC 24)
+**C24** - ✅ Cada um dos 5 padrões de shell perigoso gera `security/shell` (CORE-02, AC 24)
 Proof: `pnpm vitest run packages/core/test/rules.test.ts -t "shell patterns"`
 
-**C25** ✅ - Cada uma das 5 frases de prompt injection, sem distinção de caixa, gera `security/prompt-injection` (CORE-02, AC 25)
+**C25** - ✅ Cada uma das 5 frases de prompt injection, sem distinção de caixa, gera `security/prompt-injection` (CORE-02, AC 25)
 Proof: `pnpm vitest run packages/core/test/rules.test.ts -t "prompt injection phrases"`
 
-**C26** ✅ - Script sem `#!` gera `scripts/shebang`; sem modo `100755` no git gera `scripts/executable` (CORE-02, AC 26)
+**C26** - ✅ Script sem `#!` gera `scripts/shebang`; sem modo `100755` no git gera `scripts/executable` (CORE-02, AC 26)
 Proof: `pnpm vitest run packages/core/test/rules.test.ts -t "scripts rule"`
 
-**C27** ✅ - 3001 tokens gera `size/tokens-warn` sem mudar o exit code; 6001 tokens ou 501 linhas gera `size/tokens` (CORE-02, AC 27)
+**C27** - ✅ 3001 tokens gera `size/tokens-warn` sem mudar o exit code; 6001 tokens ou 501 linhas gera `size/tokens` (CORE-02, AC 27)
 Proof: `pnpm vitest run packages/core/test/rules.test.ts -t "size rule"`
 
-**C28** ✅ - Link relativo para arquivo inexistente gera `links/missing` (CORE-02, AC 28)
+**C28** - ✅ Link relativo para arquivo inexistente gera `links/missing` (CORE-02, AC 28)
 Proof: `pnpm vitest run packages/core/test/rules.test.ts -t "missing link"`
 
-**C29** ✅ - `evals/` sem `triggers.json` com `should` e `shouldNot` gera `evals/shape` (CORE-02, AC 29)
+**C29** - ✅ `evals/` sem `triggers.json` com `should` e `shouldNot` gera `evals/shape` (CORE-02, AC 29)
 Proof: `pnpm vitest run packages/core/test/rules.test.ts -t "evals shape"`
 
-**C30** ✅ - `buildRegistry` produz a forma da door 3: `files[]` ordenado por `path`, `sha256` minúsculo, `tags` array, `tokens = ceil(chars/4)`, `deprecated` copiado, `generatedAt` ISO UTC; e `contentHash` bate com o vetor conhecido calculado à mão sobre uma skill fixa (CORE-03, AC 30)
+**C30** - ✅ `buildRegistry` produz a forma da door 3: `files[]` ordenado por `path`, `sha256` minúsculo, `tags` array, `tokens = ceil(chars/4)`, `deprecated` copiado, `generatedAt` ISO UTC; e `contentHash` bate com o vetor conhecido calculado à mão sobre uma skill fixa (CORE-03, AC 30)
 Proof: `pnpm vitest run packages/core/test/registry.test.ts -t "registry shape"` · `pnpm vitest run packages/core/test/registry.test.ts -t "contentHash known answer"`
 
-**C31** ✅ - `registry --check` sai com `1` e lista os campos divergentes quando o commitado difere em algo além de `generatedAt` (CORE-03, AC 31)
+**C31** - ✅ `registry --check` sai com `1` e lista os campos divergentes quando o commitado difere em algo além de `generatedAt` (CORE-03, AC 31)
 Proof: `pnpm vitest run packages/core/test/registry-bin.test.ts -t "check detects drift"`
 
-**C32** ✅ - Nome deprecado que ainda tem pasta, ou `replacedBy` inexistente, gera `deprecated/conflict` (2 casos) (CORE-03, AC 32)
+**C32** - ✅ Nome deprecado que ainda tem pasta, ou `replacedBy` inexistente, gera `deprecated/conflict` (2 casos) (CORE-03, AC 32)
 Proof: `pnpm vitest run packages/core/test/rules.test.ts -t "deprecated conflict"`
 
-**C33** ✅ - `packages/core` exporta `parseSkill`, `validateSkill`, `validateCatalog`, `hashFiles`, `buildRegistry` e os tipos, e nem `packages/cli/src` nem `apps/site/src` importam `gray-matter` ou `node:crypto` diretamente (CORE-03, AC 33)
+**C33** - ✅ `packages/core` exporta `parseSkill`, `validateSkill`, `validateCatalog`, `hashFiles`, `buildRegistry` e os tipos, e nem `packages/cli/src` nem `apps/site/src` importam `gray-matter` ou `node:crypto` diretamente (CORE-03, AC 33)
 Proof: `pnpm vitest run packages/core/test/exports.test.ts -t "public api"` · `pnpm vitest run packages/core/test/exports.test.ts -t "no duplicate parser"`
 
 ### S3 - Cinco skills-exemplo · 12 files · ~20 KB · ~5k
 
-**C34** ✅ - As 5 skills existem em `skills/`, cada `SKILL.md` tem no máximo 80 linhas e `validateCatalog` retorna zero achados (SKL-01, AC 34)
+**C34** - ✅ As 5 skills existem em `skills/`, cada `SKILL.md` tem no máximo 80 linhas e `validateCatalog` retorna zero achados (SKL-01, AC 34)
 Proof: `pnpm vitest run test/repo/catalog.test.ts -t "five example skills validate"`
 
-**C35** ✅ - `mass-skill-authoring` tem `references/` referenciado pelo `SKILL.md` e `evals/triggers.json` com ≥ 3 `should` e ≥ 3 `shouldNot` (SKL-01, AC 35)
+**C35** - ✅ `mass-skill-authoring` tem `references/` referenciado pelo `SKILL.md` e `evals/triggers.json` com ≥ 3 `should` e ≥ 3 `shouldNot` (SKL-01, AC 35)
 Proof: `pnpm vitest run test/repo/catalog.test.ts -t "skill-authoring exercises references and evals"`
 
-**C36** ✅ - `mass-commit-message/scripts/` tem script com shebang e `100755`; `mass-pr-description/assets/` tem template referenciado (SKL-01, AC 36)
+**C36** - ✅ `mass-commit-message/scripts/` tem script com shebang e `100755`; `mass-pr-description/assets/` tem template referenciado (SKL-01, AC 36)
 Proof: `pnpm vitest run test/repo/catalog.test.ts -t "commit-message scripts and pr-description assets"`
 
-**C37** ✅ - `mass-code-review` tem `metadata.requires: "git, gh"` e `allowed-tools`; `mass-security-checklist` só tem `SKILL.md` (SKL-01, AC 37)
+**C37** - ✅ `mass-code-review` tem `metadata.requires: "git, gh"` e `allowed-tools`; `mass-security-checklist` só tem `SKILL.md` (SKL-01, AC 37)
 Proof: `pnpm vitest run test/repo/catalog.test.ts -t "code-review requires and security-checklist minimal"`
 
-**C38** ✅ - `skills/_categories.json` cobre toda categoria usada e `skills/_deprecated.json` é `{}` (SKL-01, AC 38)
+**C38** - ✅ `skills/_categories.json` cobre toda categoria usada e `skills/_deprecated.json` é `{}` (SKL-01, AC 38)
 Proof: `pnpm vitest run test/repo/catalog.test.ts -t "categories and deprecated files"`
 
 ### S4 - Compatibilidade de descoberta · 5 files · ~5 KB · ~2k
 
-**C39** ✅ - `marketplace.json` e `plugin.json` têm a forma da door 5 (`name: "mass-solutions"`, plugin `mass-solutions-skills`, `source: "./"`, `skills: ["./skills/"]`) (DISC-01, AC 39)
+**C39** - ✅ `marketplace.json` e `plugin.json` têm a forma da door 5 (`name: "mass-solutions"`, plugin `mass-solutions-skills`, `source: "./"`, `skills: ["./skills/"]`) (DISC-01, AC 39)
 Proof: `pnpm vitest run test/repo/marketplace.test.ts -t "marketplace shape"`
 
-**C40** ✅ - `npx skills add ./ --list` na raiz lista exatamente as 5 skills `mass-*` (DISC-01, AC 40)
+**C40** - ✅ `npx skills add ./ --list` na raiz lista exatamente as 5 skills `mass-*` (DISC-01, AC 40)
 Proof: `bash tools/spike/npx-skills-list.sh`
 
-**C41** ✅ - `claude plugin validate .` sai com `0` (DISC-01, AC 41)
+**C41** - ✅ `claude plugin validate .` sai com `0` (DISC-01, AC 41)
 Proof: `bash tools/spike/claude-plugin-validate.sh`
 
-**C42** ✅ - `claude plugin marketplace add ./` + `claude plugin install mass-solutions-skills@mass-solutions` deixam as 5 pastas no diretório instalado; o script remove o plugin e o marketplace ao final (DISC-01, AC 42)
+**C42** - ✅ `claude plugin marketplace add ./` + `claude plugin install mass-solutions-skills@mass-solutions` deixam as 5 pastas no diretório instalado; o script remove o plugin e o marketplace ao final (DISC-01, AC 42)
 Proof: `bash tools/spike/claude-plugin-install.sh`
 
 ### S5 - CLI `mass-skills` · ~25 files · ~80 KB · ~20k
@@ -270,7 +270,7 @@ Proof: `pnpm vitest run test/repo/release.test.ts -t "changesets config"`
 **C80** - `release.yml` dispara em tags `v*`, roda `pnpm check`, `pnpm build` e `gh release create ${{ github.ref_name }} --generate-notes` (REL-01, AC 80)
 Proof: `pnpm vitest run test/repo/workflows.test.ts -t "release workflow"`
 
-**C81** ✅ - O registry commitado tem `version: 1` e `repo: "maiconsouza89/mass-solutions-skills"` (REL-01, AC 81)
+**C81** - ✅ O registry commitado tem `version: 1` e `repo: "maiconsouza89/mass-solutions-skills"` (REL-01, AC 81)
 Proof: `pnpm vitest run packages/core/test/registry.test.ts -t "committed registry version and repo"`
 
 ## Coverage
@@ -355,3 +355,9 @@ Intended split, with the arithmetic, written before any code:
 - Estimativa de leitura (tudo novo, `wc -c` previsto): S1 45 KB + S2 70 KB + S3 20 KB + S4 5 KB + S5 80 KB + S6 90 KB + S7 15 KB + S8 3 KB ≈ 330 KB ≈ 83k tokens, abaixo do budget de 150k -> pelo critério de leitura, um builder.
 - Três batches mesmo assim, em fronteiras onde a surface muda: **B1 = S1-S4** (repo, core, catálogo, descoberta), **B2 = S5** (CLI), **B3 = S6-S8** (site, CI, release). Razão: a saída de ferramentas de cada batch (`astro build`, servidor HTTP nos testes do CLI, `npx skills`) enche o contexto de um builder muito antes do que a leitura dos arquivos; o corte em fronteira de surface é o que faz o diff de B1 ser lido por B2 sem narrativa.
 - Cada batch só passa para o próximo em verde. O Verifier roda ao final de B3 sobre `<feature base>..HEAD` com os 82 checks.
+
+Appended by builder B1 (S1-S4):
+
+- **Boundary:** C1-C42 e C81 fechados em `5e228ab` (commits `fbb2709`..`5e228ab`). Provas de C40-C42 rodam sobre um export limpo da árvore (`tools/spike/export-tree.sh`), porque `.claude/skills/` continua no disco do mantenedor e o `npx skills` o listaria.
+- **Settled mid-build:** o validador tem um 17º id, `frontmatter/parse` (frontmatter ausente, não terminado ou YAML inválido), coberto por `packages/core/test/rules.test.ts -t "frontmatter parse error"`. O parser é o pacote `yaml` (schema core, datas viram string), não `gray-matter`. O modo executável lê `git ls-files -s` quando o arquivo está no índice e `fs.stat` fora do git. `pnpm-workspace.yaml` usa `allowBuilds: { esbuild: true }` (pnpm 11 não lê mais o campo `pnpm` do `package.json`). Os bins `mass-validate`/`mass-registry` de `packages/core` não existem como `bin` (apontariam para `dist/` inexistente na instalação); os scripts da raiz chamam `tsx packages/core/src/bin/*.ts`, e o CLI (B2) espelha via `main()` exportado. O README gerado por `new-skill` tem 3 linhas sem linha em branco. `vitest.config.ts` mapeia `@mass-solutions/skills-core` para `packages/core/src/index.ts`, então B2/B3 importam o core sem build; `tsconfig.json` da raiz cobre `tools/` e `test/`. `AGENTS.md` ganhou a seção `## Dependências` pedida pelo `CLAUDE.md` do usuário; as linhas de Test policy não foram gravadas lá.
+- **Abandoned:** `gray-matter` (js-yaml converte `reviewed: 2026-09-14` em Date e quebraria o contrato string→string); `bin` no `package.json` do core (warnings de link no `pnpm install`); rodar os spikes no working tree (lista o tooling em `.claude/skills/`).
