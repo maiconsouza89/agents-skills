@@ -1,0 +1,6 @@
+[
+  { "id": "authoring", "en": "Skill authoring", "pt-br": "Autoria de skills" },
+  { "id": "workflow", "en": "Git workflow", "pt-br": "Fluxo Git" },
+  { "id": "quality", "en": "Code quality", "pt-br": "Qualidade de código" },
+  { "id": "security", "en": "Security", "pt-br": "Segurança" }
+]

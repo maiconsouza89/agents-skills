@@ -1,0 +1,145 @@
+{
+  "version": 1,
+  "generatedAt": "2026-09-14T23:46:55.613Z",
+  "repo": "maiconsouza89/mass-solutions-skills",
+  "skills": [
+    {
+      "name": "mass-code-review",
+      "path": "skills/mass-code-review",
+      "description": "Reviews a pull request or a local diff for correctness bugs, missing tests and unsafe changes, and reports findings with file and line. Use when \"review this PR\", \"review my changes\" or \"look for bugs in this diff\". Do NOT use for writing the PR description (use mass-pr-description) or for a security-only audit of a skill (use mass-security-checklist).",
+      "category": "quality",
+      "tags": [
+        "code-review",
+        "pull-request",
+        "quality"
+      ],
+      "version": "0.1.0",
+      "reviewed": "2026-09-14",
+      "author": "mass-solutions",
+      "license": "CC-BY-4.0",
+      "files": [
+        {
+          "path": "SKILL.md",
+          "sha256": "a30f63f46f9d51f3cb727cf35af65b753206097943307b3ff3b148fc429fe3f7",
+          "bytes": 1973
+        }
+      ],
+      "contentHash": "50b647e61af4e6fbd30837e66472401132766f7ef550649e03345a0c6de96c97",
+      "tokens": 494
+    },
+    {
+      "name": "mass-commit-message",
+      "path": "skills/mass-commit-message",
+      "description": "Writes a Conventional Commits message from the staged diff, with a scope taken from the changed directories. Use when \"write a commit message\", \"commit this\" or \"what scope should this commit have\". Do NOT use for pull request descriptions (use mass-pr-description).",
+      "category": "workflow",
+      "tags": [
+        "git",
+        "commits",
+        "conventional-commits"
+      ],
+      "version": "0.1.0",
+      "reviewed": "2026-09-14",
+      "author": "mass-solutions",
+      "license": "CC-BY-4.0",
+      "files": [
+        {
+          "path": "SKILL.md",
+          "sha256": "13ea8305268e8ff7d21399370d7cedb264af99ace6a0331e333a4404f9bc97d1",
+          "bytes": 1691
+        },
+        {
+          "path": "scripts/suggest-scope.sh",
+          "sha256": "7e6df8d1d015a09a3b2e18627af31d4bcade117d3aa8465676bad2a8e8baf2d8",
+          "bytes": 276
+        }
+      ],
+      "contentHash": "b788e3e426c8dee4a1a9ddf24ab48ba6599c6070e8051f9c817ffaf7126f3518",
+      "tokens": 421
+    },
+    {
+      "name": "mass-pr-description",
+      "path": "skills/mass-pr-description",
+      "description": "Fills the Mass Solutions pull request template from the branch's commits and diff. Use when \"write the PR description\", \"open a pull request\" or \"describe this branch\". Do NOT use for a single commit message (use mass-commit-message) or for reviewing someone else's PR (use mass-code-review).",
+      "category": "workflow",
+      "tags": [
+        "git",
+        "pull-request",
+        "github"
+      ],
+      "version": "0.1.0",
+      "reviewed": "2026-09-14",
+      "author": "mass-solutions",
+      "license": "CC-BY-4.0",
+      "files": [
+        {
+          "path": "SKILL.md",
+          "sha256": "b7156c733087f39c202cd248fbd9825866612df858d3424f91684e385d5cb2b0",
+          "bytes": 1580
+        },
+        {
+          "path": "assets/pr-template.md",
+          "sha256": "f90a8c00cc534688b74043b1fe08b182327857916e2e370d69bfd237fc4eae88",
+          "bytes": 356
+        }
+      ],
+      "contentHash": "b093b862357889bc0a9c792a462fce2670232fc2d3ffe2204908b32e7803df65",
+      "tokens": 395
+    },
+    {
+      "name": "mass-security-checklist",
+      "path": "skills/mass-security-checklist",
+      "description": "Audits a skill, script or configuration for the four threat classes the Mass Solutions validator and Snyk Agent Scan look for, and reports pass or fail per item. Use when \"is this skill safe\", \"security check this script\" or \"audit this SKILL.md\". Do NOT use for a general code review (use mass-code-review).",
+      "category": "security",
+      "tags": [
+        "security",
+        "audit",
+        "prompt-injection",
+        "secrets"
+      ],
+      "version": "0.1.0",
+      "reviewed": "2026-09-14",
+      "author": "mass-solutions",
+      "license": "CC-BY-4.0",
+      "files": [
+        {
+          "path": "SKILL.md",
+          "sha256": "4ee8f0ca88f73121051e183a0a834fc3e2feb15eba0ca2554bc797e083d6d997",
+          "bytes": 2129
+        }
+      ],
+      "contentHash": "623452ff40251d0b243693c92809997c97fc94655f6680af2e84d1e0d89d95ba",
+      "tokens": 533
+    },
+    {
+      "name": "mass-skill-authoring",
+      "path": "skills/mass-skill-authoring",
+      "description": "Writes or reviews a Mass Solutions skill so it passes the catalog validator on the first run. Use when \"create a new skill\", \"review this SKILL.md\" or \"why does the validator reject my skill\". Do NOT use for writing commit messages or pull requests (use mass-commit-message or mass-pr-description).",
+      "category": "authoring",
+      "tags": [
+        "skills",
+        "authoring",
+        "frontmatter",
+        "validator"
+      ],
+      "version": "0.1.0",
+      "reviewed": "2026-09-14",
+      "author": "mass-solutions",
+      "license": "CC-BY-4.0",
+      "files": [
+        {
+          "path": "SKILL.md",
+          "sha256": "9fb1488e50b32e9f74af9796e930970245da49d4bc38a2037d9569a0be7d5ab3",
+          "bytes": 2324
+        },
+        {
+          "path": "references/skill-contract.md",
+          "sha256": "ec37dac4a50b3475e5a62b01514132e8372d820609d1cba61da61924bdaecd3f",
+          "bytes": 1982
+        }
+      ],
+      "contentHash": "ad38c36c9276279fc38c80d5711a9a2dad0e1c8966244dabc0aed706426aa246",
+      "tokens": 581
+    }
+  ],
+  "deprecated": {}
+}

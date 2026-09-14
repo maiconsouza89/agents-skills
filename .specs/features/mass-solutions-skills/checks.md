@@ -116,19 +116,19 @@ Proof: `pnpm vitest run packages/core/test/exports.test.ts -t "public api"` · `
 
 ### S3 - Cinco skills-exemplo · 12 files · ~20 KB · ~5k
 
-**C34** - As 5 skills existem em `skills/`, cada `SKILL.md` tem no máximo 80 linhas e `validateCatalog` retorna zero achados (SKL-01, AC 34)
+**C34** ✅ - As 5 skills existem em `skills/`, cada `SKILL.md` tem no máximo 80 linhas e `validateCatalog` retorna zero achados (SKL-01, AC 34)
 Proof: `pnpm vitest run test/repo/catalog.test.ts -t "five example skills validate"`
 
-**C35** - `mass-skill-authoring` tem `references/` referenciado pelo `SKILL.md` e `evals/triggers.json` com ≥ 3 `should` e ≥ 3 `shouldNot` (SKL-01, AC 35)
+**C35** ✅ - `mass-skill-authoring` tem `references/` referenciado pelo `SKILL.md` e `evals/triggers.json` com ≥ 3 `should` e ≥ 3 `shouldNot` (SKL-01, AC 35)
 Proof: `pnpm vitest run test/repo/catalog.test.ts -t "skill-authoring exercises references and evals"`
 
-**C36** - `mass-commit-message/scripts/` tem script com shebang e `100755`; `mass-pr-description/assets/` tem template referenciado (SKL-01, AC 36)
+**C36** ✅ - `mass-commit-message/scripts/` tem script com shebang e `100755`; `mass-pr-description/assets/` tem template referenciado (SKL-01, AC 36)
 Proof: `pnpm vitest run test/repo/catalog.test.ts -t "commit-message scripts and pr-description assets"`
 
-**C37** - `mass-code-review` tem `metadata.requires: "git, gh"` e `allowed-tools`; `mass-security-checklist` só tem `SKILL.md` (SKL-01, AC 37)
+**C37** ✅ - `mass-code-review` tem `metadata.requires: "git, gh"` e `allowed-tools`; `mass-security-checklist` só tem `SKILL.md` (SKL-01, AC 37)
 Proof: `pnpm vitest run test/repo/catalog.test.ts -t "code-review requires and security-checklist minimal"`
 
-**C38** - `skills/_categories.json` cobre toda categoria usada e `skills/_deprecated.json` é `{}` (SKL-01, AC 38)
+**C38** ✅ - `skills/_categories.json` cobre toda categoria usada e `skills/_deprecated.json` é `{}` (SKL-01, AC 38)
 Proof: `pnpm vitest run test/repo/catalog.test.ts -t "categories and deprecated files"`
 
 ### S4 - Compatibilidade de descoberta · 5 files · ~5 KB · ~2k
@@ -270,7 +270,7 @@ Proof: `pnpm vitest run test/repo/release.test.ts -t "changesets config"`
 **C80** - `release.yml` dispara em tags `v*`, roda `pnpm check`, `pnpm build` e `gh release create ${{ github.ref_name }} --generate-notes` (REL-01, AC 80)
 Proof: `pnpm vitest run test/repo/workflows.test.ts -t "release workflow"`
 
-**C81** - O registry commitado tem `version: 1` e `repo: "maiconsouza89/mass-solutions-skills"` (REL-01, AC 81)
+**C81** ✅ - O registry commitado tem `version: 1` e `repo: "maiconsouza89/mass-solutions-skills"` (REL-01, AC 81)
 Proof: `pnpm vitest run packages/core/test/registry.test.ts -t "committed registry version and repo"`
 
 ## Coverage

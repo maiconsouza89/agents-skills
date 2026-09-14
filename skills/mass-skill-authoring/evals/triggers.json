@@ -1,0 +1,14 @@
+{
+  "should": [
+    "Create a new skill for our release checklist",
+    "Review this SKILL.md before I open the PR",
+    "Why does the validator reject my skill with frontmatter/description?",
+    "Help me write the description for a mass- skill"
+  ],
+  "shouldNot": [
+    "Write a commit message for these changes",
+    "Draft the pull request description",
+    "Review this diff for bugs",
+    "Is this script safe to run?"
+  ]
+}
