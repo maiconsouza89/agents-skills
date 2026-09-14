@@ -57,61 +57,61 @@ Proof: `pnpm vitest run test/repo/gitignore.test.ts -t "tooling skills are untra
 
 ### S2 - Core, validador e registry · ~20 files · ~70 KB · ~18k
 
-**C15** - `validateCatalog(root)` percorre só `skills/*/SKILL.md`, ignora `.claude/`, `node_modules/`, `packages/`, `apps/`, e `pnpm validate` sai com `0` sobre o catálogo (CORE-01, AC 15)
+**C15** ✅ - `validateCatalog(root)` percorre só `skills/*/SKILL.md`, ignora `.claude/`, `node_modules/`, `packages/`, `apps/`, e `pnpm validate` sai com `0` sobre o catálogo (CORE-01, AC 15)
 Proof: `pnpm vitest run packages/core/test/validate.test.ts -t "walks only the catalog"` · `pnpm validate`
 
-**C16** - Um achado é impresso como `<rule-id> <path>:<line> <mensagem>` e o processo sai com `1` (CORE-01, AC 16)
+**C16** ✅ - Um achado é impresso como `<rule-id> <path>:<line> <mensagem>` e o processo sai com `1` (CORE-01, AC 16)
 Proof: `pnpm vitest run packages/core/test/validate-bin.test.ts -t "prints one line per finding and exits 1"`
 
-**C17** - Chave fora das 6 do spec gera `frontmatter/unknown-key` (CORE-01, AC 17)
+**C17** ✅ - Chave fora das 6 do spec gera `frontmatter/unknown-key` (CORE-01, AC 17)
 Proof: `pnpm vitest run packages/core/test/rules.test.ts -t "unknown key"`
 
-**C18** - `name` diferente da pasta, fora do regex `mass-`, ou acima de 64 chars gera `frontmatter/name` (3 casos) (CORE-01, AC 18)
+**C18** ✅ - `name` diferente da pasta, fora do regex `mass-`, ou acima de 64 chars gera `frontmatter/name` (3 casos) (CORE-01, AC 18)
 Proof: `pnpm vitest run packages/core/test/rules.test.ts -t "name rule"`
 
-**C19** - `description` vazia, acima de 1024 ou fora da fórmula gera `frontmatter/description` (3 casos) (CORE-01, AC 19)
+**C19** ✅ - `description` vazia, acima de 1024 ou fora da fórmula gera `frontmatter/description` (3 casos) (CORE-01, AC 19)
 Proof: `pnpm vitest run packages/core/test/rules.test.ts -t "description rule"`
 
-**C20** - `frontmatter/metadata` cobre os 9 casos: `license` ≠ `CC-BY-4.0`, ausência de `author`/`version`/`category`/`tags`/`reviewed`, `version` não semver, `category` fora de `_categories.json`, `reviewed` futuro, valor não string (CORE-01, AC 20)
+**C20** ✅ - `frontmatter/metadata` cobre os 9 casos: `license` ≠ `CC-BY-4.0`, ausência de `author`/`version`/`category`/`tags`/`reviewed`, `version` não semver, `category` fora de `_categories.json`, `reviewed` futuro, valor não string (CORE-01, AC 20)
 Proof: `pnpm vitest run packages/core/test/rules.test.ts -t "metadata rule"`
 
-**C21** - `compatibility` acima de 500 chars gera `frontmatter/compatibility` (CORE-01, AC 21)
+**C21** ✅ - `compatibility` acima de 500 chars gera `frontmatter/compatibility` (CORE-01, AC 21)
 Proof: `pnpm vitest run packages/core/test/rules.test.ts -t "compatibility rule"`
 
-**C22** - Byte `0x00` nos primeiros 8192 bytes gera `content/binary` (CORE-02, AC 22)
+**C22** ✅ - Byte `0x00` nos primeiros 8192 bytes gera `content/binary` (CORE-02, AC 22)
 Proof: `pnpm vitest run packages/core/test/rules.test.ts -t "binary rule"`
 
-**C23** - Cada um dos 4 padrões de segredo gera `security/secret` (CORE-02, AC 23)
+**C23** ✅ - Cada um dos 4 padrões de segredo gera `security/secret` (CORE-02, AC 23)
 Proof: `pnpm vitest run packages/core/test/rules.test.ts -t "secret patterns"`
 
-**C24** - Cada um dos 5 padrões de shell perigoso gera `security/shell` (CORE-02, AC 24)
+**C24** ✅ - Cada um dos 5 padrões de shell perigoso gera `security/shell` (CORE-02, AC 24)
 Proof: `pnpm vitest run packages/core/test/rules.test.ts -t "shell patterns"`
 
-**C25** - Cada uma das 5 frases de prompt injection, sem distinção de caixa, gera `security/prompt-injection` (CORE-02, AC 25)
+**C25** ✅ - Cada uma das 5 frases de prompt injection, sem distinção de caixa, gera `security/prompt-injection` (CORE-02, AC 25)
 Proof: `pnpm vitest run packages/core/test/rules.test.ts -t "prompt injection phrases"`
 
-**C26** - Script sem `#!` gera `scripts/shebang`; sem modo `100755` no git gera `scripts/executable` (CORE-02, AC 26)
+**C26** ✅ - Script sem `#!` gera `scripts/shebang`; sem modo `100755` no git gera `scripts/executable` (CORE-02, AC 26)
 Proof: `pnpm vitest run packages/core/test/rules.test.ts -t "scripts rule"`
 
-**C27** - 3001 tokens gera `size/tokens-warn` sem mudar o exit code; 6001 tokens ou 501 linhas gera `size/tokens` (CORE-02, AC 27)
+**C27** ✅ - 3001 tokens gera `size/tokens-warn` sem mudar o exit code; 6001 tokens ou 501 linhas gera `size/tokens` (CORE-02, AC 27)
 Proof: `pnpm vitest run packages/core/test/rules.test.ts -t "size rule"`
 
-**C28** - Link relativo para arquivo inexistente gera `links/missing` (CORE-02, AC 28)
+**C28** ✅ - Link relativo para arquivo inexistente gera `links/missing` (CORE-02, AC 28)
 Proof: `pnpm vitest run packages/core/test/rules.test.ts -t "missing link"`
 
-**C29** - `evals/` sem `triggers.json` com `should` e `shouldNot` gera `evals/shape` (CORE-02, AC 29)
+**C29** ✅ - `evals/` sem `triggers.json` com `should` e `shouldNot` gera `evals/shape` (CORE-02, AC 29)
 Proof: `pnpm vitest run packages/core/test/rules.test.ts -t "evals shape"`
 
-**C30** - `buildRegistry` produz a forma da door 3: `files[]` ordenado por `path`, `sha256` minúsculo, `tags` array, `tokens = ceil(chars/4)`, `deprecated` copiado, `generatedAt` ISO UTC; e `contentHash` bate com o vetor conhecido calculado à mão sobre uma skill fixa (CORE-03, AC 30)
+**C30** ✅ - `buildRegistry` produz a forma da door 3: `files[]` ordenado por `path`, `sha256` minúsculo, `tags` array, `tokens = ceil(chars/4)`, `deprecated` copiado, `generatedAt` ISO UTC; e `contentHash` bate com o vetor conhecido calculado à mão sobre uma skill fixa (CORE-03, AC 30)
 Proof: `pnpm vitest run packages/core/test/registry.test.ts -t "registry shape"` · `pnpm vitest run packages/core/test/registry.test.ts -t "contentHash known answer"`
 
-**C31** - `registry --check` sai com `1` e lista os campos divergentes quando o commitado difere em algo além de `generatedAt` (CORE-03, AC 31)
+**C31** ✅ - `registry --check` sai com `1` e lista os campos divergentes quando o commitado difere em algo além de `generatedAt` (CORE-03, AC 31)
 Proof: `pnpm vitest run packages/core/test/registry-bin.test.ts -t "check detects drift"`
 
-**C32** - Nome deprecado que ainda tem pasta, ou `replacedBy` inexistente, gera `deprecated/conflict` (2 casos) (CORE-03, AC 32)
+**C32** ✅ - Nome deprecado que ainda tem pasta, ou `replacedBy` inexistente, gera `deprecated/conflict` (2 casos) (CORE-03, AC 32)
 Proof: `pnpm vitest run packages/core/test/rules.test.ts -t "deprecated conflict"`
 
-**C33** - `packages/core` exporta `parseSkill`, `validateSkill`, `validateCatalog`, `hashFiles`, `buildRegistry` e os tipos, e nem `packages/cli/src` nem `apps/site/src` importam `gray-matter` ou `node:crypto` diretamente (CORE-03, AC 33)
+**C33** ✅ - `packages/core` exporta `parseSkill`, `validateSkill`, `validateCatalog`, `hashFiles`, `buildRegistry` e os tipos, e nem `packages/cli/src` nem `apps/site/src` importam `gray-matter` ou `node:crypto` diretamente (CORE-03, AC 33)
 Proof: `pnpm vitest run packages/core/test/exports.test.ts -t "public api"` · `pnpm vitest run packages/core/test/exports.test.ts -t "no duplicate parser"`
 
 ### S3 - Cinco skills-exemplo · 12 files · ~20 KB · ~5k
