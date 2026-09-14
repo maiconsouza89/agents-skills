@@ -13,10 +13,10 @@ Runner: `vitest` 5 na raiz (workspace), invocado como `pnpm vitest run <arquivo>
 
 ### S1 - Repositório, governança e documentos · ~30 files · ~45 KB · ~11k
 
-**C1** - `pnpm install --frozen-lockfile` resolve `packages/core`, `packages/cli` e `apps/site` como workspaces e `pnpm-workspace.yaml` os declara (GOV-01, AC 1)
+**C1** ✅ - `pnpm install --frozen-lockfile` resolve `packages/core`, `packages/cli` e `apps/site` como workspaces e `pnpm-workspace.yaml` os declara (GOV-01, AC 1)
 Proof: `pnpm install --frozen-lockfile && pnpm vitest run test/repo/workspace.test.ts -t "workspace declares the three packages"`
 
-**C2** - `package.json` da raiz expõe `check`, `validate`, `registry`, `build`, `test`, `scan`, `new-skill` e `stale`, e `check` encadeia `validate`, `registry --check` e `test` (GOV-01, AC 2)
+**C2** ✅ - `package.json` da raiz expõe `check`, `validate`, `registry`, `build`, `test`, `scan`, `new-skill` e `stale`, e `check` encadeia `validate`, `registry --check` e `test` (GOV-01, AC 2)
 Proof: `pnpm vitest run test/repo/workspace.test.ts -t "root scripts"`
 
 **C3** - `pnpm new-skill mass-exemplo` cria `SKILL.md` com frontmatter completo (description na fórmula, `version: "0.1.0"`, `reviewed` = hoje) e `README.md`, e o resultado passa em `validateSkill` (GOV-01, AC 3)
@@ -52,7 +52,7 @@ Proof: `pnpm vitest run test/repo/github.test.ts -t "dependabot"`
 **C13** - `AGENTS.md` traz as regras do catálogo e o bloco `## tlc-spec-lean` com `profile: standard` e `budget: 150k`; `CLAUDE.md` aponta para `AGENTS.md` e mantém a regra de idioma (GOV-03, AC 13)
 Proof: `pnpm vitest run test/repo/docs.test.ts -t "agents and claude"`
 
-**C14** - `.gitignore` cobre `.claude/skills/`, `skills-lock.json`, `node_modules/`, `apps/site/dist/`, `.astro/`, e `git ls-files` não retorna nada sob `.claude/skills/` (GOV-03, AC 14)
+**C14** ✅ - `.gitignore` cobre `.claude/skills/`, `skills-lock.json`, `node_modules/`, `apps/site/dist/`, `.astro/`, e `git ls-files` não retorna nada sob `.claude/skills/` (GOV-03, AC 14)
 Proof: `pnpm vitest run test/repo/gitignore.test.ts -t "tooling skills are untracked"`
 
 ### S2 - Core, validador e registry · ~20 files · ~70 KB · ~18k

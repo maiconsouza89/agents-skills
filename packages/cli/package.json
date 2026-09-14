@@ -1,0 +1,11 @@
+{
+  "name": "@mass-solutions/skills-cli",
+  "version": "0.1.0",
+  "description": "mass-skills: install Mass Solutions skills with integrity verification and a lockfile",
+  "license": "MIT",
+  "type": "module",
+  "private": true,
+  "dependencies": {
+    "@mass-solutions/skills-core": "workspace:*"
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "name": "site",
+  "version": "0.1.0",
+  "description": "Bilingual static catalog site for Mass Solutions skills",
+  "license": "MIT",
+  "type": "module",
+  "private": true,
+  "dependencies": {
+    "@mass-solutions/skills-core": "workspace:*"
+  }
+}

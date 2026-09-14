@@ -1,0 +1,9 @@
+# development tooling installed per maintainer with `npx skills add` - not part of the catalog
+.claude/skills/
+skills-lock.json
+
+node_modules/
+dist/
+apps/site/dist/
+.astro/
+*.tsbuildinfo
