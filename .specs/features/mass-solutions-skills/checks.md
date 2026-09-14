@@ -19,10 +19,10 @@ Proof: `pnpm install --frozen-lockfile && pnpm vitest run test/repo/workspace.te
 **C2** ✅ - `package.json` da raiz expõe `check`, `validate`, `registry`, `build`, `test`, `scan`, `new-skill` e `stale`, e `check` encadeia `validate`, `registry --check` e `test` (GOV-01, AC 2)
 Proof: `pnpm vitest run test/repo/workspace.test.ts -t "root scripts"`
 
-**C3** - `pnpm new-skill mass-exemplo` cria `SKILL.md` com frontmatter completo (description na fórmula, `version: "0.1.0"`, `reviewed` = hoje) e `README.md`, e o resultado passa em `validateSkill` (GOV-01, AC 3)
+**C3** ✅ - `pnpm new-skill mass-exemplo` cria `SKILL.md` com frontmatter completo (description na fórmula, `version: "0.1.0"`, `reviewed` = hoje) e `README.md`, e o resultado passa em `validateSkill` (GOV-01, AC 3)
 Proof: `pnpm vitest run test/repo/new-skill.test.ts -t "scaffolds a skill that validates"`
 
-**C4** - `pnpm new-skill` com nome fora de `^mass-[a-z0-9]+(-[a-z0-9]+)*$` sai com `2`, imprime a regra e não cria arquivo (GOV-01, AC 4)
+**C4** ✅ - `pnpm new-skill` com nome fora de `^mass-[a-z0-9]+(-[a-z0-9]+)*$` sai com `2`, imprime a regra e não cria arquivo (GOV-01, AC 4)
 Proof: `pnpm vitest run test/repo/new-skill.test.ts -t "rejects an invalid name with exit 2"`
 
 **C5** - `LICENSE` é MIT, `skills/LICENSE` é CC-BY-4.0, e ambos os READMEs declaram a divisão (GOV-02, AC 5)
