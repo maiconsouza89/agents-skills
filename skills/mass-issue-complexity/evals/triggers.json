@@ -1,0 +1,14 @@
+{
+  "should": [
+    "How complex is issue #22? Low, medium or high?",
+    "Classify the complexity of this ticket: users can't reset their password when the email has uppercase letters",
+    "Read this GitHub issue and tell me if it's a small, medium or big piece of work",
+    "Qual a complexidade dessa issue? Justifica."
+  ],
+  "shouldNot": [
+    "Review this diff for bugs before I merge",
+    "Write the pull request description for this branch",
+    "Break this epic into sub-issues with acceptance criteria",
+    "What is the priority of this bug compared to the others?"
+  ]
+}
