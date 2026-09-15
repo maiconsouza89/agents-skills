@@ -18,9 +18,9 @@
 ## Handoff
 
 **Feature**: mass-solutions-skills
-**Where**: rodada 1 do Verifier (`5c157b1`) devolveu FAIL com 5 lacunas; B4 corrigiu todas (C83-C86, provas de C45/C58/C59/C68 reforçadas); 86/86 checks marcados
+**Where**: build completo (86 checks fechados, `pnpm check` verde com 143 testes). Verificação independente: 3 rodadas (`5c157b1`, `aa0648c`, `f9337d3`); a rodada 3 fechou em FAIL por um único mutante (Fh, causa `missing frontmatter` do C86), corrigido em `911a7ee` sem nova rodada. O usuário aceitou encerrar assim em 2026-09-15; `validate_verification.py` continua em 1 (veredito FAIL na rodada 3) por decisão dele, não por lacuna aberta.
 **In progress**: nada
-**Next step**: o orquestrador despacha o Verifier para a **rodada 2 - scoped** (diff do B4 + os vereditos não-PASS da rodada 1: F5, cobertura de exits e 404 de arquivo, test policy de `agents.ts`/`update.ts`/`new-skill.ts`, rule ids 17), provas em full no novo HEAD; depois `validate_verification.py mass-solutions-skills`; go-live só com go-ahead explícito
-**Blockers**: open questions 1-4 (go-live) não bloqueiam a verificação local
+**Next step**: go-live, cada item com go-ahead explícito: (1) push de `feature/implement-v1` e PR para `main` em `maiconsouza89/agents-skills`; (2) branch protection em `main` via `gh api` (PR obrigatório, check `ci`, sem force-push) e Pages com source "GitHub Actions"; (3) secret `SNYK_TOKEN`; (4) tag `v0.1.0`; (5) arquivar `maiconsouza89/mass-agents-skills` com README apontando o sucessor
+**Blockers**: nenhum técnico
 **Uncommitted**: nada
 **Branch**: feature/implement-v1
