@@ -56,3 +56,9 @@ Antes de instalar ou integrar novas dependências, funcionalidades ou tecnologia
 - `security-scan.yml` (`main` e PRs): `tools/allowlist.ts` roda sempre e falha com entrada vencida; `uvx snyk-agent-scan@latest skills --ci` só em push e PR do próprio repo (precisa de `SNYK_TOKEN`). O erro `X007` (limite diário da versão pública do Snyk Agent-Scan) é tratado como não-bloqueante — o step captura a saída, e só falha o job se o código de saída for diferente de zero *e* a saída não contiver `X007`; qualquer outra falha (achado real, erro de auth, etc.) continua bloqueando.
 - `stale-skills.yml` (segunda 09:00 UTC e manual): `pnpm --silent stale --days 90` alimenta a issue `Stale skills` (label `stale-skill`), fechada quando a lista fica vazia.
 - `release.yml` (tag `v*`): `pnpm check`, `pnpm build`, `gh release create --generate-notes`. Versões dos pacotes via Changesets (`pnpm changeset`); o site não é versionado.
+
+## Fluxo com o GitHub Project
+
+- O roadmap e o trabalho em andamento vivem no [GitHub Project #5](https://github.com/users/maiconsouza89/projects/5). Toda demanda é uma issue, com `Priority` (`P0`, `P1`, `P2`, `Backlog`) e `Area` (`CLI`, `Core`, `Site`, `CI`, `Catalog`); trabalho grande vira sub-issues e dependência usa *blocked by*.
+- Começar uma issue: `pnpm start-issue <N>` (`tools/start-issue.ts`) cria a branch ligada à issue (`feat|fix|docs/<N>-<slug>`, ou troca para a já ligada), atribui a issue e muda o Status para `In Progress`. Recusa issue fechada e working tree sujo; usa o token do `gh`, que precisa do escopo `project`.
+- PR com `Closes #N` (o template já traz): o Project move o item para `In Review` quando o PR é ligado e para `Done` no merge. Merge por squash.
