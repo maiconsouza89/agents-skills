@@ -6,7 +6,15 @@ import { parseSkill, validateCatalog } from "@mass-solutions/skills-core";
 
 const ROOT = fileURLToPath(new URL("../..", import.meta.url));
 const SKILLS = join(ROOT, "skills");
-const CATALOG = ["mass-code-review", "mass-commit-message", "mass-issue-complexity", "mass-pr-description", "mass-security-checklist", "mass-skill-authoring"];
+const CATALOG = [
+  "mass-code-review",
+  "mass-commit-message",
+  "mass-issue-complexity",
+  "mass-issue-priority",
+  "mass-pr-description",
+  "mass-security-checklist",
+  "mass-skill-authoring",
+];
 
 describe("example skills", () => {
   it("catalog skills validate and stay under 80 lines", () => {

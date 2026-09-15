@@ -1,10 +1,10 @@
 ---
 name: mass-issue-complexity
-description: Classifies the complexity of an issue or ticket as low, medium or high from its text and justifies the level with the signals found. Use when "how complex is this issue", "classify the complexity of this ticket" or "is this issue low, medium or high". Do NOT use for reviewing a diff or pull request (use mass-code-review) or for writing a pull request description (use mass-pr-description).
+description: Classifies the complexity of an issue or ticket as low, medium or high from its text and justifies the level with the signals found. Use when "how complex is this issue", "classify the complexity of this ticket" or "is this issue low, medium or high". Do NOT use for reviewing a diff or pull request (use mass-code-review), for deciding how urgent an issue is (use mass-issue-priority) or for writing a pull request description (use mass-pr-description).
 license: CC-BY-4.0
 metadata:
   author: mass-solutions
-  version: "0.1.0"
+  version: "0.1.1"
   category: workflow
   tags: "issues, triage, estimation, complexity"
   reviewed: "2026-09-15"
