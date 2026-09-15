@@ -139,23 +139,4 @@ describe("workflows", () => {
     for (const r of runs(job)) expect(r).not.toContain("${{");
     expect(new Set(steps(job).map((s) => s.env?.GH_TOKEN))).toEqual(new Set(["${{ secrets.PROJECT_TOKEN }}", "${{ github.token }}"]));
   });
-
-  it("set-complexity workflow is manually dispatched with issue_number and level inputs, writing with PROJECT_TOKEN", () => {
-    const wf = workflow("set-complexity.yml");
-    expect(Object.keys(wf.on)).toEqual(["workflow_dispatch"]);
-    const inputs = wf.on.workflow_dispatch.inputs;
-    expect(inputs.issue_number.required).toBe(true);
-    expect(inputs.level.required).toBe(true);
-    expect(inputs.level.type).toBe("choice");
-    expect(inputs.level.options).toEqual(["Low", "Medium", "High"]);
-    expect(wf.permissions).toEqual({});
-    const job = wf.jobs.set;
-    expect(wf.concurrency.group).toContain("github.event.inputs.issue_number");
-    expect(wf.concurrency["cancel-in-progress"]).toBe(false);
-    expect(job.env.GH_TOKEN).toBe("${{ secrets.PROJECT_TOKEN }}");
-    expect(steps(job).every((s) => s.uses === undefined)).toBe(true);
-    const r = runs(job);
-    expect(r.some((x) => x.includes('field(name: "Complexity")'))).toBe(true);
-    expect(r.some((x) => x.includes("updateProjectV2ItemFieldValue"))).toBe(true);
-  });
 });

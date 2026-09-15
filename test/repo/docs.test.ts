@@ -5,6 +5,8 @@ import { describe, expect, it } from "vitest";
 
 const ROOT = fileURLToPath(new URL("../..", import.meta.url));
 const read = (p: string) => readFileSync(join(ROOT, p), "utf8");
+// Spelled indirectly so the repo-wide grep in triage-issue.test.ts keeps meaning something.
+const REMOVED_COMMAND = ["set", "complexity"].join("-");
 
 function headingOrder(text: string, headings: string[]) {
   const idx = headings.map((h) => text.indexOf(`\n## ${h}`));
@@ -78,5 +80,41 @@ describe("documents", () => {
     expect(claude).toContain("pnpm check");
     expect(claude).toMatch(/pt-BR/);
     expect(claude).toMatch(/[Ii]ngl[êe]s|English/);
+  });
+
+  it("claude md describes the label triage flow", () => {
+    const section = read("CLAUDE.md").split("\n## ").find((s) => s.startsWith("Fluxo com o GitHub Project"))!;
+    for (const token of ["priority:", "area:", "complexity:", "project-fields.yml", "pnpm triage-issue <N>"]) {
+      expect(section, token).toContain(token);
+    }
+    expect(section).not.toContain(REMOVED_COMMAND);
+    expect(section).not.toMatch(/escopo `repo`\+`workflow`|`workflow`, além/);
+  });
+
+  it("claude md carries the area rule", () => {
+    const section = read("CLAUDE.md").split("\n## ").find((s) => s.startsWith("Fluxo com o GitHub Project"))!;
+    const mappings: Array<[string, string]> = [
+      ["cli:", "CLI"],
+      ["core:", "Core"],
+      ["mcp:", "Core"],
+      ["site:", "Site"],
+      ["ci:", "CI"],
+      ["release:", "CI"],
+      ["catalog:", "Catalog"],
+      ["skill:", "Catalog"],
+    ];
+    const rule = section.split("\n").find((l) => l.includes("Regra de Area"))!;
+    for (const [prefix, area] of mappings) expect(rule, prefix).toMatch(new RegExp(`${prefix.replace(":", ":")}[^→]*→ ${area}`));
+    expect(rule).toContain("tools/");
+    expect(rule).toContain(".github/");
+  });
+
+  it("readme lists the maintainer commands", () => {
+    const text = read("README.md");
+    expect(text).toMatch(/tools\/ +maintainer scripts \([^)]*triage-issue[^)]*\)/);
+    const line = text.split("\n").find((l) => l.startsWith("Maintainer commands:"))!;
+    expect(line).toContain("pnpm triage-issue <number>");
+    for (const flag of ["--priority", "--area", "--complexity"]) expect(line, flag).toContain(flag);
+    expect(text).not.toContain(REMOVED_COMMAND);
   });
 });
