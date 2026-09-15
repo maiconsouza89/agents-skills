@@ -14,6 +14,7 @@
 | AD-008 | Contribuição externa é issue-first; PR sem issue vinculada é fechado com redirecionamento | lição documentada do tech-leads-club/agent-skills | active | 2026-09-14 |
 | AD-009 | Skills de tooling do próprio repo (`.claude/skills/`, `skills-lock.json`) não são versionadas | `npx skills add <repo> --list` varre `.claude/skills/` e listaria tooling junto com o catálogo | active | 2026-09-14 |
 | AD-010 | O repositório público é `maiconsouza89/agents-skills`; site em `https://maiconsouza89.github.io/agents-skills/`; nome do plugin do Claude Code continua `mass-solutions-skills@mass-solutions` | decisão do usuário em 2026-09-15; o repo foi criado com esse nome | active | 2026-09-15 |
+| AD-011 | O site segue o design system v2 do `DESIGN.md` (Linear adaptado): canvas `#010102`, lavanda `#5e6ad2` como acento único, Inter e JetBrains Mono self-hosted pela Fonts API do Astro (`fontProviders.local()` sobre os `.woff2` de `@fontsource-variable/*`), painel de terminal do `mass-skills` como destaque, filtro de categoria em pills | decisão do usuário em 2026-09-15; o provider `npm` do Astro reescreve as URLs para o jsdelivr e faria o build depender de rede | active | 2026-09-15 |
 
 ## Handoff
 

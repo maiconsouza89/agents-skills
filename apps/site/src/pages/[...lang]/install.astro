@@ -1,5 +1,6 @@
 ---
 import Base from "../../layouts/Base.astro";
+import Snippet from "../../components/Snippet.astro";
 import { REPO } from "@mass-solutions/skills-core";
 import { langPaths, localized, t, type Lang } from "../../lib/i18n";
 
@@ -17,21 +18,27 @@ const commands = [
 ---
 
 <Base lang={lang} title={d.installTitle} path="install/">
-  <h1>{d.installTitle}</h1>
-  <p>{d.installIntro}</p>
-  <ol class="rows" data-install-paths>
+  <header class="page-head">
+    <p class="eyebrow">{d.siteName}</p>
+    <h1 class="display-lg">{d.installTitle}</h1>
+    <p class="body-lg muted">{d.installIntro}</p>
+  </header>
+  <ol class="grid-3 section-tight" data-install-paths>
     {
       d.installPaths.map((p, i) => (
-        <li>
-          <h2>
-            <span class="marker">[+]</span>
-            {p.title}
-          </h2>
-          <code class="snippet">{commands[i]}</code>
-          <p>{p.verifies}</p>
+        <li class:list={["card", "install-path", { "card--featured": i === 0 }]}>
+          <div class="install-path-head">
+            <h2 class="card-title">{p.title}</h2>
+            {i === 0 && <span class="status-badge status-badge--success">sha256</span>}
+          </div>
+          <Snippet code={commands[i]} />
+          <p class="body-sm subtle">{p.verifies}</p>
         </li>
       ))
     }
   </ol>
-  <p><strong>{d.hashWarning}</strong> <a href={localized(lang, "agents/")}>{d.nav.agents} →</a></p>
+  <div class="cta-banner section">
+    <p class="headline">{d.hashWarning}</p>
+    <a class="btn btn-secondary" href={localized(lang, "agents/")}>{d.nav.agents} →</a>
+  </div>
 </Base>

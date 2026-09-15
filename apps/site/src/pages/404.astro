@@ -7,10 +7,13 @@ const pt = t("pt-br");
 ---
 
 <Base lang="en" title={en.notFound} path="">
-  <h1>404</h1>
-  <p>{en.notFoundBody} / {pt.notFoundBody}</p>
-  <ul class="rows">
-    <li><span class="marker">[+]</span><a href={href("")}>{en.backToCatalog}</a></li>
-    <li><span class="marker">[+]</span><a href={href("pt-br/")}>{pt.backToCatalog}</a></li>
-  </ul>
+  <header class="page-head">
+    <p class="eyebrow">404</p>
+    <h1 class="display-lg">{en.notFound}</h1>
+    <p class="body-lg muted">{en.notFoundBody} <span lang="pt-br">/ {pt.notFoundBody}</span></p>
+    <div class="actions">
+      <a class="btn btn-primary" href={href("")}>{en.backToCatalog}</a>
+      <a class="btn btn-secondary" href={href("pt-br/")} hreflang="pt-br" lang="pt-br">{pt.backToCatalog}</a>
+    </div>
+  </header>
 </Base>

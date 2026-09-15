@@ -53,4 +53,36 @@ describe("home search", () => {
       expect(visible).not.toContain("mass-commit-message");
     }
   });
+
+  it("category pills filter the catalog and combine with the search term", async () => {
+    const doc = await loadHome("index.html");
+    const win = doc.defaultView as Window & typeof globalThis;
+    const index: Array<{ name: string; description: string; tags: string[]; category: string }> = JSON.parse(html(DIST, "search-index.json"));
+    const expected = (category: string, term: string) =>
+      index
+        .filter((s) => (!category || s.category === category) && (!term || [s.name, s.description, ...s.tags].join(" ").toLowerCase().includes(term)))
+        .map((s) => s.name)
+        .sort();
+    const pick = (value: string) => {
+      const radio = doc.querySelector<HTMLInputElement>(`input[name="category"][value="${value}"]`)!;
+      radio.checked = true;
+      radio.dispatchEvent(new win.Event("change", { bubbles: true }));
+    };
+    const visible = () => [...doc.querySelectorAll<HTMLElement>("[data-skill]")].filter((li) => !li.hidden).map((li) => li.dataset.name!).sort();
+    const noMatch = doc.querySelector<HTMLElement>("[data-no-match]")!;
+
+    pick("workflow");
+    expect(visible()).toEqual(expected("workflow", ""));
+    expect(visible().length).toBeGreaterThan(0);
+    expect(doc.querySelector<HTMLElement>('section[data-category="quality"]')!.hidden).toBe(true);
+    type(doc, "commit");
+    expect(visible()).toEqual(expected("workflow", "commit"));
+    type(doc, "zzz-nothing");
+    expect(visible()).toEqual([]);
+    expect(noMatch.hidden).toBe(false);
+    type(doc, "");
+    pick("");
+    expect(visible()).toEqual(expected("", ""));
+    expect(noMatch.hidden).toBe(true);
+  });
 });

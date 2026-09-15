@@ -10,7 +10,7 @@ Este é o repositório `agents-skills` (maiconsouza89/agents-skills): o catálog
 
 ## Design System
 
-A referência do design system do site está em [@DESIGN.md](./DESIGN.md): paleta, tipografia monoespaçada, componentes, espaçamento e princípios. O site em `apps/site` segue esses tokens.
+A referência do design system do site está em [@DESIGN.md](./DESIGN.md): paleta escura com acento lavanda único, Inter e JetBrains Mono, componentes, espaçamento e princípios. O site em `apps/site` segue esses tokens.
 
 ## Instalação de Novas Funcionalidades
 

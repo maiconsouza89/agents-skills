@@ -1,6 +1,6 @@
 // @ts-check
 import { fileURLToPath } from "node:url";
-import { defineConfig } from "astro/config";
+import { defineConfig, fontProviders } from "astro/config";
 
 const src = (p) => fileURLToPath(new URL(p, import.meta.url));
 
@@ -10,6 +10,28 @@ process.env.MASS_CATALOG_ROOT ||= src("../../skills");
 export default defineConfig({
   site: "https://maiconsouza89.github.io",
   base: "/agents-skills/",
+  // Self-hosted: the variable woff2 files ship in @fontsource-variable/*, so the build never fetches fonts.
+  // The latin subset (U+0000-00FF and punctuation) covers every accent used by the pt-br chrome.
+  fonts: [
+    {
+      provider: fontProviders.local(),
+      name: "Inter",
+      cssVariable: "--font-sans",
+      fallbacks: ["SF Pro Display", "-apple-system", "system-ui", "Segoe UI", "Roboto", "sans-serif"],
+      options: {
+        variants: [{ src: ["./node_modules/@fontsource-variable/inter/files/inter-latin-wght-normal.woff2"], weight: "100 900", style: "normal" }],
+      },
+    },
+    {
+      provider: fontProviders.local(),
+      name: "JetBrains Mono",
+      cssVariable: "--font-mono",
+      fallbacks: ["ui-monospace", "SF Mono", "Menlo", "monospace"],
+      options: {
+        variants: [{ src: ["./node_modules/@fontsource-variable/jetbrains-mono/files/jetbrains-mono-latin-wght-normal.woff2"], weight: "100 800", style: "normal" }],
+      },
+    },
+  ],
   i18n: {
     defaultLocale: "en",
     locales: ["en", "pt-br"],

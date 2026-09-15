@@ -1,0 +1,20 @@
+---
+export interface TerminalLine {
+  kind: "prompt" | "output" | "comment" | "gap";
+  text?: string;
+}
+
+interface Props {
+  title: string;
+  caption: string;
+  lines: TerminalLine[];
+}
+
+const { title, caption, lines } = Astro.props;
+---
+
+<figure class="panel terminal-panel">
+  <div class="terminal-bar" aria-hidden="true"><span></span><span></span><span></span><span class="terminal-title caption">{title}</span></div>
+  <pre class="terminal" lang="en">{lines.map((l) => <span class={`line ${l.kind}`}>{l.text ?? ""}</span>)}</pre>
+  <figcaption class="body-sm subtle">{caption}</figcaption>
+</figure>
