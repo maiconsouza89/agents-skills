@@ -1,17 +1,18 @@
-/* Tokens from DESIGN.md: one monospaced face, cream canvas, near-black ink, 4px radius on interactive elements only. */
+/* Tokens from DESIGN.md: one monospaced face, dark canvas, light ink, 4px radius on interactive elements only. */
 :root {
-  --color-canvas: #fdfcfc;
-  --color-ink: #201d1d;
-  --color-ink-deep: #0f0000;
-  --color-surface-soft: #f8f7f7;
-  --color-surface-card: #f1eeee;
-  --color-surface-dark: #201d1d;
-  --color-on-dark: #fdfcfc;
-  --color-body: #424245;
-  --color-mute: #646262;
-  --color-ash: #9a9898;
-  --color-hairline: rgba(15, 0, 0, 0.12);
-  --color-hairline-strong: #646262;
+  color-scheme: dark;
+  --color-canvas: #201d1d;
+  --color-ink: #fdfcfc;
+  --color-ink-deep: #ffffff;
+  --color-surface-soft: #2b2828;
+  --color-surface-card: #353131;
+  --color-surface-dark: #fdfcfc;
+  --color-on-dark: #201d1d;
+  --color-body: #d8d5d5;
+  --color-mute: #aaa5a5;
+  --color-ash: #8f8a8a;
+  --color-hairline: rgba(253, 252, 252, 0.18);
+  --color-hairline-strong: #aaa5a5;
   --font-mono: "Berkeley Mono", "JetBrains Mono", "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
   --space-sm: 8px;
   --space-md: 12px;
