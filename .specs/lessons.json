@@ -3,7 +3,7 @@
   "promote_threshold": 2,
   "window_days": 45,
   "quarantine_threshold": 2,
-  "next_id": 6,
+  "next_id": 7,
   "lessons": [
     {
       "id": "L-001",
@@ -94,6 +94,24 @@
       ],
       "created": "2026-09-15T03:54:32Z",
       "last_seen": "2026-09-15T03:54:32Z"
+    },
+    {
+      "id": "L-006",
+      "key": "ac_gap::quando um check enumera varias entradas que produzem o mesmo resultado a prova precisa de um caso asserido por entrada nomeada it each nao de um unico caso pelo id da regra",
+      "text": "Quando um check enumera várias entradas que produzem o mesmo resultado, a prova precisa de um caso asserido por entrada nomeada (it.each), não de um único caso pelo id da regra.",
+      "signal": "ac_gap",
+      "scope": "packages/core",
+      "status": "candidate",
+      "features": [
+        "mass-solutions-skills"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "C86 - packages/core/test/rules.test.ts:17-19; packages/core/src/frontmatter.ts:27,34 (packages/core)"
+      ],
+      "created": "2026-09-15T04:09:10Z",
+      "last_seen": "2026-09-15T04:09:10Z"
     }
   ]
 }

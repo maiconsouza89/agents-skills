@@ -44,6 +44,12 @@ Seen once or not yet corroborated. Tracked, not trusted.
 - evidence: checks.md Coverage validator rule ids (16) (.specs)
 - last seen: 2026-09-15T03:54:32Z
 
+### L-006 - Quando um check enumera várias entradas que produzem o mesmo resultado, a prova precisa de um caso asserido por entrada nomeada (it.each), não de um único caso pelo id da regra.
+- signal: `ac_gap` · recurrence: 1 feature(s) · scope: `packages/core` · harmful: 0
+- features: mass-solutions-skills
+- evidence: C86 - packages/core/test/rules.test.ts:17-19; packages/core/src/frontmatter.ts:27,34 (packages/core)
+- last seen: 2026-09-15T04:09:10Z
+
 ## Quarantined (failed when applied - ignore)
 
 A confirmed lesson that recurred alongside failure. Kept for the maintainer to review.
