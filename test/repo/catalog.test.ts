@@ -6,18 +6,18 @@ import { parseSkill, validateCatalog } from "@mass-solutions/skills-core";
 
 const ROOT = fileURLToPath(new URL("../..", import.meta.url));
 const SKILLS = join(ROOT, "skills");
-const FIVE = ["mass-code-review", "mass-commit-message", "mass-pr-description", "mass-security-checklist", "mass-skill-authoring"];
+const CATALOG = ["mass-code-review", "mass-commit-message", "mass-issue-complexity", "mass-pr-description", "mass-security-checklist", "mass-skill-authoring"];
 
 describe("example skills", () => {
-  it("five example skills validate and stay under 80 lines", () => {
+  it("catalog skills validate and stay under 80 lines", () => {
     const dirs = readdirSync(SKILLS).filter((e) => !e.startsWith("_") && statSync(join(SKILLS, e)).isDirectory()).sort();
-    expect(dirs).toEqual(FIVE);
-    for (const name of FIVE) {
+    expect(dirs).toEqual(CATALOG);
+    for (const name of CATALOG) {
       const lines = readFileSync(join(SKILLS, name, "SKILL.md"), "utf8").split("\n").length;
       expect(lines, name).toBeLessThanOrEqual(80);
     }
     const result = validateCatalog(ROOT);
-    expect(result.skills).toEqual(FIVE);
+    expect(result.skills).toEqual(CATALOG);
     expect(result.findings).toEqual([]);
   });
 
@@ -62,7 +62,7 @@ describe("example skills", () => {
       expect(typeof c.en).toBe("string");
       expect(typeof c["pt-br"]).toBe("string");
     }
-    for (const name of FIVE) {
+    for (const name of CATALOG) {
       const meta = parseSkill(join(SKILLS, name)).frontmatter!.metadata as Record<string, string>;
       expect(ids, `${name} category`).toContain(meta.category);
     }
