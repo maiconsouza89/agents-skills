@@ -21,7 +21,7 @@ jobs:
         id: allowlist
         run: echo "flags=$(pnpm exec tsx tools/allowlist.ts)" >> "$GITHUB_OUTPUT"
       # Snyk needs SNYK_TOKEN, which forks do not receive: push to main and same-repo PRs only.
-      - uses: astral-sh/setup-uv@v10
+      - uses: astral-sh/setup-uv@v10.1.0
         if: ${{ github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository }}
       - name: Snyk Agent Scan
         if: ${{ github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository }}
