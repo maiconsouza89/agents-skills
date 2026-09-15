@@ -31,13 +31,18 @@ jobs:
         # skills directory, not an MCP config, so no stdio server is ever started - the flag is inert here.
         # X007 is the public tier's daily usage limit, not a finding: treat it as non-blocking so quota
         # exhaustion doesn't fail PRs, while any other failure (including real findings) still fails the job.
+        # The check is deliberately narrow (exact tool-emitted sentence, both must match, fixed-string grep)
+        # rather than a bare `grep X007`: skill content is attacker-controlled, and a loose substring match
+        # on scan output could let a crafted skill spoof the quota message and suppress real findings.
         run: |
           set +e
           output=$(uvx snyk-agent-scan@latest skills --ci --dangerously-run-mcp-servers ${{ steps.allowlist.outputs.flags }} 2>&1)
           code=$?
           echo "$output"
-          if [ "$code" -ne 0 ] && echo "$output" | grep -q "X007"; then
-            echo "::warning::Snyk Agent Scan hit its public-tier daily usage limit (X007); treating as non-blocking."
+          if [ "$code" -ne 0 ] \
+            && echo "$output" | grep -qF "[X007 info]: Daily usage limit reached for the public version of Agent-Scan." \
+            && echo "$output" | grep -qF "no mcp servers or skills found"; then
+            echo "::warning::Snyk Agent Scan hit its public-tier daily usage limit (X007) before scanning anything; treating as non-blocking."
             exit 0
           fi
           exit "$code"
