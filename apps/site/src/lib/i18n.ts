@@ -122,7 +122,7 @@ const dict = {
     installNpx: "Instalador aberto, sem verificação de hash",
     installMarketplace: "Marketplace do Claude Code, instala o catálogo inteiro, sem verificação de hash",
     hashWarning: "Só o CLI mass-skills verifica hash.",
-    deprecatedSince: (since: string) => `Deprecated since ${since}`,
+    deprecatedSince: (since: string) => `Descontinuada desde ${since}`,
     replacedBy: "Use no lugar",
     reason: "Motivo",
     skillBody: "Instruções da skill (sempre em inglês)",

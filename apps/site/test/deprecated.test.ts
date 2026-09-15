@@ -18,7 +18,10 @@ describe("deprecated skill page", () => {
     for (const page of ["skills/mass-old-review/index.html", "pt-br/skills/mass-old-review/index.html"]) {
       const d = dom(out, page);
       const banner = d.querySelector("[data-deprecated]")!;
-      expect(text(banner)).toContain("Deprecated since 2026-08-01");
+      const expectedDeprecatedSince = page.startsWith("pt-br/")
+        ? "Descontinuada desde 2026-08-01"
+        : "Deprecated since 2026-08-01";
+      expect(text(banner)).toContain(expectedDeprecatedSince);
       expect(text(banner)).toContain("merged into mass-alpha");
       const link = banner.querySelector("a")!;
       expect(link.textContent).toBe("mass-alpha");
