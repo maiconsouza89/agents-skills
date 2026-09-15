@@ -17,9 +17,9 @@
 ## Handoff
 
 **Feature**: mass-solutions-skills
-**Where**: batch B1 (S1-S4, C1-C42 + C81) fechado e verde; B2 (S5, CLI) e B3 (S6-S8) pendentes
+**Where**: batches B1 (S1-S4) e B2 (S5, C43-C60 + C82) fechados e verdes; B3 (S6-S8: site, CI, release) pendente
 **In progress**: nada
-**Next step**: despachar o builder B2 com `checks.md` e o diff `c18c7f5..HEAD`; B2 cria `packages/cli/src` com `run(argv, {cwd, env, stdout, stderr})`, lê `MASS_SKILLS_BASE_URL`, importa `@mass-solutions/skills-core` (alias do vitest aponta para o src)
+**Next step**: despachar o builder B3 com `checks.md` e o diff `43ff185..2b9e767` (CLI) mais `c18c7f5..43ff185` (repo/core); B3 cria `apps/site` (Astro 7, `MASS_CATALOG_ROOT`), `.github/workflows/*.yml`, `tools/stale.ts`, `tools/allowlist.ts`, `.changeset/` e os testes `test/repo/{workflows,allowlist,stale,release}.test.ts` e `apps/site/test/*`
 **Blockers**: open questions 1-4 (go-live) não bloqueiam o build local
 **Uncommitted**: nada
 **Branch**: main
