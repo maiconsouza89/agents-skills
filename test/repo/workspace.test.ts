@@ -20,9 +20,9 @@ describe("workspace", () => {
     expect(existsSync(join(ROOT, "pnpm-lock.yaml"))).toBe(true);
   });
 
-  it("root scripts expose check, validate, registry, build, test, scan, new-skill and stale", () => {
+  it("root scripts expose check, validate, registry, build, test, scan, new-skill, stale and start-issue", () => {
     const pkg = JSON.parse(readFileSync(join(ROOT, "package.json"), "utf8"));
-    for (const s of ["check", "validate", "registry", "build", "test", "scan", "new-skill", "stale"]) {
+    for (const s of ["check", "validate", "registry", "build", "test", "scan", "new-skill", "stale", "start-issue"]) {
       expect(typeof pkg.scripts[s], s).toBe("string");
     }
     const check: string = pkg.scripts.check;
