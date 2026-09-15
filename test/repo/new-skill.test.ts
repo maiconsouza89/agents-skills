@@ -42,6 +42,17 @@ describe("pnpm new-skill", () => {
     expect(validateSkill(dir, { root })).toEqual([]);
   });
 
+  it("refuses an existing skill with exit 2 and leaves it untouched", () => {
+    const root = makeRoot();
+    expect(run(["mass-exemplo", "--root", root]).status).toBe(0);
+    const skillPath = join(root, "skills", "mass-exemplo", "SKILL.md");
+    writeFileSync(skillPath, "edited by hand\n");
+    const res = run(["mass-exemplo", "--root", root]);
+    expect(res.status).toBe(2);
+    expect(res.stderr).toContain("skills/mass-exemplo/ already exists");
+    expect(readFileSync(skillPath, "utf8")).toBe("edited by hand\n");
+  });
+
   it("rejects an invalid name with exit 2 and creates nothing", () => {
     const root = makeRoot();
     for (const bad of ["exemplo", "mass-Exemplo", "mass--x", "mass-"]) {

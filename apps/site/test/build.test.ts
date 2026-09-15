@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { beforeAll, describe, expect, it } from "vitest";
-import { AGENTS } from "../../../packages/cli/src/agents.js";
+import { DOOR_10 } from "../../../packages/cli/test/door10.js";
 import { BASE, DIST, REPO_ROOT, SITE_ROOT, buildSite, dom, html, text, walk } from "./helpers";
 
 const registry = JSON.parse(readFileSync(join(REPO_ROOT, "skills-registry.json"), "utf8"));
@@ -137,11 +137,11 @@ describe("site build", () => {
     for (const page of ["agents/index.html", "pt-br/agents/index.html"]) {
       const d = dom(DIST, page);
       const rows = [...d.querySelectorAll("[data-agents] tbody tr")];
-      expect(rows.map((r) => r.getAttribute("data-agent"))).toEqual(AGENTS.map((a) => a.id));
-      for (const a of AGENTS) {
+      expect(rows.map((r) => r.getAttribute("data-agent"))).toEqual(DOOR_10.map((a) => a.id));
+      for (const a of DOOR_10) {
         const row = text(d.querySelector(`[data-agent="${a.id}"]`));
-        expect(row).toContain(`${a.projectDir}/`);
-        expect(row).toContain(`~/${a.globalDir}/`);
+        expect(row).toContain(`${a.project}/`);
+        expect(row).toContain(`~/${a.global}/`);
       }
     }
   });

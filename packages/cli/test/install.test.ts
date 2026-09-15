@@ -1,8 +1,8 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { AGENTS } from "../src/agents.js";
 import type { Lockfile } from "../src/types.js";
+import { DOOR_10 } from "./door10.js";
 import { cli, makeCatalog, makeProject, readJson, serveCatalog, type Fixture } from "./helpers.js";
 
 let fx: Fixture;
@@ -21,7 +21,7 @@ function untouched(project: { cwd: string; home: string }) {
 
 describe("install", () => {
   it("installs into every agent path, project and global, and records the lockfile entry", async () => {
-    const cases = AGENTS.map((a) => ({ id: a.id, project: a.projectDir, global: a.globalDir }));
+    const cases = DOOR_10;
     expect(cases).toHaveLength(8);
     for (const c of cases) {
       const p = makeProject(fx, []);
@@ -202,5 +202,17 @@ describe("install", () => {
     expect(n.stderr).toMatch(/^Failed to fetch http:\/\/127\.0\.0\.1:1\/main\/skills-registry\.json: .+\n$/);
     expect(n.stderr).not.toMatch(/: \d{3}\n$/);
     untouched(q);
+
+    // registry 200, one file of files[] answers a real HTTP 404
+    const f = makeProject(fx);
+    fx.overrides.set("skills/mass-alpha/references/guide.md", 404);
+    try {
+      const r = await cli(f, ["install", "mass-alpha", "-a", "claude-code"]);
+      expect(r.code).toBe(1);
+      expect(r.stderr).toMatch(/^Failed to fetch http:\/\/127\.0\.0\.1:\d+\/main\/skills\/mass-alpha\/references\/guide\.md: 404\n$/);
+      untouched(f);
+    } finally {
+      fx.overrides.clear();
+    }
   });
 });

@@ -21,6 +21,9 @@ describe("exit codes", () => {
       { argv: ["frobnicate"], code: 2 },
       { argv: ["install"], code: 2 },
       { argv: ["list", "--bogus"], code: 2 },
+      { argv: ["update", "--bogus"], code: 2 },
+      { argv: ["doctor", "--bogus"], code: 2 },
+      { argv: ["remove"], code: 2 },
     ];
     for (const row of table) {
       const p = makeProject(fx);

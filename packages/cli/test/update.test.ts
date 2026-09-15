@@ -1,4 +1,4 @@
-import { appendFileSync, readFileSync, statSync, writeFileSync } from "node:fs";
+import { appendFileSync, existsSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { Lockfile } from "../src/types.js";
@@ -53,6 +53,30 @@ describe("update", () => {
     expect(readFileSync(skill, "utf8")).toBe(readFileSync(join(fx.root, "skills/mass-alpha/SKILL.md"), "utf8"));
     const after = readJson<Lockfile>(lockPath);
     expect(after.skills["mass-alpha"].installedAt).toBe("2026-09-14T12:00:00.000Z");
+  });
+
+  it("update reports missing and not-in-registry and writes nothing", async () => {
+    const p = makeProject(fx);
+    await cli(p, ["install", "mass-alpha", "mass-beta", "-a", "claude-code"]);
+    const lockPath = join(p.cwd, "mass-skills.lock.json");
+    const lockBefore = readFileSync(lockPath, "utf8");
+    rmSync(join(p.cwd, ".claude/skills/mass-alpha"), { recursive: true });
+    const betaSkill = join(p.cwd, ".claude/skills/mass-beta/SKILL.md");
+    const betaBefore = readFileSync(betaSkill, "utf8");
+    const original = fx.registry;
+    const next = structuredClone(original);
+    next.skills = next.skills.filter((s) => s.name !== "mass-beta");
+    fx.registry = next;
+    try {
+      const r = await cli(p, ["update"]);
+      expect(r.code, r.stderr).toBe(0);
+      expect(r.stdout).toBe("mass-alpha: missing (run mass-skills install)\nmass-beta: not in registry\n");
+      expect(readFileSync(lockPath, "utf8")).toBe(lockBefore);
+      expect(readFileSync(betaSkill, "utf8")).toBe(betaBefore);
+      expect(existsSync(join(p.cwd, ".claude/skills/mass-alpha"))).toBe(false);
+    } finally {
+      fx.registry = original;
+    }
   });
 
   it("check writes nothing and prints every state", async () => {
