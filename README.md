@@ -192,7 +192,7 @@ tools/             maintainer scripts (new-skill, stale, allowlist, start-issue)
 skills-registry.json   generated index, committed
 ```
 
-Maintainer commands: `pnpm check` (validator, registry check, tests), `pnpm registry` (regenerate the index after any skill change), `pnpm new-skill mass-<slug>` (scaffold a skill that already passes the contract), `pnpm start-issue <number>` (branch linked to the issue, issue assigned and moved to In Progress on the project board), `pnpm build`.
+Maintainer commands: `pnpm check` (validator, registry check, tests), `pnpm registry` (regenerate the index after any skill change), `pnpm new-skill mass-<slug>` (scaffold a skill that already passes the contract), `pnpm start-issue <number>` (branch for the issue, issue assigned; a GitHub Actions workflow then moves it to In Progress on the project board), `pnpm build`.
 
 ## Contributing
 

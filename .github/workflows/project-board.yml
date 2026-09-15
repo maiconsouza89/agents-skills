@@ -1,0 +1,84 @@
+name: project-board
+
+on:
+  issues:
+    types: [opened, assigned]
+
+permissions: {}
+
+concurrency:
+  group: project-board-${{ github.event.issue.number }}
+  cancel-in-progress: false
+
+jobs:
+  board:
+    if: github.event.issue.state == 'open'
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.PROJECT_TOKEN }}
+      PROJECT_OWNER: maiconsouza89
+      PROJECT_NUMBER: "5"
+      ISSUE_NUMBER: ${{ github.event.issue.number }}
+      ISSUE_NODE_ID: ${{ github.event.issue.node_id }}
+      TARGET_STATUS: ${{ github.event.action == 'assigned' && 'In Progress' || '' }}
+    steps:
+      - name: Resolve the project and its Status field
+        run: |
+          gh api graphql -f query='
+            query($login: String!, $number: Int!) {
+              user(login: $login) {
+                projectV2(number: $number) {
+                  id
+                  field(name: "Status") {
+                    ... on ProjectV2SingleSelectField { id options { id name } }
+                  }
+                }
+              }
+            }' -f login="$PROJECT_OWNER" -F number="$PROJECT_NUMBER" > project.json
+          echo "PROJECT_ID=$(jq -r .data.user.projectV2.id project.json)" >> "$GITHUB_ENV"
+          echo "FIELD_ID=$(jq -r .data.user.projectV2.field.id project.json)" >> "$GITHUB_ENV"
+          if [ -n "$TARGET_STATUS" ]; then
+            option_id=$(jq -r --arg s "$TARGET_STATUS" '.data.user.projectV2.field.options[] | select(.name == $s) | .id' project.json)
+            echo "OPTION_ID=$option_id" >> "$GITHUB_ENV"
+          fi
+
+      - name: Find or add the project item for the issue
+        run: |
+          gh api graphql -f query='
+            query($owner: String!, $repo: String!, $n: Int!) {
+              repository(owner: $owner, name: $repo) {
+                issue(number: $n) {
+                  projectItems(first: 20) {
+                    nodes {
+                      id
+                      project { id }
+                      fieldValueByName(name: "Status") {
+                        ... on ProjectV2ItemFieldSingleSelectValue { name }
+                      }
+                    }
+                  }
+                }
+              }
+            }' -f owner="${GITHUB_REPOSITORY_OWNER}" -f repo="${GITHUB_REPOSITORY#*/}" -F n="$ISSUE_NUMBER" > items.json
+          item_id=$(jq -r --arg p "$PROJECT_ID" '.data.repository.issue.projectItems.nodes[] | select(.project.id == $p) | .id' items.json)
+          if [ -z "$item_id" ]; then
+            item_id=$(gh api graphql -f query='
+              mutation($p: ID!, $c: ID!) {
+                addProjectV2ItemById(input: { projectId: $p, contentId: $c }) { item { id } }
+              }' -f p="$PROJECT_ID" -f c="$ISSUE_NODE_ID" --jq .data.addProjectV2ItemById.item.id)
+            current=""
+          else
+            current=$(jq -r --arg p "$PROJECT_ID" '.data.repository.issue.projectItems.nodes[] | select(.project.id == $p) | .fieldValueByName.name // ""' items.json)
+          fi
+          echo "ITEM_ID=$item_id" >> "$GITHUB_ENV"
+          echo "CURRENT_STATUS=$current" >> "$GITHUB_ENV"
+
+      - name: Set Status to In Progress on assign
+        if: env.TARGET_STATUS != '' && env.CURRENT_STATUS != env.TARGET_STATUS && env.CURRENT_STATUS != 'In Review' && env.CURRENT_STATUS != 'Done'
+        run: |
+          gh api graphql --silent -f query='
+            mutation($p: ID!, $i: ID!, $f: ID!, $o: String!) {
+              updateProjectV2ItemFieldValue(input: {
+                projectId: $p, itemId: $i, fieldId: $f, value: { singleSelectOptionId: $o }
+              }) { projectV2Item { id } }
+            }' -f p="$PROJECT_ID" -f i="$ITEM_ID" -f f="$FIELD_ID" -f o="$OPTION_ID"

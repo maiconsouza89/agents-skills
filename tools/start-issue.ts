@@ -1,6 +1,10 @@
 #!/usr/bin/env node
-// Start work on an issue: a branch linked to it, the issue assigned to you and its project item set to "In Progress".
-// Usage: pnpm start-issue <number> [--project 5] [--owner <login>] [--base main]
+// Start work on an issue: a branch for it and the issue assigned to you.
+// A GitHub Actions workflow (project-board.yml) adds the issue to the project board and moves it
+// to "In Progress" when it sees the assignment, because that workflow needs GraphQL to talk to
+// Projects v2 and the Claude Code cloud sandbox blocks GraphQL except a pinned set of PR
+// operations - this script only uses REST and plain git so it works the same way everywhere.
+// Usage: pnpm start-issue <number> [--base main] [--assignee <login>]
 import { execFileSync } from "node:child_process";
 
 export type Exec = (cmd: string, args: string[]) => string;
@@ -11,14 +15,12 @@ export interface Issue {
   labels: string[];
 }
 
-interface Field {
-  id: string;
-  name: string;
-  options?: Array<{ id: string; name: string }>;
+interface Out {
+  write(s: string): unknown;
 }
 
-const USAGE = "Usage: pnpm start-issue <number> [--project 5] [--owner <login>] [--base main]\n";
-const TYPE_BY_LABEL: Record<string, string> = { bug: "fix", documentation: "docs" };
+const USAGE = "Usage: pnpm start-issue <number> [--base main] [--assignee <login>]\n";
+const TYPE_BY_LABEL: Record<string, string> = { bug: "fix", "skill-bug": "fix", documentation: "docs" };
 const SLUG_MAX = 40;
 
 function flag(argv: string[], name: string): string | undefined {
@@ -49,81 +51,95 @@ export function branchName(issue: Issue): string {
   return `${type}/${issue.number}-${slug || words[0]?.slice(0, SLUG_MAX) || "issue"}`;
 }
 
-export function main(argv: string[], out: { write(s: string): unknown } = process.stdout, exec: Exec = defaultExec): number {
+// Reads the repo's `owner/name` from the origin remote instead of `gh repo view`, which is GraphQL
+// and fails behind the Claude Code cloud sandbox's GitHub proxy.
+export function ownerAndName(remoteUrl: string): { owner: string; name: string } {
+  const m = remoteUrl.trim().match(/github\.com[:/]([^/]+)\/([^/.]+?)(?:\.git)?$/);
+  if (!m) throw new Error(`origin remote is not a github.com URL: ${remoteUrl.trim()}`);
+  return { owner: m[1], name: m[2] };
+}
+
+export function main(argv: string[], out: Out = process.stdout, exec: Exec = defaultExec, env: NodeJS.ProcessEnv = process.env): number {
   const number = Number(positional(argv));
   if (!Number.isInteger(number) || number <= 0) {
     out.write(USAGE);
     return 2;
   }
-  const project = flag(argv, "--project") ?? "5";
   const base = flag(argv, "--base") ?? "main";
+  const cloud = env.CLAUDE_CODE_REMOTE === "true";
   try {
-    const repo = JSON.parse(exec("gh", ["repo", "view", "--json", "owner,name"])) as { owner: { login: string }; name: string };
-    const owner = flag(argv, "--owner") ?? repo.owner.login;
-    const view = JSON.parse(exec("gh", ["issue", "view", String(number), "--json", "number,title,state,url,labels"])) as {
+    const { owner, name: repo } = ownerAndName(exec("git", ["remote", "get-url", "origin"]));
+
+    const view = JSON.parse(exec("gh", ["api", `repos/${owner}/${repo}/issues/${number}`])) as {
       title: string;
       state: string;
-      url: string;
+      html_url: string;
       labels: Array<{ name: string }>;
+      assignees: Array<{ login: string }>;
+      pull_request?: unknown;
     };
-    if (view.state !== "OPEN") {
-      out.write(`Issue #${number} is ${view.state.toLowerCase()}; nothing to start.\n`);
+    if (view.pull_request) {
+      out.write(`#${number} is a pull request, not an issue.\n`);
       return 1;
     }
+    if (view.state !== "open") {
+      out.write(`Issue #${number} is ${view.state}; nothing to start.\n`);
+      return 1;
+    }
+
+    let assignee = flag(argv, "--assignee");
+    if (!assignee) {
+      try {
+        assignee = JSON.parse(exec("gh", ["api", "user"])).login as string;
+      } catch (e) {
+        const err = e as { stderr?: string; message?: string };
+        out.write(
+          `Could not resolve the current GitHub user (${err.stderr?.trim() || err.message}); pass --assignee <login>.\n`,
+        );
+        return 1;
+      }
+    }
+
     if (exec("git", ["status", "--porcelain"]).trim()) {
       out.write("The working tree has uncommitted changes; commit or stash them first.\n");
       return 1;
     }
 
-    // Resolve the project and its Status option before creating anything, so a wrong project fails early.
-    const { fields } = JSON.parse(exec("gh", ["project", "field-list", project, "--owner", owner, "--format", "json"])) as { fields: Field[] };
-    const status = fields.find((f) => f.name === "Status");
-    const inProgress = status?.options?.find((o) => o.name === "In Progress");
-    if (!status || !inProgress) {
-      out.write(`Project ${project} of ${owner} has no Status option "In Progress".\n`);
-      return 1;
-    }
-    const projectId = (JSON.parse(exec("gh", ["project", "view", project, "--owner", owner, "--format", "json"])) as { id: string }).id;
-
-    const linked = exec("gh", ["issue", "develop", "--list", String(number)])
-      .split("\n")
-      .map((line) => line.split("\t")[0].trim())
-      .filter(Boolean);
-    let branch: string;
-    if (linked.length > 0) {
-      branch = linked[0];
-      exec("git", ["fetch", "origin", branch]);
-      exec("git", ["switch", branch]);
-      out.write(`Switched to the linked branch ${branch}\n`);
+    let branch: string | undefined;
+    if (cloud) {
+      branch = exec("git", ["branch", "--show-current"]).trim();
+      out.write(`Claude Code web session: staying on ${branch}; push is limited to the session's branch.\n`);
     } else {
-      branch = branchName({ number, title: view.title, labels: view.labels.map((l) => l.name) });
-      exec("gh", ["issue", "develop", String(number), "--base", base, "--checkout", "--name", branch]);
-      out.write(`Created and checked out ${branch}\n`);
+      const wanted = branchName({ number, title: view.title, labels: view.labels.map((l) => l.name) });
+      const remoteMatch = exec("git", ["ls-remote", "--heads", "origin"])
+        .split("\n")
+        .map((l) => l.split("\t")[1]?.replace(/^refs\/heads\//, ""))
+        .find((b) => b && new RegExp(`^(feat|fix|docs)/${number}-`).test(b));
+      const localMatch = exec("git", ["branch", "--list", `*/${number}-*`])
+        .split("\n")
+        .map((l) => l.replace(/^\*?\s+/, "").trim())
+        .find((b) => new RegExp(`^(feat|fix|docs)/${number}-`).test(b));
+      branch = remoteMatch ?? localMatch;
+      if (branch) {
+        exec("git", ["fetch", "origin", branch]);
+        exec("git", ["switch", branch]);
+        out.write(`Switched to the linked branch ${branch}\n`);
+      } else {
+        branch = wanted;
+        exec("git", ["fetch", "origin", base]);
+        exec("git", ["switch", "-c", branch, `origin/${base}`]);
+        exec("git", ["push", "-u", "origin", branch]);
+        out.write(`Created and pushed ${branch}\n`);
+      }
     }
 
-    exec("gh", ["issue", "edit", String(number), "--add-assignee", "@me"]);
-
-    const items = JSON.parse(
-      exec("gh", [
-        "api",
-        "graphql",
-        "-f",
-        "query=query($owner:String!,$name:String!,$number:Int!){repository(owner:$owner,name:$name){issue(number:$number){projectItems(first:20){nodes{id project{number}}}}}}",
-        "-f",
-        `owner=${repo.owner.login}`,
-        "-f",
-        `name=${repo.name}`,
-        "-F",
-        `number=${number}`,
-      ]),
-    ) as { data: { repository: { issue: { projectItems: { nodes: Array<{ id: string; project: { number: number } }> } } } } };
-    let itemId = items.data.repository.issue.projectItems.nodes.find((n) => n.project.number === Number(project))?.id;
-    if (!itemId) {
-      itemId = (JSON.parse(exec("gh", ["project", "item-add", project, "--owner", owner, "--url", view.url, "--format", "json"])) as { id: string }).id;
+    if (view.assignees.some((a) => a.login === assignee)) {
+      out.write(`#${number} ${view.title}: already assigned to ${assignee}; the board keeps its current Status.\n`);
+      return 0;
     }
-    exec("gh", ["project", "item-edit", "--id", itemId, "--project-id", projectId, "--field-id", status.id, "--single-select-option-id", inProgress.id]);
+    exec("gh", ["api", "-X", "POST", `repos/${owner}/${repo}/issues/${number}/assignees`, "-f", `assignees[]=${assignee}`]);
 
-    out.write(`#${number} ${view.title}: assigned to you and In Progress in project ${project}\n`);
+    out.write(`#${number} ${view.title}: assigned to ${assignee}; the project-board workflow moves it to In Progress.\n`);
     return 0;
   } catch (e) {
     const err = e as { stderr?: string; message?: string };
