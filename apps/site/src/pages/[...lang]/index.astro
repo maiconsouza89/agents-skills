@@ -1,6 +1,8 @@
 ---
 import Base from "../../layouts/Base.astro";
-import { groupedByCategory } from "../../lib/catalog";
+import SkillCard from "../../components/SkillCard.astro";
+import TerminalPanel, { type TerminalLine } from "../../components/TerminalPanel.astro";
+import { GITHUB_URL, groupedByCategory, registry, registrySkill } from "../../lib/catalog";
 import { href, langPaths, localized, t, type Lang } from "../../lib/i18n";
 
 export function getStaticPaths() {
@@ -12,61 +14,83 @@ const d = t(lang);
 const groups = groupedByCategory();
 const indexUrl = href("search-index.json");
 const noMatchTemplate = d.noMatch("__TERM__");
+
+// The session reproduces the CLI's real output lines (packages/cli/src/commands/install.ts and installer.ts).
+const demo = registrySkill("mass-code-review") ?? registry.skills[0];
+const command = `mass-skills install ${demo.name} -a claude-code`;
+const session: TerminalLine[] = [
+  { kind: "prompt", text: command },
+  { kind: "output", text: `${demo.name}@${demo.version}: installed to /home/dev/app/.claude/skills/${demo.name}` },
+  { kind: "gap" },
+  { kind: "comment", text: "# SKILL.md changed on the ref after the registry was generated" },
+  { kind: "prompt", text: command },
+  { kind: "output", text: `Integrity check failed for ${demo.name}: SKILL.md` },
+];
 ---
 
 <Base lang={lang} title={d.nav.catalog} path="" description={d.tagline}>
-  <h1>{d.siteName}</h1>
-  <p>{d.tagline}</p>
+  <section class="hero">
+    <p class="eyebrow">{d.heroEyebrow}</p>
+    <h1 class="display-xl">{d.siteName}</h1>
+    <p class="body-lg muted hero-lead">{d.tagline}</p>
+    <div class="actions">
+      <a class="btn btn-primary" href={localized(lang, "install/")}>{d.install}</a>
+      <a class="btn btn-secondary" href={GITHUB_URL}>{d.nav.github}</a>
+    </div>
+  </section>
 
-  <form class="search" data-search role="search" onsubmit="return false">
-    <label>
-      {d.searchLabel}
-      <input type="search" name="q" id="q" placeholder={d.searchPlaceholder} autocomplete="off" />
-    </label>
-    <label>
-      {d.filterLabel}
-      <select name="category" id="category">
-        <option value="">{d.allCategories}</option>
-        {groups.map(({ category }) => <option value={category.id}>{category[lang]}</option>)}
-      </select>
-    </label>
-  </form>
-
-  <p data-no-match hidden data-template={noMatchTemplate}></p>
-
-  <div data-catalog data-ready="0">
-    {
-      groups.map(({ category, skills }) => (
-        <section data-category={category.id}>
-          <h2>
-            <span class="marker">[+]</span>
-            {category[lang]}
-          </h2>
-          <ul class="rows">
-            {skills.map((s) => (
-              <li data-skill data-name={s.name} data-category={s.category} data-tags={s.tags.join(" ")}>
-                <span class="marker">[+]</span>
-                <a href={localized(lang, `skills/${s.name}/`)}>
-                  <strong>{s.name}</strong>
-                </a>
-                <span class="meta">
-                  {" "}
-                  {d.version} {s.version}
-                </span>
-                <p data-description>{s.description}</p>
-              </li>
-            ))}
-          </ul>
-        </section>
-      ))
-    }
+  <div class="hero-visual">
+    <TerminalPanel title={d.terminalTitle} caption={d.terminalCaption} lines={session} />
   </div>
+
+  <section class="section" aria-labelledby="catalog-title">
+    <div class="page-head">
+      <p class="eyebrow">{d.skillCount(registry.skills.length)}</p>
+      <h2 class="display-md" id="catalog-title">{d.nav.catalog}</h2>
+    </div>
+
+    <form class="search section-tight" data-search role="search" onsubmit="return false">
+      <label class="field">
+        <span class="eyebrow">{d.searchLabel}</span>
+        <input class="text-input" type="search" name="q" id="q" placeholder={d.searchPlaceholder} autocomplete="off" />
+      </label>
+      <fieldset class="tabs">
+        <legend class="sr-only">{d.filterLabel}</legend>
+        <label class="tab"><input type="radio" name="category" value="" checked /><span>{d.allCategories}</span></label>
+        {
+          groups.map(({ category }) => (
+            <label class="tab">
+              <input type="radio" name="category" value={category.id} />
+              <span>{category[lang]}</span>
+            </label>
+          ))
+        }
+      </fieldset>
+    </form>
+
+    <p class="empty" data-no-match hidden data-template={noMatchTemplate}></p>
+
+    <div data-catalog data-ready="0">
+      {
+        groups.map(({ category, skills }) => (
+          <section class="category" data-category={category.id}>
+            <h2 class="subhead category-title">{category[lang]}</h2>
+            <ul class="grid-2">
+              {skills.map((s) => (
+                <SkillCard lang={lang} skill={s} />
+              ))}
+            </ul>
+          </section>
+        ))
+      }
+    </div>
+  </section>
 
   <script is:inline define:vars={{ indexUrl }}>
     // Search and category filter over search-index.json; everything else on this site ships without JavaScript.
     (async () => {
+      const form = document.querySelector("[data-search]");
       const q = document.getElementById("q");
-      const category = document.getElementById("category");
       const noMatch = document.querySelector("[data-no-match]");
       const catalog = document.querySelector("[data-catalog]");
       const template = noMatch.getAttribute("data-template");
@@ -81,7 +105,8 @@ const noMatchTemplate = d.noMatch("__TERM__");
       const items = Array.from(catalog.querySelectorAll("[data-skill]"));
       const apply = () => {
         const term = q.value.trim().toLowerCase();
-        const cat = category.value;
+        const checked = form.querySelector('input[name="category"]:checked');
+        const cat = checked ? checked.value : "";
         let visible = 0;
         for (const li of items) {
           const name = li.getAttribute("data-name");
@@ -98,7 +123,7 @@ const noMatchTemplate = d.noMatch("__TERM__");
         noMatch.textContent = visible > 0 ? "" : template.replace("__TERM__", q.value.trim());
       };
       q.addEventListener("input", apply);
-      category.addEventListener("change", apply);
+      form.addEventListener("change", apply);
       apply();
       catalog.setAttribute("data-ready", "1");
     })();

@@ -1,5 +1,6 @@
 ---
 import Base from "../../layouts/Base.astro";
+import Snippet from "../../components/Snippet.astro";
 import { AGENTS } from "@mass-solutions/skills-cli/agents";
 import { langPaths, t, type Lang } from "../../lib/i18n";
 
@@ -12,15 +13,18 @@ const d = t(lang);
 ---
 
 <Base lang={lang} title={d.agentsTitle} path="agents/">
-  <h1>{d.agentsTitle}</h1>
-  <p>{d.agentsIntro}</p>
-  <div class="table-wrap">
+  <header class="page-head">
+    <p class="eyebrow">mass-skills install -a</p>
+    <h1 class="display-lg">{d.agentsTitle}</h1>
+    <p class="body-lg muted">{d.agentsIntro}</p>
+  </header>
+  <div class="panel table-panel section-tight">
     <table data-agents>
       <thead>
         <tr>
-          <th>{d.agentId}</th>
-          <th>{d.projectPath}</th>
-          <th>{d.globalPath}</th>
+          <th scope="col">{d.agentId}</th>
+          <th scope="col">{d.projectPath}</th>
+          <th scope="col">{d.globalPath}</th>
         </tr>
       </thead>
       <tbody>
@@ -36,5 +40,7 @@ const d = t(lang);
       </tbody>
     </table>
   </div>
-  <code class="snippet">mass-skills install &lt;skill&gt; -a auto</code>
+  <div class="section-tight">
+    <Snippet code="mass-skills install <skill> -a auto" />
+  </div>
 </Base>

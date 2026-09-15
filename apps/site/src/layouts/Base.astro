@@ -1,4 +1,5 @@
 ---
+import { Font } from "astro:assets";
 import "../styles/global.css";
 import { href, localized, otherLang, t, type Lang } from "../lib/i18n";
 import { GITHUB_URL } from "../lib/catalog";
@@ -14,35 +15,80 @@ interface Props {
 const { lang, title, path, description } = Astro.props;
 const d = t(lang);
 const other = otherLang(lang);
+const links = [
+  { href: localized(lang), label: d.nav.catalog, current: path === "" },
+  { href: localized(lang, "install/"), label: d.nav.install, current: path === "install/" },
+  { href: localized(lang, "agents/"), label: d.nav.agents, current: path === "agents/" },
+];
 ---
 
 <html lang={lang}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#010102" />
+    <Font cssVariable="--font-sans" preload />
+    <Font cssVariable="--font-mono" />
     <title>{title} · {d.siteName}</title>
     {description && <meta name="description" content={description} />}
     <link rel="alternate" hreflang={other} href={localized(other, path)} />
   </head>
   <body>
-    <header class="site-header">
-      <div class="container">
-        <a class="wordmark" href={localized(lang)} aria-label={d.siteName}>MASS SOLUTIONS SKILLS</a>
-        <nav class="site-nav" aria-label="main">
-          <a href={localized(lang)}>{d.nav.catalog}</a>
-          <a href={localized(lang, "install/")}>{d.nav.install}</a>
-          <a href={localized(lang, "agents/")}>{d.nav.agents}</a>
-          <a href={GITHUB_URL}>{d.nav.github}</a>
-          <a data-lang-switch href={localized(other, path)} hreflang={other}>{d.switchLang}</a>
+    <a class="skip-link btn btn-secondary" href="#main">{d.skipToContent}</a>
+    <header class="top-nav">
+      <div class="container top-nav-inner">
+        <a class="wordmark" href={localized(lang)}><span class="brand-mark" aria-hidden="true"></span>{d.siteName}</a>
+        <nav class="nav-links" aria-label="main">
+          {links.map((l) => <a href={l.href} aria-current={l.current ? "page" : undefined}>{l.label}</a>)}
         </nav>
+        <div class="nav-actions">
+          <a class="btn btn-tertiary" data-lang-switch href={localized(other, path)} hreflang={other}>{d.switchLang}</a>
+          <a class="btn btn-secondary nav-github" href={GITHUB_URL}>{d.nav.github}</a>
+          <a class="btn btn-primary" href={localized(lang, "install/")}>{d.install}</a>
+        </div>
+        <details class="nav-menu">
+          <summary class="btn btn-secondary">{d.menu}</summary>
+          <nav class="nav-menu-panel" aria-label="mobile">
+            {links.map((l) => <a href={l.href} aria-current={l.current ? "page" : undefined}>{l.label}</a>)}
+            <a href={GITHUB_URL}>{d.nav.github}</a>
+            <a href={localized(other, path)} hreflang={other}>{d.switchLang}</a>
+          </nav>
+        </details>
       </div>
     </header>
-    <main class="container">
+    <main id="main" class="container">
       <slot />
     </main>
-    <footer class="site-footer">
+    <footer class="footer">
+      <div class="container footer-grid">
+        <div class="footer-brand">
+          <a class="wordmark" href={localized(lang)}><span class="brand-mark" aria-hidden="true"></span>{d.siteName}</a>
+          <p>{d.tagline}</p>
+        </div>
+        <div>
+          <p class="footer-title">{d.footerSite}</p>
+          <ul>
+            {links.map((l) => <li><a href={l.href}>{l.label}</a></li>)}
+          </ul>
+        </div>
+        <div>
+          <p class="footer-title">{d.footerProject}</p>
+          <ul>
+            <li><a href={GITHUB_URL}>{d.nav.github}</a></li>
+            <li><a href={`${GITHUB_URL}/blob/main/SECURITY.md`}>{d.footerSecurity}</a></li>
+            <li><a href={`${GITHUB_URL}/blob/main/CONTRIBUTING.md`}>{d.footerContributing}</a></li>
+          </ul>
+        </div>
+        <div>
+          <p class="footer-title">{d.footerLanguages}</p>
+          <ul>
+            <li><a href={href("")} hreflang="en">English</a></li>
+            <li><a href={href("pt-br/")} hreflang="pt-br">Português (BR)</a></li>
+          </ul>
+        </div>
+      </div>
       <div class="container">
-        <span class="marker">[-]</span>{d.footer} · <a href={href("")}>EN</a> · <a href={href("pt-br/")}>PT-BR</a>
+        <p class="footer-legal">{d.footer}</p>
       </div>
     </footer>
   </body>

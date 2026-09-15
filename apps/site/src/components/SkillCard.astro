@@ -1,0 +1,21 @@
+---
+import type { RegistrySkill } from "@mass-solutions/skills-core";
+import { localized, t, type Lang } from "../lib/i18n";
+
+interface Props {
+  lang: Lang;
+  skill: RegistrySkill;
+}
+
+const { lang, skill } = Astro.props;
+const d = t(lang);
+---
+
+<li class="card card--link skill-card" data-skill data-name={skill.name} data-category={skill.category} data-tags={skill.tags.join(" ")}>
+  <div class="skill-card-head">
+    <h3 class="card-title"><a class="stretched-link" href={localized(lang, `skills/${skill.name}/`)}>{skill.name}</a></h3>
+    <span class="status-badge"><span class="sr-only">{d.version} </span>{skill.version}</span>
+  </div>
+  <p class="body-sm subtle" data-description>{skill.description}</p>
+  <p class="caption subtle tags">{skill.tags.join(" · ")}</p>
+</li>
