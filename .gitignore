@@ -8,3 +8,7 @@ apps/site/dist/
 .astro/
 *.tsbuildinfo
 .astro-build.lock
+
+docs/
+.specs/
+.desing/
