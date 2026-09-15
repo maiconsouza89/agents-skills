@@ -14,13 +14,9 @@ function rules(findings: Finding[]): string[] {
 }
 
 describe("frontmatter parse error", () => {
-  it("reports frontmatter/parse when the fences are missing", () => {
-    const f = findingsFor("mass-x", { frontmatter: undefined, body: "no frontmatter", noSkillMd: true });
-    expect(rules(f)).toContain("frontmatter/parse");
-  });
-
-  // One asserted case per cause the parser distinguishes (C86 names three; the fourth is the parser's own).
+  // One asserted case per cause the parser distinguishes (C86 names all four).
   it.each([
+    ["missing frontmatter", "no frontmatter\n"],
     ["unterminated frontmatter", "---\nname: mass-x\ndescription: never closed\n"],
     ["invalid YAML", "---\nname: [unclosed\n---\nbody\n"],
     ["frontmatter is not a mapping", "---\n- just\n- a list\n---\nbody\n"],

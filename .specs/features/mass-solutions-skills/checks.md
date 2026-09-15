@@ -338,7 +338,7 @@ O repositório nasce nesta feature e não tem guideline de testes, então estas 
 
 Evidence:
 
-- `packages/core/src/rules/*.ts`: 16 rule ids, ~30 branch points -> decides, not across a boundary -> C17-C29, C32 at its own layer
+- `packages/core/src/rules/*.ts`: 17 rule ids, ~30 branch points -> decides, not across a boundary -> C17-C29, C32 at its own layer
 - `packages/core/src/registry.ts`: ordering, hashing, `deprecated` merge, 4 branch points -> decides -> C30, C31
 - `packages/cli/src/commands/install.ts`: agent resolution (8 + auto), integrity, deprecated, unsafe path, temp-then-move; ~12 branch points -> decides, reached across a boundary (HTTP + fs) -> C45-C51 at the boundary (HTTP local) and `agents.ts` table at its own layer (C83, literal table)
 - `packages/cli/src/commands/update.ts`: 3-way outcome + `missing` + `not-in-registry` + `--force` + `--check` -> decides -> C53-C55, C84
@@ -347,7 +347,7 @@ Evidence:
 - `apps/site/src/**`: templates that map registry + collection to HTML, decisions only in grouping/ordering and deprecated branch -> entry points proven at the boundary (built output) -> C61-C71
 - `tools/*.ts` (`new-skill`, `stale`, `allowlist`): each 2-3 branch points -> decides -> C3, C4, C85, C75, C78
 
-Cost: 9 proofs at their own layer across 6 files, beyond the boundary proofs. Sem estas linhas, a tabela de agentes e as 16 regras seriam provadas só pelo caminho que o `install` e o `pnpm validate` atravessam. Estas linhas não foram gravadas em `AGENTS.md`; o build roda sob elas.
+Cost: 9 proofs at their own layer across 6 files, beyond the boundary proofs. Sem estas linhas, a tabela de agentes e as 17 regras seriam provadas só pelo caminho que o `install` e o `pnpm validate` atravessam. Estas linhas não foram gravadas em `AGENTS.md`; o build roda sob elas.
 
 ## Swept
 
