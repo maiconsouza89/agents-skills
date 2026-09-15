@@ -120,6 +120,26 @@ describe("workflows", () => {
     expect(setStatus.if).toContain("Done");
   });
 
+  it("project fields workflow mirrors a triage label per family, with least privilege and no expression in any script", () => {
+    const wf = workflow("project-fields.yml");
+    expect(Object.keys(wf.on)).toEqual(["issues"]);
+    expect(wf.on.issues.types).toEqual(["labeled"]);
+    expect(wf.permissions).toEqual({ issues: "write" });
+    const family = "${{ startsWith(github.event.label.name, 'priority:') && 'priority' || startsWith(github.event.label.name, 'area:') && 'area' || 'complexity' }}";
+    expect(wf.concurrency.group).toBe(`project-fields-\${{ github.event.issue.number }}-${family}`);
+    expect(wf.concurrency["cancel-in-progress"]).toBe(false);
+    const jobs = Object.values(wf.jobs) as Array<{ if: string; steps: Step[] }>;
+    expect(jobs).toHaveLength(1);
+    const job = jobs[0];
+    expect(job.if).toBe(
+      "startsWith(github.event.label.name, 'priority:') || startsWith(github.event.label.name, 'area:') || startsWith(github.event.label.name, 'complexity:')",
+    );
+    expect(steps(job).every((s) => s.uses === undefined)).toBe(true);
+    // The label name is attacker-controlled, so no script may interpolate an expression at all.
+    for (const r of runs(job)) expect(r).not.toContain("${{");
+    expect(new Set(steps(job).map((s) => s.env?.GH_TOKEN))).toEqual(new Set(["${{ secrets.PROJECT_TOKEN }}", "${{ github.token }}"]));
+  });
+
   it("set-complexity workflow is manually dispatched with issue_number and level inputs, writing with PROJECT_TOKEN", () => {
     const wf = workflow("set-complexity.yml");
     expect(Object.keys(wf.on)).toEqual(["workflow_dispatch"]);
