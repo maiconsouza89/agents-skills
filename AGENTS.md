@@ -40,6 +40,8 @@ Versões escolhidas em 2026-09-14 consultando `npm view` e a documentação ofic
 | @types/node | ^24.13.4 | acompanha o Node 24 |
 | astro | ^7.3.2 | site estático com i18n por rota nativo e `glob()` lendo o catálogo em `../../skills`; compilador Rust do v7 é estrito com tags não fechadas; exige Node >=22.12 |
 | jsdom | ^30.0.1 (dev, site) | executa o script de busca da home nos testes sem navegador |
+| @fontsource-variable/inter | ^5.3.0 (site) | Inter variável (OFL-1.1), substituta da fonte de texto/display do `DESIGN.md`; só o `.woff2` latin é usado, via `fontProviders.local()`, para o build não baixar nada |
+| @fontsource-variable/jetbrains-mono | ^5.3.0 (site) | JetBrains Mono variável (OFL-1.1) para código, snippets e o painel de terminal; mesmo carregamento local |
 | @changesets/cli | ^3.0.3 (dev, raiz) | versiona `packages/core` e `packages/cli`; `apps/site` fica fora (`ignore` no config) |
 | commander | ^15.0.0 | parser de comandos do `mass-skills`; `exitOverride` + `configureOutput` permitem rodar o CLI em processo nos testes, sem `process.exit`; exige Node >=22.12, igual ao repo |
 
