@@ -97,15 +97,9 @@ Any other agent that supports the Agent Skills spec can use the [`npx skills add
 
 ## Skills in the catalog
 
-| Skill | Category | What it does |
-| --- | --- | --- |
-| [`mass-skill-authoring`](skills/mass-skill-authoring) | Skill authoring | Writes or reviews a skill so it passes the catalog validator on the first run. Use when creating a new skill or when the validator rejects yours. |
-| [`mass-commit-message`](skills/mass-commit-message) | Git workflow | Writes a Conventional Commits message from the staged diff, with a scope taken from the changed directories. |
-| [`mass-pr-description`](skills/mass-pr-description) | Git workflow | Fills the pull request template from the branch's commits and diff. |
-| [`mass-code-review`](skills/mass-code-review) | Code quality | Reviews a PR or local diff for correctness bugs, missing tests and unsafe changes, reporting file and line. Needs `git` and `gh`. |
-| [`mass-security-checklist`](skills/mass-security-checklist) | Security | Audits a skill, script or configuration for the four threat classes the validator and Snyk look for, pass or fail per item. |
+The catalog is browsable at **https://maiconsouza89.github.io/agents-skills/**, with search and category filters, in English and Portuguese. Each skill page shows its description, version, review date and the exact install command.
 
-`skills-registry.json` is the machine-readable index: files, hashes, versions, tags and deprecations. The [site](https://maiconsouza89.github.io/agents-skills/) renders the same data with search and category filters, in English and Portuguese.
+From the terminal, `mass-skills list` prints every skill and `mass-skills search <term>` matches by name, description or tag. `skills-registry.json` is the machine-readable index: files, hashes, versions, tags and deprecations.
 
 ## Quick start
 

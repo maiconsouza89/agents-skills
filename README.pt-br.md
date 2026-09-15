@@ -97,15 +97,9 @@ Qualquer outro agente que suporte a especificação Agent Skills pode usar o cam
 
 ## Skills do catálogo
 
-| Skill | Categoria | O que faz |
-| --- | --- | --- |
-| [`mass-skill-authoring`](skills/mass-skill-authoring) | Autoria de skills | Escreve ou revisa uma skill para passar no validador do catálogo na primeira tentativa. Use ao criar uma skill nova ou quando o validador rejeitar a sua. |
-| [`mass-commit-message`](skills/mass-commit-message) | Fluxo Git | Escreve uma mensagem em Conventional Commits a partir do diff em stage, com escopo tirado dos diretórios alterados. |
-| [`mass-pr-description`](skills/mass-pr-description) | Fluxo Git | Preenche o template de pull request a partir dos commits e do diff da branch. |
-| [`mass-code-review`](skills/mass-code-review) | Qualidade de código | Revisa um PR ou diff local procurando bugs, testes ausentes e mudanças inseguras, apontando arquivo e linha. Precisa de `git` e `gh`. |
-| [`mass-security-checklist`](skills/mass-security-checklist) | Segurança | Audita uma skill, script ou configuração contra as quatro classes de ameaça que o validador e o Snyk procuram, com passa ou falha por item. |
+O catálogo pode ser navegado em **https://maiconsouza89.github.io/agents-skills/pt-br/**, com busca e filtro por categoria, em inglês e português. A página de cada skill mostra descrição, versão, data de revisão e o comando exato de instalação.
 
-`skills-registry.json` é o índice legível por máquina: arquivos, hashes, versões, tags e deprecações. O [site](https://maiconsouza89.github.io/agents-skills/pt-br/) mostra os mesmos dados com busca e filtro por categoria, em inglês e português.
+No terminal, `mass-skills list` imprime todas as skills e `mass-skills search <termo>` busca por nome, descrição ou tag. `skills-registry.json` é o índice legível por máquina: arquivos, hashes, versões, tags e deprecações.
 
 ## Início rápido
 
