@@ -17,7 +17,7 @@ const noMatchTemplate = d.noMatch("__TERM__");
 
 // The session reproduces the CLI's real output lines (packages/cli/src/commands/install.ts and installer.ts).
 const demo = registrySkill("mass-code-review") ?? registry.skills[0];
-const command = `mass-skills install ${demo.name} -a claude-code`;
+const command = `npx @mass-solutions/skills-cli install ${demo.name} -a claude-code`;
 const session: TerminalLine[] = [
   { kind: "prompt", text: command },
   { kind: "output", text: `${demo.name}@${demo.version}: installed to /home/dev/app/.claude/skills/${demo.name}` },

@@ -107,7 +107,7 @@ describe("site build", () => {
       expect(text(d.querySelector("[data-content-hash]"))).toBe(reg.contentHash);
       expect(d.querySelector("[data-source]")!.getAttribute("href")).toBe(`https://github.com/${REPO}/tree/main/skills/${name}`);
       const install = text(d.querySelector("[data-install]"));
-      expect(install).toContain(`mass-skills install ${name} -a <agent>`);
+      expect(install).toContain(`npx @mass-solutions/skills-cli install ${name} -a <agent>`);
       expect(install).toContain(`npx skills add ${REPO} --skill ${name}`);
       expect(install).toContain(`/plugin marketplace add ${REPO}`);
       expect(install).toContain(warning);

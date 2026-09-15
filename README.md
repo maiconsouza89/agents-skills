@@ -15,7 +15,7 @@ Three ways to install, from most to least verified:
 1. **`mass-skills` (verifies integrity, keeps a lockfile)**
 
    ```bash
-   npx github:maiconsouza89/agents-skills#main install mass-code-review -a claude-code
+   npx @mass-solutions/skills-cli install mass-code-review -a claude-code
    ```
 
    Downloads the files at the pinned ref, checks every file's `sha256` and the skill's `contentHash` against `skills-registry.json`, and records what was installed in `mass-skills.lock.json`. `mass-skills update` never overwrites a skill you edited locally unless you pass `--force`.

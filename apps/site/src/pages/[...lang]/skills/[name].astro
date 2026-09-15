@@ -34,7 +34,7 @@ const Content = entry ? (await render(entry)).Content : undefined;
 const extras = reg ? extraFiles(reg) : [];
 const meta = entry?.data.metadata ?? {};
 const commands = [
-  `mass-skills install ${name} -a <agent>`,
+  `npx @mass-solutions/skills-cli install ${name} -a <agent>`,
   `npx skills add ${REPO} --skill ${name}`,
   `/plugin marketplace add ${REPO}`,
 ];

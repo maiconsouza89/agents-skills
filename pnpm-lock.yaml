@@ -49,8 +49,8 @@ importers:
   packages/cli:
     dependencies:
       '@mass-solutions/skills-core':
-        specifier: workspace:*
-        version: link:../core
+        specifier: ^0.1.0
+        version: 0.1.0
       commander:
         specifier: ^15.0.0
         version: 15.0.0
@@ -695,6 +695,9 @@ packages:
   '@manypkg/tools@2.1.2':
     resolution: {integrity: sha512-6QEf6yqFbETdwGITKq57aYoPfX/3K8XFNwsAlx0C1M7o8cb79sv1M3w+tWuWvIcSbNqrLF7OD7YpZMVVz335hQ==}
     engines: {node: '>=20.0.0'}
+
+  '@mass-solutions/skills-core@0.1.0':
+    resolution: {integrity: sha512-8Pn55S0A0k574lZHFESSRurS9/c8kZRBm9y7ZkYzKvb4a1xtM2OGRZyhPXomrDnS5xVgmJuqN/iVuu4Q9hVcaA==}
 
   '@napi-rs/wasm-runtime@1.2.4':
     resolution: {integrity: sha512-AJxoUD2/15ESHbvpcyjU274nsAPLuOtPHCk0vKJM5pj//Fg/B1FXNWjPnXTT9PymCYYiHo4zPj0ZomXBKhoy7g==}
@@ -2329,6 +2332,10 @@ snapshots:
     dependencies:
       jju: 1.4.0
       tinyglobby: 0.2.17
+      yaml: 2.9.1
+
+  '@mass-solutions/skills-core@0.1.0':
+    dependencies:
       yaml: 2.9.1
 
   '@napi-rs/wasm-runtime@1.2.4(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.1)':

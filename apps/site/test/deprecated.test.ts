@@ -24,8 +24,10 @@ describe("deprecated skill page", () => {
       expect(link.textContent).toBe("mass-alpha");
       expect(link.getAttribute("href")).toBe(`${BASE}${page.startsWith("pt-br/") ? "pt-br/" : ""}skills/mass-alpha/`);
       expect(d.querySelector("[data-install]")).toBeNull();
-      expect(text(d.querySelector("main"))).not.toContain("mass-skills install");
+      expect(text(d.querySelector("main"))).not.toContain("npx @mass-solutions/skills-cli install");
     }
-    expect(text(dom(out, "skills/mass-alpha/index.html").querySelector("[data-install]"))).toContain("mass-skills install mass-alpha");
+    expect(text(dom(out, "skills/mass-alpha/index.html").querySelector("[data-install]"))).toContain(
+      "npx @mass-solutions/skills-cli install mass-alpha",
+    );
   });
 });

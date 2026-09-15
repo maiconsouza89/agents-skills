@@ -15,7 +15,7 @@ Três caminhos, do mais ao menos verificado:
 1. **`mass-skills` (verifica integridade, mantém lockfile)**
 
    ```bash
-   npx github:maiconsouza89/agents-skills#main install mass-code-review -a claude-code
+   npx @mass-solutions/skills-cli install mass-code-review -a claude-code
    ```
 
    Baixa os arquivos no ref fixado, confere o `sha256` de cada arquivo e o `contentHash` da skill contra `skills-registry.json`, e registra o que instalou em `mass-skills.lock.json`. `mass-skills update` nunca sobrescreve uma skill editada localmente sem `--force`.
