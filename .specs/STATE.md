@@ -17,9 +17,9 @@
 ## Handoff
 
 **Feature**: mass-solutions-skills
-**Where**: batches B1 (S1-S4) e B2 (S5, C43-C60 + C82) fechados e verdes; B3 (S6-S8: site, CI, release) pendente
+**Where**: build completo - B1 (S1-S4), B2 (S5) e B3 (S6-S8) fechados e verdes; 82/82 checks marcados em `checks.md`
 **In progress**: nada
-**Next step**: despachar o builder B3 com `checks.md` e o diff `43ff185..2b9e767` (CLI) mais `c18c7f5..43ff185` (repo/core); B3 cria `apps/site` (Astro 7, `MASS_CATALOG_ROOT`), `.github/workflows/*.yml`, `tools/stale.ts`, `tools/allowlist.ts`, `.changeset/` e os testes `test/repo/{workflows,allowlist,stale,release}.test.ts` e `apps/site/test/*`
-**Blockers**: open questions 1-4 (go-live) não bloqueiam o build local
+**Next step**: o orquestrador despacha o Verifier (fresh, não autor) sobre `0fff8f7..HEAD` com os 82 checks, perfil `standard`; depois `validate_verification.py mass-solutions-skills`; go-live (repo, push, branch protection, Pages, `SNYK_TOKEN`, arquivar rascunho) só com go-ahead explícito
+**Blockers**: open questions 1-4 (go-live) não bloqueiam a verificação local
 **Uncommitted**: nada
 **Branch**: main
