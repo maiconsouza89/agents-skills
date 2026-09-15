@@ -29,4 +29,15 @@ jobs:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         # --dangerously-run-mcp-servers: --ci now requires it (snyk-agent-scan 0.6.3). We scan a plain
         # skills directory, not an MCP config, so no stdio server is ever started - the flag is inert here.
-        run: uvx snyk-agent-scan@latest skills --ci --dangerously-run-mcp-servers ${{ steps.allowlist.outputs.flags }}
+        # X007 is the public tier's daily usage limit, not a finding: treat it as non-blocking so quota
+        # exhaustion doesn't fail PRs, while any other failure (including real findings) still fails the job.
+        run: |
+          set +e
+          output=$(uvx snyk-agent-scan@latest skills --ci --dangerously-run-mcp-servers ${{ steps.allowlist.outputs.flags }} 2>&1)
+          code=$?
+          echo "$output"
+          if [ "$code" -ne 0 ] && echo "$output" | grep -q "X007"; then
+            echo "::warning::Snyk Agent Scan hit its public-tier daily usage limit (X007); treating as non-blocking."
+            exit 0
+          fi
+          exit "$code"

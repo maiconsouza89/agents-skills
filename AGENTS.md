@@ -70,6 +70,6 @@ Publicado em 2026-09-15 pelo mantenedor (login npm `mass-solutions`, 2FA obrigat
 
 - `ci.yml` (PR e `main`): `pnpm check`, `pnpm build`, `npx -y @anthropic-ai/claude-code@latest plugin validate .`; sem secrets, roda em fork.
 - `pages.yml` (`main`): `withastro/action` em `apps/site` + `actions/deploy-pages`; o Node vem do `.nvmrc`.
-- `security-scan.yml` (`main` e PRs): `tools/allowlist.ts` roda sempre e falha com entrada vencida; `uvx snyk-agent-scan@latest skills --ci` só em push e PR do próprio repo (precisa de `SNYK_TOKEN`).
+- `security-scan.yml` (`main` e PRs): `tools/allowlist.ts` roda sempre e falha com entrada vencida; `uvx snyk-agent-scan@latest skills --ci` só em push e PR do próprio repo (precisa de `SNYK_TOKEN`). O erro `X007` (limite diário da versão pública do Snyk Agent-Scan) é tratado como não-bloqueante — o step captura a saída, e só falha o job se o código de saída for diferente de zero *e* a saída não contiver `X007`; qualquer outra falha (achado real, erro de auth, etc.) continua bloqueando.
 - `stale-skills.yml` (segunda 09:00 UTC e manual): `pnpm --silent stale --days 90` alimenta a issue `Stale skills` (label `stale-skill`), fechada quando a lista fica vazia.
 - `release.yml` (tag `v*`): `pnpm check`, `pnpm build`, `gh release create --generate-notes`. Versões dos pacotes via Changesets (`pnpm changeset`); o site não é versionado.
