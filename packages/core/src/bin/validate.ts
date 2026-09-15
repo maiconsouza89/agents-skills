@@ -2,7 +2,9 @@
 import { resolve } from "node:path";
 import { formatFinding, hasErrors, validateCatalog } from "../index.js";
 
-export function main(argv: string[], out = process.stdout, err = process.stderr): number {
+export type Writer = { write(chunk: string): unknown };
+
+export function main(argv: string[], out: Writer = process.stdout, err: Writer = process.stderr): number {
   const args = argv.filter((a) => !a.startsWith("-"));
   const root = resolve(args[0] ?? process.cwd());
   let result;

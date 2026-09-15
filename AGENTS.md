@@ -38,3 +38,11 @@ Versões escolhidas em 2026-09-14 consultando `npm view` e a documentação ofic
 | vitest | ^5.0.0 | runner único para raiz, pacotes e site; seletor `-t` nas provas |
 | yaml | ^2.9.1 | parser de frontmatter; o schema padrão mantém datas como string, que é o que o contrato exige |
 | @types/node | ^24.13.4 | acompanha o Node 24 |
+| commander | ^15.0.0 | parser de comandos do `mass-skills`; `exitOverride` + `configureOutput` permitem rodar o CLI em processo nos testes, sem `process.exit`; exige Node >=22.12, igual ao repo |
+
+## CLI `mass-skills`
+
+- `packages/cli/bin/mass-skills.js` importa `dist/`, gerado por `pnpm build` (o core builda antes, por ordem topológica do pnpm). Em desenvolvimento: `pnpm --filter @mass-solutions/skills-cli exec tsx src/bin.ts <args>`.
+- `run(argv, { cwd, env, stdout, stderr })` em `packages/cli/src/run.ts` é a única entrada; nunca chama `process.exit`, devolve o exit code (`0` sucesso, `1` falha de execução, `2` uso).
+- `MASS_SKILLS_BASE_URL` troca a base de download (default `https://raw.githubusercontent.com/maiconsouza89/mass-solutions-skills/`); os testes sobem um `node:http` local servindo um catálogo de fixture e apontam essa variável para ele.
+- `install` baixa e verifica tudo num diretório temporário antes de escrever no agente ou no lockfile; `update` só sobrescreve edição local com `--force`; `remove` só apaga nos agentes registrados no lockfile.

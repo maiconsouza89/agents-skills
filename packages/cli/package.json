@@ -5,7 +5,20 @@
   "license": "MIT",
   "type": "module",
   "private": true,
+  "bin": {
+    "mass-skills": "./bin/mass-skills.js"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "bin",
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json"
+  },
   "dependencies": {
-    "@mass-solutions/skills-core": "workspace:*"
+    "@mass-solutions/skills-core": "workspace:*",
+    "commander": "^15.0.0"
   }
 }

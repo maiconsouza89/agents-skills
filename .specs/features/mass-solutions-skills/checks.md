@@ -147,61 +147,61 @@ Proof: `bash tools/spike/claude-plugin-install.sh`
 
 ### S5 - CLI `mass-skills` · ~25 files · ~80 KB · ~20k
 
-**C43** - `list` baixa o registry do ref e imprime `<name>  <version>  <category>  <description≤80>` por skill, ordenado por `name`, exit `0` (CLI-01, AC 43)
+**C43** - ✅ `list` baixa o registry do ref e imprime `<name>  <version>  <category>  <description≤80>` por skill, ordenado por `name`, exit `0` (CLI-01, AC 43)
 Proof: `pnpm vitest run packages/cli/test/list.test.ts -t "lists skills in name order"`
 
-**C44** - `search <termo>` filtra por `name`/`description`/`tags` sem caixa; sem resultado imprime `No skills match "<termo>"` e sai com `0` (CLI-01, AC 44)
+**C44** - ✅ `search <termo>` filtra por `name`/`description`/`tags` sem caixa; sem resultado imprime `No skills match "<termo>"` e sai com `0` (CLI-01, AC 44)
 Proof: `pnpm vitest run packages/cli/test/list.test.ts -t "search matches case-insensitively"` · `pnpm vitest run packages/cli/test/list.test.ts -t "search with no match"`
 
-**C45** - `install` grava os arquivos em `<agent path>/<name>/` para cada um dos 8 agentes (projeto e, com `--global`, o path global) e registra a entrada no lockfile (CLI-02, AC 45)
+**C45** - ✅ `install` grava os arquivos em `<agent path>/<name>/` para cada um dos 8 agentes (projeto e, com `--global`, o path global) e registra a entrada no lockfile (CLI-02, AC 45)
 Proof: `pnpm vitest run packages/cli/test/install.test.ts -t "installs into every agent path"`
 
-**C46** - `sha256` de arquivo ou `contentHash` divergente: imprime `Integrity check failed for <name>: <path>`, exit `1`, nenhum arquivo no agente e lockfile intacto (2 casos) (CLI-02, AC 46)
+**C46** - ✅ `sha256` de arquivo ou `contentHash` divergente: imprime `Integrity check failed for <name>: <path>`, exit `1`, nenhum arquivo no agente e lockfile intacto (2 casos) (CLI-02, AC 46)
 Proof: `pnpm vitest run packages/cli/test/install.test.ts -t "integrity failure writes nothing"`
 
-**C47** - Falha de rede no 2º de 3 arquivos deixa o diretório do agente e o lockfile como estavam (CLI-02, AC 47)
+**C47** - ✅ Falha de rede no 2º de 3 arquivos deixa o diretório do agente e o lockfile como estavam (CLI-02, AC 47)
 Proof: `pnpm vitest run packages/cli/test/install.test.ts -t "partial download leaves nothing behind"`
 
-**C48** - Agente desconhecido: mensagem `Unsupported agent "<id>". Supported: ... npx skills add maiconsouza89/mass-solutions-skills`, exit `2` (CLI-02, AC 48)
+**C48** - ✅ Agente desconhecido: mensagem `Unsupported agent "<id>". Supported: ... npx skills add maiconsouza89/mass-solutions-skills`, exit `2` (CLI-02, AC 48)
 Proof: `pnpm vitest run packages/cli/test/install.test.ts -t "unsupported agent exits 2"`
 
-**C49** - `-a auto` escolhe pelas pastas `.claude/`, `.agents/`, `.windsurf/` presentes; sem nenhuma sai com `2` listando os ids (CLI-02, AC 49)
+**C49** - ✅ `-a auto` escolhe pelas pastas `.claude/`, `.agents/`, `.windsurf/` presentes; sem nenhuma sai com `2` listando os ids (CLI-02, AC 49)
 Proof: `pnpm vitest run packages/cli/test/install.test.ts -t "auto detects agents"` · `pnpm vitest run packages/cli/test/install.test.ts -t "auto with nothing detected exits 2"`
 
-**C50** - Nome deprecado: `"<old>" is deprecated since <since>: <reason>. Use: <replacedBy>` e exit `1`; nome ausente: exit `2` sugerindo `mass-skills search` (CLI-02, AC 50)
+**C50** - ✅ Nome deprecado: `"<old>" is deprecated since <since>: <reason>. Use: <replacedBy>` e exit `1`; nome ausente: exit `2` sugerindo `mass-skills search` (CLI-02, AC 50)
 Proof: `pnpm vitest run packages/cli/test/install.test.ts -t "deprecated is refused"` · `pnpm vitest run packages/cli/test/install.test.ts -t "unknown skill exits 2"`
 
-**C51** - `path` com `..`, começando com `/`, ou `name` fora do regex: `Unsafe path`, exit `1`, nada gravado (3 casos) (CLI-02, AC 51)
+**C51** - ✅ `path` com `..`, começando com `/`, ou `name` fora do regex: `Unsafe path`, exit `1`, nada gravado (3 casos) (CLI-02, AC 51)
 Proof: `pnpm vitest run packages/cli/test/install.test.ts -t "unsafe path is refused"`
 
-**C52** - O lockfile tem a forma da door 4, é gravado via `.tmp` + rename (nenhum `.tmp` sobra) e `mass-skills.lock.json` nunca lê nem escreve `skills-lock.json` (CLI-02, AC 52)
+**C52** - ✅ O lockfile tem a forma da door 4, é gravado via `.tmp` + rename (nenhum `.tmp` sobra) e `mass-skills.lock.json` nunca lê nem escreve `skills-lock.json` (CLI-02, AC 52)
 Proof: `pnpm vitest run packages/cli/test/lockfile.test.ts -t "lockfile shape and atomic write"`
 
-**C53** - `update`: hash local ≠ gravado → `locally modified, skipped (use --force)` sem tocar; igual e registry maior → reinstala e atualiza o lockfile; igual e igual → `up to date` (3 casos) (CLI-03, AC 53)
+**C53** - ✅ `update`: hash local ≠ gravado → `locally modified, skipped (use --force)` sem tocar; igual e registry maior → reinstala e atualiza o lockfile; igual e igual → `up to date` (3 casos) (CLI-03, AC 53)
 Proof: `pnpm vitest run packages/cli/test/update.test.ts -t "update three outcomes"`
 
-**C54** - `update --force` sobrescreve a skill modificada e grava `installedAt` novo (CLI-03, AC 54)
+**C54** - ✅ `update --force` sobrescreve a skill modificada e grava `installedAt` novo (CLI-03, AC 54)
 Proof: `pnpm vitest run packages/cli/test/update.test.ts -t "force overwrites local edits"`
 
-**C55** - `update --check` imprime o estado de cada skill e não escreve nada (CLI-03, AC 55)
+**C55** - ✅ `update --check` imprime o estado de cada skill e não escreve nada (CLI-03, AC 55)
 Proof: `pnpm vitest run packages/cli/test/update.test.ts -t "check writes nothing"`
 
-**C56** - `doctor` reporta `ok`, `missing`, `modified`, `deprecated` (4 estados) e sai com `1` se algum ≠ `ok` (CLI-03, AC 56)
+**C56** - ✅ `doctor` reporta `ok`, `missing`, `modified`, `deprecated` (4 estados) e sai com `1` se algum ≠ `ok` (CLI-03, AC 56)
 Proof: `pnpm vitest run packages/cli/test/doctor.test.ts -t "doctor reports every state"`
 
-**C57** - `remove` apaga só nos agentes registrados para a skill e remove a entrada do lockfile, exit `0` (CLI-03, AC 57)
+**C57** - ✅ `remove` apaga só nos agentes registrados para a skill e remove a entrada do lockfile, exit `0` (CLI-03, AC 57)
 Proof: `pnpm vitest run packages/cli/test/remove.test.ts -t "removes only registered agents"`
 
-**C58** - Registry ou arquivo `404`, ou erro de rede: `Failed to fetch <url>: <status ou erro>`, exit `1`, nada alterado (2 casos) (CLI-02, AC 58)
+**C58** - ✅ Registry ou arquivo `404`, ou erro de rede: `Failed to fetch <url>: <status ou erro>`, exit `1`, nada alterado (2 casos) (CLI-02, AC 58)
 Proof: `pnpm vitest run packages/cli/test/install.test.ts -t "fetch failure"`
 
-**C59** - Tabela de exit codes: `0` sucesso, `1` execução, `2` uso; erros vão para `stderr` e não para `stdout` (CLI-01, AC 59)
+**C59** - ✅ Tabela de exit codes: `0` sucesso, `1` execução, `2` uso; erros vão para `stderr` e não para `stdout` (CLI-01, AC 59)
 Proof: `pnpm vitest run packages/cli/test/exit-codes.test.ts -t "exit code contract"`
 
-**C60** - `mass-skills validate` e `mass-skills registry --check` devolvem os mesmos exit codes que os scripts da raiz sobre o mesmo fixture (CLI-01, AC 60)
+**C60** - ✅ `mass-skills validate` e `mass-skills registry --check` devolvem os mesmos exit codes que os scripts da raiz sobre o mesmo fixture (CLI-01, AC 60)
 Proof: `pnpm vitest run packages/cli/test/mirrors.test.ts -t "validate and registry mirror root scripts"`
 
-**C82** - Sem `MASS_SKILLS_BASE_URL`, a base de download é `https://raw.githubusercontent.com/maiconsouza89/mass-solutions-skills/<ref>/` com `ref` default `main` (CLI-02, AC 45, door 9)
+**C82** - ✅ Sem `MASS_SKILLS_BASE_URL`, a base de download é `https://raw.githubusercontent.com/maiconsouza89/mass-solutions-skills/<ref>/` com `ref` default `main` (CLI-02, AC 45, door 9)
 Proof: `pnpm vitest run packages/cli/test/download.test.ts -t "default base url"`
 
 ### S6 - Site bilíngue · ~25 files · ~90 KB · ~22k

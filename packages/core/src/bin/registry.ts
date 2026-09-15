@@ -3,7 +3,9 @@ import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { buildRegistry, diffRegistry, REGISTRY_FILE, serializeRegistry } from "../index.js";
 
-export function main(argv: string[], out = process.stdout, err = process.stderr): number {
+export type Writer = { write(chunk: string): unknown };
+
+export function main(argv: string[], out: Writer = process.stdout, err: Writer = process.stderr): number {
   const check = argv.includes("--check");
   const rootIdx = argv.indexOf("--root");
   const root = resolve(rootIdx >= 0 ? argv[rootIdx + 1] : process.cwd());

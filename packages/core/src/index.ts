@@ -9,3 +9,5 @@ export type { ValidateOptions, CatalogResult } from "./validate.js";
 export { buildRegistry, diffRegistry, serializeRegistry, splitTags } from "./registry.js";
 export type { BuildRegistryOptions } from "./registry.js";
 export { RULES } from "./rules/index.js";
+export { main as validateMain } from "./bin/validate.js";
+export { main as registryMain } from "./bin/registry.js";
