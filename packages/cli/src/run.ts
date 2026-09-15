@@ -1,3 +1,4 @@
+import { createRequire } from "node:module";
 import { Command, CommanderError } from "commander";
 import { openSession, type CommonOptions } from "./context.js";
 import { doctor } from "./commands/doctor.js";
@@ -8,6 +9,9 @@ import { remove } from "./commands/remove.js";
 import { update } from "./commands/update.js";
 import { DEFAULT_REF } from "./download.js";
 import { CliError, EXIT_FAILURE, EXIT_OK, EXIT_USAGE, type RunContext } from "./types.js";
+
+const require = createRequire(import.meta.url);
+const { version: PACKAGE_VERSION } = require("../package.json") as { version: string };
 
 export interface RunOptions {
   /** Injected for tests; defaults to the global `fetch`. */
@@ -24,6 +28,7 @@ function buildProgram(ctx: RunContext, run: RunOptions, result: { code: number }
   const program = new Command("mass-skills");
   program
     .description("Install Mass Solutions skills with integrity verification and a lockfile")
+    .version(PACKAGE_VERSION, "-V, --version", "output the version number")
     .option("--ref <ref>", "git ref of the catalog to read", DEFAULT_REF)
     .option("-g, --global", "use the user-level agent directories and lockfile", false)
     .exitOverride()
