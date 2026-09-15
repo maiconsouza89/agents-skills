@@ -30,7 +30,7 @@ describe(".github", () => {
 
   it("pull request template requires a linked issue and the checklist", () => {
     const tpl = read(".github/PULL_REQUEST_TEMPLATE.md");
-    expect(tpl).toContain("Issue vinculada: #");
+    expect(tpl).toContain("Closes #");
     expect(tpl).toMatch(/- \[ \] .*pnpm check/);
     expect(tpl).toMatch(/- \[ \] .*metadata\.reviewed/);
   });

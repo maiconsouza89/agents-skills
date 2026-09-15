@@ -4,7 +4,7 @@
 
 ## Linked issue
 
-Issue vinculada: #
+Closes #
 
 <!-- Required. External pull requests without a linked, approved issue are closed with a pointer to the skill proposal template. -->
 
