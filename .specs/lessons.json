@@ -1,0 +1,99 @@
+{
+  "schema": 1,
+  "promote_threshold": 2,
+  "window_days": 45,
+  "quarantine_threshold": 2,
+  "next_id": 6,
+  "lessons": [
+    {
+      "id": "L-001",
+      "key": "surviving_mutant::um teste table driven que itera a tabela do proprio modulo sob teste nao prova a tabela quando o plano fixa valores literais paths ids urls escreva os literalmente no teste ou num fixture separado e compare o modulo contra eles",
+      "text": "Um teste table-driven que itera a tabela do próprio módulo sob teste não prova a tabela: quando o plano fixa valores literais (paths, ids, URLs), escreva-os literalmente no teste ou num fixture separado e compare o módulo contra eles.",
+      "signal": "surviving_mutant",
+      "scope": "packages/cli",
+      "status": "candidate",
+      "features": [
+        "mass-solutions-skills"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "packages/cli/src/agents.ts:16 (packages/cli)"
+      ],
+      "created": "2026-09-15T03:54:31Z",
+      "last_seen": "2026-09-15T03:54:31Z"
+    },
+    {
+      "id": "L-002",
+      "key": "ac_gap::quando uma linha de coverage declara um exit code por comando cite um teste que dispare esse codigo naquele comando especifico um erro de uso generico de outro comando nao prova o membro",
+      "text": "Quando uma linha de Coverage declara um exit code por comando, cite um teste que dispare esse código naquele comando específico; um erro de uso genérico de outro comando não prova o membro.",
+      "signal": "ac_gap",
+      "scope": "packages/cli",
+      "status": "candidate",
+      "features": [
+        "mass-solutions-skills"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "C59 (packages/cli)"
+      ],
+      "created": "2026-09-15T03:54:31Z",
+      "last_seen": "2026-09-15T03:54:31Z"
+    },
+    {
+      "id": "L-003",
+      "key": "ac_gap::ao implementar mais ramos do que o ac enumera estados extra num classify guard de pasta existente acrescente um caso asserido por ramo novo ou remova o ramo a linha de test policy conta linhas da tabela de decisao do codigo nao do ac",
+      "text": "Ao implementar mais ramos do que o AC enumera (estados extra num classify, guard de pasta existente), acrescente um caso asserido por ramo novo ou remova o ramo; a linha de Test policy conta linhas da tabela de decisão do código, não do AC.",
+      "signal": "ac_gap",
+      "scope": "packages/cli",
+      "status": "candidate",
+      "features": [
+        "mass-solutions-skills"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "packages/cli/src/commands/update.ts:30 (packages/cli)"
+      ],
+      "created": "2026-09-15T03:54:31Z",
+      "last_seen": "2026-09-15T03:54:31Z"
+    },
+    {
+      "id": "L-004",
+      "key": "ac_gap::se a surface lista o mesmo status para duas urls exercite o status em cada url um 404 de arquivo alem do 404 do registry destruir o socket prova falha de rede nao o mapeamento de status",
+      "text": "Se a Surface lista o mesmo status para duas URLs, exercite o status em cada URL (um 404 de arquivo além do 404 do registry); destruir o socket prova falha de rede, não o mapeamento de status.",
+      "signal": "ac_gap",
+      "scope": "packages/cli",
+      "status": "candidate",
+      "features": [
+        "mass-solutions-skills"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "packages/cli/test/helpers.ts:66 (packages/cli)"
+      ],
+      "created": "2026-09-15T03:54:31Z",
+      "last_seen": "2026-09-15T03:54:31Z"
+    },
+    {
+      "id": "L-005",
+      "key": "spec_precision_gap::ao fechar um batch recompute o tamanho de cada conjunto de coverage a partir do codigo e atualize a linha e os check ids um membro adicionado no meio do build precisa de check nao so de teste",
+      "text": "Ao fechar um batch, recompute o tamanho de cada conjunto de Coverage a partir do código e atualize a linha e os check ids: um membro adicionado no meio do build precisa de check, não só de teste.",
+      "signal": "spec_precision_gap",
+      "scope": ".specs",
+      "status": "candidate",
+      "features": [
+        "mass-solutions-skills"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "checks.md Coverage validator rule ids (16) (.specs)"
+      ],
+      "created": "2026-09-15T03:54:32Z",
+      "last_seen": "2026-09-15T03:54:32Z"
+    }
+  ]
+}
