@@ -34,11 +34,6 @@ Antes de instalar ou integrar novas dependências, funcionalidades ou tecnologia
 - **Verificar boas práticas**: consultar padrões de mercado e recomendações atuais.
 - **Usar web search** se Context7 não tiver informação recente.
 
-## tlc-spec-lean
-
-profile: standard
-budget: 150k
-
 ## CLI `mass-skills`
 
 - `packages/cli/bin/mass-skills.js` importa `dist/`, gerado por `pnpm build` (o core builda antes, por ordem topológica do pnpm). Em desenvolvimento: `pnpm --filter @mass-solutions/skills-cli exec tsx src/bin.ts <args>`.
