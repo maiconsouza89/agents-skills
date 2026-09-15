@@ -140,6 +140,30 @@ describe("set-complexity", () => {
     }
   });
 
+  it("dispatches set-complexity.yml instead of writing directly in a Claude Code web (cloud) session", async () => {
+    const f = fakeExec({ "git remote get-url origin": "https://github.com/acme/skills.git\n" });
+    const r = await run(["8", "medium"], f, { CLAUDE_CODE_REMOTE: "true" });
+    expect(r.code).toBe(0);
+    expect(r.calls).toEqual([
+      "git remote get-url origin",
+      "gh api -X POST repos/acme/skills/actions/workflows/set-complexity.yml/dispatches -f ref=main -f inputs[issue_number]=8 -f inputs[level]=Medium",
+    ]);
+    expect(r.out).toContain("triggered the set-complexity workflow for #8 -> Medium");
+  });
+
+  it("falls back to REST over fetch for the cloud dispatch when gh is missing", async () => {
+    const f = fakeExec({
+      "git remote get-url origin": "https://github.com/acme/skills.git\n",
+      "gh api -X POST repos/acme/skills/actions/workflows/set-complexity.yml/dispatches": ENOENT(),
+    });
+    const { fn, calls: fetchCalls } = fakeFetch({
+      "POST https://api.github.com/repos/acme/skills/actions/workflows/set-complexity.yml/dispatches": { status: 204 },
+    });
+    const r = await run(["8", "low"], f, { CLAUDE_CODE_REMOTE: "true", GH_TOKEN: "proxy-injected" }, fn);
+    expect(r.code).toBe(0);
+    expect(fetchCalls).toEqual(["POST https://api.github.com/repos/acme/skills/actions/workflows/set-complexity.yml/dispatches"]);
+  });
+
   it("prints usage and exits 2 for a missing or invalid level", async () => {
     const r1 = await run(["8"]);
     expect(r1.code).toBe(2);

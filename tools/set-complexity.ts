@@ -1,9 +1,10 @@
 #!/usr/bin/env node
 // Set the Complexity field of an issue's item on the GitHub Project board.
-// Uses the Projects v2 REST API (PATCH /users/{owner}/projectsV2/{n}/items/{item}), not GraphQL:
-// unlike Status (handled by project-board.yml in Actions, because Projects v2's field-write
-// mutation only exists in GraphQL, which the Claude Code cloud sandbox blocks), this REST
-// endpoint is not GraphQL, so it can be run directly from a Claude Code web session too.
+// Locally: writes directly via the Projects v2 REST API (PATCH /users/{owner}/projectsV2/{n}/items/{item}).
+// In a Claude Code web session: that same REST path gets a 403 from the session's own GitHub
+// proxy, which only allows repository-scoped paths ("repos/{owner}/{repo}/...") - so instead this
+// dispatches set-complexity.yml (itself a repository-scoped call), and that workflow does the
+// actual write on a runner with no such restriction.
 // Pair it with the mass-issue-complexity skill: classify the issue, then pass the level here.
 // Usage: pnpm set-complexity <issue-number> <low|medium|high> [--project 5] [--owner <login>]
 import { defaultExec, ghApi, ghApiPaginated, ownerAndName, type Exec, type FetchLike } from "./lib/gh.js";
@@ -60,19 +61,52 @@ export async function main(
     return 2;
   }
   const project = flag(argv, "--project") ?? "5";
+  const wantedName = level[0].toUpperCase() + level.slice(1);
   try {
-    const owner = flag(argv, "--owner") ?? ownerAndName(exec("git", ["remote", "get-url", "origin"])).owner;
+    if (env.CLAUDE_CODE_REMOTE === "true") {
+      // The proxy in a Claude Code web session rejects any GitHub API path that isn't
+      // repository-scoped ("repos/{owner}/{repo}/...") with a 403, before the request even
+      // reaches GitHub - including users/{owner}/projectsV2/..., regardless of token. Dispatching
+      // a workflow is itself a repository-scoped REST call, so it passes the proxy; the actual
+      // write then happens on a runner, via set-complexity.yml and the PROJECT_TOKEN secret.
+      const { owner, name: repo } = ownerAndName(exec("git", ["remote", "get-url", "origin"]));
+      await ghApi(
+        exec,
+        fetchImpl,
+        env,
+        "POST",
+        `repos/${owner}/${repo}/actions/workflows/set-complexity.yml/dispatches`,
+        [
+          "api",
+          "-X",
+          "POST",
+          `repos/${owner}/${repo}/actions/workflows/set-complexity.yml/dispatches`,
+          "-f",
+          "ref=main",
+          "-f",
+          `inputs[issue_number]=${number}`,
+          "-f",
+          `inputs[level]=${wantedName}`,
+        ],
+        { ref: "main", inputs: { issue_number: String(number), level: wantedName } },
+      );
+      out.write(
+        `Claude Code web session: triggered the set-complexity workflow for #${number} -> ${wantedName}. Check the Actions run for the result.\n`,
+      );
+      return 0;
+    }
 
-    const fields = (await ghApi(exec, fetchImpl, env, "GET", `users/${owner}/projectsV2/${project}/fields`, [
+    const projectOwner = flag(argv, "--owner") ?? ownerAndName(exec("git", ["remote", "get-url", "origin"])).owner;
+
+    const fields = (await ghApi(exec, fetchImpl, env, "GET", `users/${projectOwner}/projectsV2/${project}/fields`, [
       "api",
-      `users/${owner}/projectsV2/${project}/fields`,
+      `users/${projectOwner}/projectsV2/${project}/fields`,
     ])) as Field[];
     const field = fields.find((f) => f.name === "Complexity" && f.data_type === "single_select");
     if (!field) {
-      out.write(`Project ${project} of ${owner} has no single-select "Complexity" field. Create it first (Low/Medium/High).\n`);
+      out.write(`Project ${project} of ${projectOwner} has no single-select "Complexity" field. Create it first (Low/Medium/High).\n`);
       return 1;
     }
-    const wantedName = level[0].toUpperCase() + level.slice(1);
     const option = field.options?.find((o) => o.name.raw === wantedName);
     if (!option) {
       out.write(`The Complexity field on project ${project} has no "${wantedName}" option.\n`);
@@ -81,7 +115,7 @@ export async function main(
 
     // The items endpoint only includes a field's current value in the response when that field's
     // id is requested explicitly via `?fields=`; otherwise only Title comes back.
-    const itemsPath = `users/${owner}/projectsV2/${project}/items?fields=${field.id}`;
+    const itemsPath = `users/${projectOwner}/projectsV2/${project}/items?fields=${field.id}`;
     const items = (await ghApiPaginated(exec, fetchImpl, env, itemsPath, ["api", itemsPath, "--paginate"])) as ProjectItem[];
     const item = items.find((i) => i.content?.number === number);
     if (!item) {
@@ -100,12 +134,12 @@ export async function main(
       fetchImpl,
       env,
       "PATCH",
-      `users/${owner}/projectsV2/${project}/items/${item.id}`,
+      `users/${projectOwner}/projectsV2/${project}/items/${item.id}`,
       [
         "api",
         "-X",
         "PATCH",
-        `users/${owner}/projectsV2/${project}/items/${item.id}`,
+        `users/${projectOwner}/projectsV2/${project}/items/${item.id}`,
         "-F",
         `fields[][id]=${field.id}`,
         "-f",
