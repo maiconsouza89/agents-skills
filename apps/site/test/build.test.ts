@@ -74,8 +74,9 @@ describe("site build", () => {
       }
       expect(total).toBe(names.length);
       expect(d.querySelector("input#q")).not.toBeNull();
-      const options = [...d.querySelectorAll("select#category option")].map((o) => o.getAttribute("value"));
+      const options = [...d.querySelectorAll<HTMLInputElement>('input[type="radio"][name="category"]')].map((o) => o.getAttribute("value"));
       expect(options).toEqual(["", ...usedIds]);
+      expect(d.querySelector<HTMLInputElement>('input[name="category"][value=""]')!.hasAttribute("checked")).toBe(true);
       expect(d.querySelector("[data-lang-switch]")!.getAttribute("href")).toBe(switchTo);
     }
   });
@@ -129,7 +130,7 @@ describe("site build", () => {
     ] as const) {
       const d = dom(DIST, page);
       const items = [...d.querySelectorAll("[data-install-paths] > li")];
-      expect(items.map((li) => text(li.querySelector("h2")).replace(/^\[\+\]\s*/, ""))).toEqual([...titles]);
+      expect(items.map((li) => text(li.querySelector("h2")))).toEqual([...titles]);
       expect(text(items[0])).toMatch(/sha256/);
       expect(text(items[1])).toMatch(/Nothing is verified|Nada é conferido/);
       expect(text(items[2])).toMatch(/No hash verification|Sem verificação de hash/);
@@ -153,26 +154,45 @@ describe("site build", () => {
     expect(hrefs).toContain(`${BASE}pt-br/`);
   });
 
-  it("design tokens: monospace everywhere, dark canvas, light ink, 4px radius only on interactive elements, no shadow or gradient, ascii markers", () => {
+  it("design tokens: dark canvas, lavender as the only accent, sans body with mono in code, radius from the scale, no shadow or gradient, no ascii markers", () => {
     const css = files.filter((f) => f.endsWith(".css")).map((f) => html(DIST, f)).join("\n");
-    expect(css).toMatch(/--color-canvas:#201d1d/);
-    expect(css).toMatch(/--color-ink:#fdfcfc/);
+    expect(css).toMatch(/color-scheme:dark/);
+    expect(css).toMatch(/--color-canvas:#010102/);
+    expect(css).toMatch(/--color-ink:#f7f8f8/);
+    expect(css).toMatch(/--color-primary:#5e6ad2/);
     expect(css).toMatch(/body\{[^}]*background:var\(--color-canvas\)/);
     expect(css).toMatch(/body\{[^}]*color:var\(--color-ink\)/);
-    expect(css).toMatch(/body\{[^}]*font-family:var\(--font-mono\)/);
-    expect(css).toMatch(/--font-mono:[^;]*monospace/);
+    expect(css).toMatch(/body\{[^}]*font-family:var\(--font-sans\)/);
+    // Each rule as [selector, declarations]; the selector is what sits between the previous "{" (an @media opener) and this one.
+    const rules = css.split("}").filter((b) => b.includes("{")).map((b) => {
+      const i = b.lastIndexOf("{");
+      return [b.slice(b.lastIndexOf("{", i - 1) + 1, i).trim(), b.slice(i + 1)] as const;
+    });
+    for (const sel of ["code", "pre", ".snippet", ".terminal"]) {
+      const rule = rules.find(([selector, body]) => selector.split(",").map((x) => x.trim()).includes(sel) && body.includes("font-family"))?.[1];
+      expect(rule, sel).toMatch(/font-family:var\(--font-mono\)/);
+    }
     expect(css).not.toMatch(/box-shadow/);
     expect(css).not.toMatch(/gradient/);
-    const blocks = css.split("}").filter((b) => b.includes("border-radius"));
-    expect(blocks.length).toBeGreaterThan(0);
-    for (const b of blocks) {
-      const selector = b.slice(b.lastIndexOf("{") === -1 ? 0 : 0, b.indexOf("{")).trim();
-      expect(selector, selector).toMatch(/^(input|select|\.button|\.snippet|\.badge)(,|$)/);
-      expect(b).toMatch(/border-radius:(var\(--radius-sm\)|4px)/);
+    const radius = rules.filter(([, body]) => body.includes("border-radius"));
+    expect(radius.length).toBeGreaterThan(0);
+    for (const [selector, body] of radius) expect(body, selector).toMatch(/border-radius:var\(--radius-(xs|sm|md|lg|xl|pill)\)/);
+    const primary = rules.filter(([, body]) => body.includes("var(--color-primary)"));
+    expect(primary.length).toBeGreaterThan(0);
+    for (const [selector] of primary) {
+      for (const part of selector.split(",")) expect(part.trim(), selector).toMatch(/^(\.btn-primary|\.brand-mark|\.prose a)\b/);
     }
-    const home = html(DIST, "index.html");
-    expect(home).toContain("[+]");
-    expect(home).toContain("[-]");
+    const head = html(DIST, "index.html");
+    const fontCss = css + head;
+    for (const family of ["Inter", "JetBrains Mono"]) {
+      expect(fontCss, family).toMatch(new RegExp(`@font-face\\{[^}]*font-family:"?${family}[^}]*url\\(["']?${BASE}_astro/fonts/[^)]+\\.woff2`, "i"));
+    }
+    expect(head).toMatch(new RegExp(`<link rel="preload" href="${BASE}_astro/fonts/[^"]+\\.woff2"`));
+    for (const f of files.filter((f) => f.endsWith(".html"))) {
+      const page = html(DIST, f);
+      expect(page, f).not.toContain("[+]");
+      expect(page, f).not.toContain("[-]");
+    }
   });
 
   it("zero client js outside home, one script on the home page", () => {
