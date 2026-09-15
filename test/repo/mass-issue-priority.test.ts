@@ -12,8 +12,9 @@ const LEVELS = ["p0", "p1", "p2", "backlog"];
 
 const frontmatter = (text: string) => text.split("---")[1];
 const description = (text: string) => frontmatter(text).split("\n").find((l) => l.startsWith("description:"))!.slice("description:".length).trim();
-// The level's own section, from its heading to the next one.
-const section = (level: string) => RUBRIC.split(/\n### /).find((s) => new RegExp(`^\`?${level}\`?\\b`).test(s))!;
+// The level's own section, bounded by the next heading of any level - the last level heading is
+// followed by `## ` sections, so splitting on `### ` alone would swallow the rest of the file.
+const section = (level: string) => RUBRIC.split(/\n#{2,3} /).find((s) => new RegExp(`^\`?${level}\`?\\b`).test(s))!;
 
 describe("mass-issue-priority", () => {
   it("carries the catalog frontmatter", () => {
@@ -62,8 +63,10 @@ describe("mass-issue-priority", () => {
   });
 
   it("fixes the output contract", () => {
-    expect(SKILL).toContain("Priority: <p0|p1|p2|backlog>");
-    const block = SKILL.slice(SKILL.indexOf("Priority: <p0|p1|p2|backlog>"));
+    // The fenced block itself, not the prose around it: the contract is what a caller copies.
+    const block = SKILL.split("```").find((b) => b.includes("Priority: <p0|p1|p2|backlog>"))!;
+    expect(block, "fenced output block").toBeDefined();
+    expect(block.trim().split("\n")[0]).toBe("Priority: <p0|p1|p2|backlog>");
     expect(block).toContain("Justification:");
     expect(block).toMatch(/2 to 4 bullets/);
   });
