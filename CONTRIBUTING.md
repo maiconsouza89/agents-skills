@@ -1,33 +1,33 @@
-# Contribuindo
+# Contributing
 
-Obrigado pelo interesse. Este catálogo é pequeno de propósito: cada skill tem dono, versão e data de revisão, e tudo passa pelo validador antes de entrar.
+Thanks for your interest. This catalog is small on purpose: every skill has an owner, a version and a review date, and everything goes through the validator before it gets in.
 
-## Issue primeiro
+## Issue first
 
-- **Contribuição externa**: abra uma issue com o template *Skill proposal* (nova skill) ou *Skill bug* (defeito). Um pull request só é aberto depois que um mantenedor concorda na issue. PR sem issue vinculada e aprovada é fechado com um redirecionamento para o template, não é uma rejeição da ideia.
-- **Membros do repositório** abrem PR direto, ainda assim vinculando a issue quando ela existe.
+- **External contributions**: open an issue with the *Skill proposal* template (new skill) or *Skill bug* template (defect). A pull request is only opened after a maintainer agrees on the issue. A PR without a linked, approved issue is closed with a redirect to the template; that is not a rejection of the idea.
+- **Repository members** open PRs directly, still linking the issue when one exists.
 
-Esta política vem de uma lição documentada por outros catálogos: PRs automatizados em volume consomem a revisão antes que ela aconteça.
+This policy comes from a lesson documented by other catalogs: automated PRs in volume consume the review before it happens.
 
-## Fluxo
+## Workflow
 
 1. `pnpm install`
-2. `pnpm new-skill mass-<slug>` cria `skills/mass-<slug>/SKILL.md` e `README.md` já no contrato.
-3. Escreva a skill em inglês. `mass-skill-authoring` (em `skills/`) descreve o contrato; `skills/mass-skill-authoring/references/skill-contract.md` lista cada regra do validador.
-4. `pnpm check` roda o validador, confere o `skills-registry.json` e os testes. Um achado sai como `<regra> <arquivo>:<linha> <mensagem>`; corrija todos.
-5. `pnpm registry` regenera `skills-registry.json` quando qualquer arquivo de skill muda; o arquivo é commitado.
-6. Abra o PR com o template preenchido e a issue vinculada.
+2. `pnpm new-skill mass-<slug>` creates `skills/mass-<slug>/SKILL.md` and `README.md` already in the contract.
+3. Write the skill in English. `mass-skill-authoring` (in `skills/`) describes the contract; `skills/mass-skill-authoring/references/skill-contract.md` lists every validator rule.
+4. `pnpm check` runs the validator, checks `skills-registry.json` and runs the tests. A finding is printed as `<rule> <file>:<line> <message>`; fix all of them.
+5. `pnpm registry` regenerates `skills-registry.json` whenever any skill file changes; the file is committed.
+6. Open the PR with the template filled in and the issue linked.
 
-## Revisão e versão
+## Review and versioning
 
-- `metadata.reviewed` recebe a data de hoje (`YYYY-MM-DD`) em toda mudança de conteúdo da skill. Uma skill sem revisão há mais de 90 dias aparece na issue semanal *Stale skills*.
-- `metadata.version` segue semver: patch para texto, minor para um passo ou referência nova, major quando o escopo de disparo (`Use when` / `Do NOT use for`) muda.
-- Skill retirada sai da pasta e entra em `skills/_deprecated.json` com `since`, `replacedBy` e `reason`; o CLI recusa instalar e aponta a substituta, e nunca remove nada de quem já tem.
+- `metadata.reviewed` gets today's date (`YYYY-MM-DD`) on every content change to the skill. A skill not reviewed in more than 90 days shows up in the weekly *Stale skills* issue.
+- `metadata.version` follows semver: patch for wording, minor for a new step or reference, major when the trigger scope (`Use when` / `Do NOT use for`) changes.
+- A retired skill leaves the folder and enters `skills/_deprecated.json` with `since`, `replacedBy` and `reason`; the CLI refuses to install it and points at the replacement, and never removes anything from those who already have it.
 
 ## Commits
 
-[Conventional Commits 1.0.0](https://www.conventionalcommits.org/en/v1.0.0/): `<type>(<scope>): <description>`, imperativo, minúsculas, sem ponto final. Tipos: `feat`, `fix`, `refactor`, `docs`, `test`, `build`, `ci`, `chore`. Exemplos: `feat(skills): add mass-release-checklist`, `docs(skills): clarify mass-code-review report format`.
+[Conventional Commits 1.0.0](https://www.conventionalcommits.org/en/v1.0.0/): `<type>(<scope>): <description>`, imperative, lowercase, no trailing period. Types: `feat`, `fix`, `refactor`, `docs`, `test`, `build`, `ci`, `chore`. Examples: `feat(skills): add mass-release-checklist`, `docs(skills): clarify mass-code-review report format`.
 
-## Segurança
+## Security
 
-Nunca inclua segredos, binários, downloads canalizados para um shell ou instruções que peçam ao agente para esconder algo do usuário. O validador e o Snyk Agent Scan bloqueiam o PR; a política completa está em [SECURITY.md](SECURITY.md).
+Never include secrets, binaries, downloads piped into a shell, or instructions that ask the agent to hide something from the user. The validator and Snyk Agent Scan block the PR; the full policy is in [SECURITY.md](SECURITY.md).

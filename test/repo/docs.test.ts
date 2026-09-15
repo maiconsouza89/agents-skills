@@ -47,13 +47,13 @@ describe("documents", () => {
 
   it("contributing: issue-first, the new-skill flow, conventional commits and the reviewed rule", () => {
     const text = read("CONTRIBUTING.md");
-    expect(text).toMatch(/[Ii]ssue primeiro|[Ii]ssue first/);
+    expect(text).toContain("Issue first");
     expect(text).toContain("pnpm new-skill");
     expect(text).toContain("pnpm check");
     expect(text).toMatch(/PR|pull request/i);
     expect(text).toContain("Conventional Commits");
     expect(text).toContain("metadata.reviewed");
-    expect(text).toMatch(/membros.*PR direto|members.*directly/i);
+    expect(text).toMatch(/members.*directly/i);
   });
 
   it("security policy: private advisory, no public issue, validator + snyk, allowlist with expiresAt", () => {
