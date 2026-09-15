@@ -24,7 +24,7 @@ describe("buildRegistry", () => {
     const reg = buildRegistry(root, { now });
 
     expect(reg.version).toBe(1);
-    expect(reg.repo).toBe("maiconsouza89/mass-solutions-skills");
+    expect(reg.repo).toBe("maiconsouza89/agents-skills");
     expect(reg.generatedAt).toBe("2026-09-14T12:00:00.000Z");
     expect(reg.deprecated).toEqual(deprecated);
     expect(reg.skills.map((s) => s.name)).toEqual(["mass-a", "mass-b"]);
@@ -67,6 +67,6 @@ describe("buildRegistry", () => {
   it("committed registry version and repo", () => {
     const reg = JSON.parse(readFileSync(`${REPO_ROOT}/skills-registry.json`, "utf8"));
     expect(reg.version).toBe(1);
-    expect(reg.repo).toBe("maiconsouza89/mass-solutions-skills");
+    expect(reg.repo).toBe("maiconsouza89/agents-skills");
   });
 });

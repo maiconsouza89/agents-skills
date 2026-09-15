@@ -31,8 +31,8 @@ describe("documents", () => {
     headingOrder(pt, ["O que é", "Instalação", "Skills", "Contribuir", "Segurança", "Licença"]);
     for (const text of [en, pt]) {
       expect(text).toContain("mass-skills");
-      expect(text).toContain("npx skills add maiconsouza89/mass-solutions-skills");
-      expect(text).toContain("/plugin marketplace add maiconsouza89/mass-solutions-skills");
+      expect(text).toContain("npx skills add maiconsouza89/agents-skills");
+      expect(text).toContain("/plugin marketplace add maiconsouza89/agents-skills");
       expect(text).toMatch(/Only the `mass-skills` CLI verifies hashes|Só o CLI `mass-skills` verifica hash/);
       expect(text).toContain("CONTRIBUTING.md");
       expect(text).toContain("SECURITY.md");

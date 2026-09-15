@@ -7,7 +7,7 @@ import { JSDOM } from "jsdom";
 export const SITE_ROOT = fileURLToPath(new URL("..", import.meta.url));
 export const REPO_ROOT = join(SITE_ROOT, "..", "..");
 export const DIST = join(SITE_ROOT, "dist");
-export const BASE = "/mass-solutions-skills/";
+export const BASE = "/agents-skills/";
 
 /** Run `astro build` for the site; `outDir` and `env` allow a fixture build next to the real one. */
 export function buildSite(outDir = DIST, env: Record<string, string> = {}): void {

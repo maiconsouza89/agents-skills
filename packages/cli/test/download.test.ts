@@ -3,11 +3,11 @@ import { baseUrl, DEFAULT_BASE_URL, fileUrl, registryUrl } from "../src/download
 
 describe("download base url", () => {
   it("default base url is the raw github url of the catalog repo with ref main", () => {
-    expect(DEFAULT_BASE_URL).toBe("https://raw.githubusercontent.com/maiconsouza89/mass-solutions-skills/");
+    expect(DEFAULT_BASE_URL).toBe("https://raw.githubusercontent.com/maiconsouza89/agents-skills/");
     expect(baseUrl({})).toBe(DEFAULT_BASE_URL);
-    expect(registryUrl({}, "main")).toBe("https://raw.githubusercontent.com/maiconsouza89/mass-solutions-skills/main/skills-registry.json");
+    expect(registryUrl({}, "main")).toBe("https://raw.githubusercontent.com/maiconsouza89/agents-skills/main/skills-registry.json");
     expect(fileUrl({}, "main", "skills/mass-x", "references/a.md")).toBe(
-      "https://raw.githubusercontent.com/maiconsouza89/mass-solutions-skills/main/skills/mass-x/references/a.md",
+      "https://raw.githubusercontent.com/maiconsouza89/agents-skills/main/skills/mass-x/references/a.md",
     );
   });
 

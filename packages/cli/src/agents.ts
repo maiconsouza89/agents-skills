@@ -31,7 +31,7 @@ const AUTO_MARKERS: ReadonlyArray<{ folder: string; agents: string[] }> = [
   { folder: ".windsurf", agents: ["windsurf"] },
 ];
 
-export const NPX_FALLBACK = "npx skills add maiconsouza89/mass-solutions-skills";
+export const NPX_FALLBACK = "npx skills add maiconsouza89/agents-skills";
 
 export function agentById(id: string): Agent | undefined {
   return AGENTS.find((a) => a.id === id);

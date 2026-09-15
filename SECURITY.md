@@ -4,7 +4,7 @@
 
 Use o **security advisory privado** do repositório:
 
-https://github.com/maiconsouza89/mass-solutions-skills/security/advisories/new
+https://github.com/maiconsouza89/agents-skills/security/advisories/new
 
 Nunca abra uma issue pública para uma vulnerabilidade: uma skill instalada em muitos agentes é um alvo de cadeia de suprimentos, e a descrição pública chega antes da correção. Você recebe resposta em até 7 dias; a correção sai como uma versão nova da skill e, se for o caso, uma entrada em `skills/_deprecated.json`.
 

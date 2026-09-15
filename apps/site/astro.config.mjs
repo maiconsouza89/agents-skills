@@ -9,7 +9,7 @@ process.env.MASS_CATALOG_ROOT ||= src("../../skills");
 
 export default defineConfig({
   site: "https://maiconsouza89.github.io",
-  base: "/mass-solutions-skills/",
+  base: "/agents-skills/",
   i18n: {
     defaultLocale: "en",
     locales: ["en", "pt-br"],

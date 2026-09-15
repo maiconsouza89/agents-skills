@@ -4,7 +4,7 @@
 
 ## What is this
 
-The public catalog of [Agent Skills](https://agentskills.io) written and maintained by Mass Solutions. Every skill lives under `skills/<name>/` with a `SKILL.md` that follows the Agent Skills specification, has a declared author, a semver version and a review date, and is validated in CI before it is published. The catalog is browsable at https://maiconsouza89.github.io/mass-solutions-skills/ (English and Portuguese).
+The public catalog of [Agent Skills](https://agentskills.io) written and maintained by Mass Solutions. Every skill lives under `skills/<name>/` with a `SKILL.md` that follows the Agent Skills specification, has a declared author, a semver version and a review date, and is validated in CI before it is published. The catalog is browsable at https://maiconsouza89.github.io/agents-skills/ (English and Portuguese).
 
 Writing to this repository is controlled (protected `main`, code owners, issue before pull request); reading and installing is open to anyone.
 
@@ -15,7 +15,7 @@ Three ways to install, from most to least verified:
 1. **`mass-skills` (verifies integrity, keeps a lockfile)**
 
    ```bash
-   npx github:maiconsouza89/mass-solutions-skills#main install mass-code-review -a claude-code
+   npx github:maiconsouza89/agents-skills#main install mass-code-review -a claude-code
    ```
 
    Downloads the files at the pinned ref, checks every file's `sha256` and the skill's `contentHash` against `skills-registry.json`, and records what was installed in `mass-skills.lock.json`. `mass-skills update` never overwrites a skill you edited locally unless you pass `--force`.
@@ -23,13 +23,13 @@ Three ways to install, from most to least verified:
 2. **`npx skills add` (any of 70+ agents)**
 
    ```bash
-   npx skills add maiconsouza89/mass-solutions-skills --skill mass-code-review
+   npx skills add maiconsouza89/agents-skills --skill mass-code-review
    ```
 
 3. **Claude Code plugin marketplace**
 
    ```
-   /plugin marketplace add maiconsouza89/mass-solutions-skills
+   /plugin marketplace add maiconsouza89/agents-skills
    /plugin install mass-solutions-skills@mass-solutions
    ```
 

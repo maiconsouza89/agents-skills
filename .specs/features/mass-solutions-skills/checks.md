@@ -7,7 +7,7 @@ Plan: `.specs/features/mass-solutions-skills/plan.md`
 
 82 checks in 8 slices · 11 one-way doors · 4 open (go-live), of which 0 block the build
 
-Runner: `vitest` 5 na raiz (workspace), invocado como `pnpm vitest run <arquivo> -t "<nome>"`. Testes de repositório em `test/repo/`, testes de pacote em `packages/*/test/` e `apps/site/test/`. Provas de spike são scripts em `tools/spike/` com exit code. O CLI expõe `run(argv, { cwd, env, stdout, stderr })` para os testes chamarem em processo, e lê a base de download de `MASS_SKILLS_BASE_URL` (default `https://raw.githubusercontent.com/maiconsouza89/mass-solutions-skills/`), o que permite servir um clone por HTTP local nos testes.
+Runner: `vitest` 5 na raiz (workspace), invocado como `pnpm vitest run <arquivo> -t "<nome>"`. Testes de repositório em `test/repo/`, testes de pacote em `packages/*/test/` e `apps/site/test/`. Provas de spike são scripts em `tools/spike/` com exit code. O CLI expõe `run(argv, { cwd, env, stdout, stderr })` para os testes chamarem em processo, e lê a base de download de `MASS_SKILLS_BASE_URL` (default `https://raw.githubusercontent.com/maiconsouza89/agents-skills/`), o que permite servir um clone por HTTP local nos testes.
 
 ## Checks
 
@@ -162,7 +162,7 @@ Proof: `pnpm vitest run packages/cli/test/install.test.ts -t "integrity failure 
 **C47** - ✅ Falha de rede no 2º de 3 arquivos deixa o diretório do agente e o lockfile como estavam (CLI-02, AC 47)
 Proof: `pnpm vitest run packages/cli/test/install.test.ts -t "partial download leaves nothing behind"`
 
-**C48** - ✅ Agente desconhecido: mensagem `Unsupported agent "<id>". Supported: ... npx skills add maiconsouza89/mass-solutions-skills`, exit `2` (CLI-02, AC 48)
+**C48** - ✅ Agente desconhecido: mensagem `Unsupported agent "<id>". Supported: ... npx skills add maiconsouza89/agents-skills`, exit `2` (CLI-02, AC 48)
 Proof: `pnpm vitest run packages/cli/test/install.test.ts -t "unsupported agent exits 2"`
 
 **C49** - ✅ `-a auto` escolhe pelas pastas `.claude/`, `.agents/`, `.windsurf/` presentes; sem nenhuma sai com `2` listando os ids (CLI-02, AC 49)
@@ -201,12 +201,12 @@ Proof: `pnpm vitest run packages/cli/test/exit-codes.test.ts -t "exit code contr
 **C60** - ✅ `mass-skills validate` e `mass-skills registry --check` devolvem os mesmos exit codes que os scripts da raiz sobre o mesmo fixture (CLI-01, AC 60)
 Proof: `pnpm vitest run packages/cli/test/mirrors.test.ts -t "validate and registry mirror root scripts"`
 
-**C82** - ✅ Sem `MASS_SKILLS_BASE_URL`, a base de download é `https://raw.githubusercontent.com/maiconsouza89/mass-solutions-skills/<ref>/` com `ref` default `main` (CLI-02, AC 45, door 9)
+**C82** - ✅ Sem `MASS_SKILLS_BASE_URL`, a base de download é `https://raw.githubusercontent.com/maiconsouza89/agents-skills/<ref>/` com `ref` default `main` (CLI-02, AC 45, door 9)
 Proof: `pnpm vitest run packages/cli/test/download.test.ts -t "default base url"`
 
 ### S6 - Site bilíngue · ~25 files · ~90 KB · ~22k
 
-**C61** - ✅ `pnpm build` gera `/`, `/skills/<name>/` ×5, `/install/`, `/agents/`, `/search-index.json`, `/404.html` e os equivalentes sob `/pt-br/`, e todo link interno começa com `/mass-solutions-skills/` (SITE-01, AC 61)
+**C61** - ✅ `pnpm build` gera `/`, `/skills/<name>/` ×5, `/install/`, `/agents/`, `/search-index.json`, `/404.html` e os equivalentes sob `/pt-br/`, e todo link interno começa com `/agents-skills/` (SITE-01, AC 61)
 Proof: `pnpm vitest run apps/site/test/build.test.ts -t "generates every route"`
 
 **C62** - ✅ `content.config.ts` usa `glob()` com `base` no catálogo (`../../skills` ou `MASS_CATALOG_ROOT`) e não existe cópia de `SKILL.md` sob `apps/site/` (SITE-01, AC 62)
@@ -233,7 +233,7 @@ Proof: `pnpm vitest run apps/site/test/build.test.ts -t "install and agents page
 **C69** - ✅ `/404.html` existe e liga para `/` e `/pt-br/` (SITE-01, AC 69)
 Proof: `pnpm vitest run apps/site/test/build.test.ts -t "404 page"`
 
-**C70** - ✅ O CSS gerado usa fonte monoespaçada em `body`, `#fdfcfc` de fundo, `#201d1d` de tinta, `border-radius: 4px` só em seletores interativos, nenhum `box-shadow` nem `gradient`; a home usa `[+]`/`[-]` como marcadores (SITE-01, AC 70)
+**C70** - ✅ O CSS gerado usa fonte monoespaçada em `body`, `--color-canvas: #201d1d` como fundo do `body`, `--color-ink: #fdfcfc` como cor do `body` (tema escuro, renegociado 2026-09-15), `border-radius: 4px` só em seletores interativos, nenhum `box-shadow` nem `gradient`; a home usa `[+]`/`[-]` como marcadores (SITE-01, AC 70)
 Proof: `pnpm vitest run apps/site/test/build.test.ts -t "design tokens"`
 
 **C71** - ✅ Nenhuma página além da home contém `<script`; a home contém um único `<script` (SITE-01, AC 71)
@@ -270,7 +270,7 @@ Proof: `pnpm vitest run test/repo/release.test.ts -t "changesets config"`
 **C80** - ✅ `release.yml` dispara em tags `v*`, roda `pnpm check`, `pnpm build` e `gh release create ${{ github.ref_name }} --generate-notes` (REL-01, AC 80)
 Proof: `pnpm vitest run test/repo/workflows.test.ts -t "release workflow"`
 
-**C81** - ✅ O registry commitado tem `version: 1` e `repo: "maiconsouza89/mass-solutions-skills"` (REL-01, AC 81)
+**C81** - ✅ O registry commitado tem `version: 1` e `repo: "maiconsouza89/agents-skills"` (REL-01, AC 81)
 Proof: `pnpm vitest run packages/core/test/registry.test.ts -t "committed registry version and repo"`
 
 ## Coverage
@@ -297,7 +297,7 @@ Proof: `pnpm vitest run packages/core/test/registry.test.ts -t "committed regist
 | `mass-skills list`/`search` exits (3) | 0 C43 · 1 C58 · 2 C59 | - |
 | `mass-skills install` exits (3) | 0 C45 · 1 C46 · 2 C48 | - |
 | `mass-skills update`/`doctor` exits (3) | 0 C55 · 1 C56 · 2 C59 | - |
-| site routes under `/mass-solutions-skills/` (8) | `/` C63 · `/pt-br/` C61 · `/skills/<name>/` C65 · `/pt-br/skills/<name>/` C61 · `/install/` C68 · `/agents/` C68 · `/search-index.json` C61 · `/404.html` C69 | - |
+| site routes under `/agents-skills/` (8) | `/` C63 · `/pt-br/` C61 · `/skills/<name>/` C65 · `/pt-br/skills/<name>/` C61 · `/install/` C68 · `/agents/` C68 · `/search-index.json` C61 · `/404.html` C69 | - |
 | site route statuses (2) | 200 C61 · 404 C69 | - |
 | `.claude-plugin/marketplace.json` readers (3) | Claude Code validate C41 · Claude Code install C42 · `npx skills` C40 | - |
 | workflows (5) | `ci.yml` C72 · `pages.yml` C73 · `security-scan.yml` C74 · `stale-skills.yml` C76 · `release.yml` C80 | - |

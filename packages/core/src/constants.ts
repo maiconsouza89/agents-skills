@@ -1,4 +1,4 @@
-export const REPO = "maiconsouza89/mass-solutions-skills";
+export const REPO = "maiconsouza89/agents-skills";
 export const REGISTRY_FILE = "skills-registry.json";
 export const CATALOG_DIR = "skills";
 export const CATEGORIES_FILE = "_categories.json";

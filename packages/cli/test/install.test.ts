@@ -107,7 +107,7 @@ describe("install", () => {
     const r = await cli(p, ["install", "mass-alpha", "-a", "vim"]);
     expect(r.code).toBe(2);
     expect(r.stderr).toBe(
-      'Unsupported agent "vim". Supported: claude-code, cursor, codex, github-copilot, opencode, windsurf, gemini-cli, cline. For other agents use: npx skills add maiconsouza89/mass-solutions-skills\n',
+      'Unsupported agent "vim". Supported: claude-code, cursor, codex, github-copilot, opencode, windsurf, gemini-cli, cline. For other agents use: npx skills add maiconsouza89/agents-skills\n',
     );
     untouched(p);
   });

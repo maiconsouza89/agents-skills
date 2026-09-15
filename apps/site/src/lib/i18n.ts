@@ -3,7 +3,7 @@ export const LANGS: Lang[] = ["en", "pt-br"];
 
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 
-/** Site-absolute href under the configured base: `href("pt-br/skills/x/")` -> `/mass-solutions-skills/pt-br/skills/x/`. */
+/** Site-absolute href under the configured base: `href("pt-br/skills/x/")` -> `/agents-skills/pt-br/skills/x/`. */
 export function href(path: string): string {
   return `${BASE}/${path.replace(/^\//, "")}`;
 }

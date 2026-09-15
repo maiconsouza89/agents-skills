@@ -11,7 +11,7 @@ const categories = JSON.parse(readFileSync(join(REPO_ROOT, "skills", "_categorie
   "pt-br": string;
 }>;
 const names: string[] = registry.skills.map((s: { name: string }) => s.name);
-const REPO = "maiconsouza89/mass-solutions-skills";
+const REPO = "maiconsouza89/agents-skills";
 
 let files: string[] = [];
 beforeAll(() => {
@@ -153,10 +153,12 @@ describe("site build", () => {
     expect(hrefs).toContain(`${BASE}pt-br/`);
   });
 
-  it("design tokens: monospace everywhere, cream canvas, ink text, 4px radius only on interactive elements, no shadow or gradient, ascii markers", () => {
+  it("design tokens: monospace everywhere, dark canvas, light ink, 4px radius only on interactive elements, no shadow or gradient, ascii markers", () => {
     const css = files.filter((f) => f.endsWith(".css")).map((f) => html(DIST, f)).join("\n");
-    expect(css).toContain("#fdfcfc");
-    expect(css).toContain("#201d1d");
+    expect(css).toMatch(/--color-canvas:#201d1d/);
+    expect(css).toMatch(/--color-ink:#fdfcfc/);
+    expect(css).toMatch(/body\{[^}]*background:var\(--color-canvas\)/);
+    expect(css).toMatch(/body\{[^}]*color:var\(--color-ink\)/);
     expect(css).toMatch(/body\{[^}]*font-family:var\(--font-mono\)/);
     expect(css).toMatch(/--font-mono:[^;]*monospace/);
     expect(css).not.toMatch(/box-shadow/);

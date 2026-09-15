@@ -47,12 +47,12 @@ Versões escolhidas em 2026-09-14 consultando `npm view` e a documentação ofic
 
 - `packages/cli/bin/mass-skills.js` importa `dist/`, gerado por `pnpm build` (o core builda antes, por ordem topológica do pnpm). Em desenvolvimento: `pnpm --filter @mass-solutions/skills-cli exec tsx src/bin.ts <args>`.
 - `run(argv, { cwd, env, stdout, stderr })` em `packages/cli/src/run.ts` é a única entrada; nunca chama `process.exit`, devolve o exit code (`0` sucesso, `1` falha de execução, `2` uso).
-- `MASS_SKILLS_BASE_URL` troca a base de download (default `https://raw.githubusercontent.com/maiconsouza89/mass-solutions-skills/`); os testes sobem um `node:http` local servindo um catálogo de fixture e apontam essa variável para ele.
+- `MASS_SKILLS_BASE_URL` troca a base de download (default `https://raw.githubusercontent.com/maiconsouza89/agents-skills/`); os testes sobem um `node:http` local servindo um catálogo de fixture e apontam essa variável para ele.
 - `install` baixa e verifica tudo num diretório temporário antes de escrever no agente ou no lockfile; `update` só sobrescreve edição local com `--force`; `remove` só apaga nos agentes registrados no lockfile.
 
 ## Site `apps/site`
 
-- `pnpm --filter site build` (ou `pnpm build` na raiz) gera `apps/site/dist/` com `base: /mass-solutions-skills/`, rotas `/` (EN) e `/pt-br/`.
+- `pnpm --filter site build` (ou `pnpm build` na raiz) gera `apps/site/dist/` com `base: /agents-skills/`, rotas `/` (EN) e `/pt-br/`.
 - O catálogo é lido em `../../skills` via `glob()`; `MASS_CATALOG_ROOT` aponta para outro catálogo (os testes constroem um fixture com skill deprecada). `skills-registry.json` é lido do diretório pai do catálogo, então rode `pnpm registry` antes de construir o site.
 - Chrome traduzido EN/PT em `src/lib/i18n.ts`; corpo das skills em inglês nas duas rotas. Tokens visuais em `src/styles/global.css`, a partir de `DESIGN.md`.
 - Único JavaScript do site: a busca e o filtro da home sobre `search-index.json` (`<script is:inline>`). As demais páginas não têm `<script>`.

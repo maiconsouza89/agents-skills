@@ -8,7 +8,7 @@ async function loadHome(page: string): Promise<Document> {
   const index = html(DIST, "search-index.json");
   const dom = new JSDOM(html(DIST, page), {
     runScripts: "dangerously",
-    url: "https://maiconsouza89.github.io/mass-solutions-skills/",
+    url: "https://maiconsouza89.github.io/agents-skills/",
     beforeParse(window) {
       // The page fetches search-index.json; serve the built file.
       (window as unknown as { fetch: unknown }).fetch = async () => ({ ok: true, json: async () => JSON.parse(index) });

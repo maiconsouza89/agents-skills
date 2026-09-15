@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-Este é o repositório `mass-solutions-skills`: o catálogo público de Agent Skills da Mass Solutions, com validador, registry, CLI `mass-skills`, site bilíngue e governança de escrita. As regras de trabalho estão em [AGENTS.md](AGENTS.md); leia-o antes de mudar qualquer skill ou pacote.
+Este é o repositório `agents-skills` (maiconsouza89/agents-skills): o catálogo público de Agent Skills da Mass Solutions, com validador, registry, CLI `mass-skills`, site bilíngue e governança de escrita. As regras de trabalho estão em [AGENTS.md](AGENTS.md); leia-o antes de mudar qualquer skill ou pacote.
 
 ## Linguagem
 
