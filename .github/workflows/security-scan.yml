@@ -1,0 +1,30 @@
+name: security-scan
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # Runs on every PR, forks included: an expired allowlist entry fails before Snyk is even called.
+      - name: Check the allowlist and build the ignore flags
+        id: allowlist
+        run: echo "flags=$(pnpm exec tsx tools/allowlist.ts)" >> "$GITHUB_OUTPUT"
+      # Snyk needs SNYK_TOKEN, which forks do not receive: push to main and same-repo PRs only.
+      - uses: astral-sh/setup-uv@v10
+        if: ${{ github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository }}
+      - name: Snyk Agent Scan
+        if: ${{ github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository }}
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        run: uvx snyk-agent-scan@latest skills --ci ${{ steps.allowlist.outputs.flags }}

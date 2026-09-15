@@ -241,33 +241,33 @@ Proof: `pnpm vitest run apps/site/test/build.test.ts -t "zero client js outside 
 
 ### S7 - CI, Pages e scan de segurança · 8 files · ~15 KB · ~4k
 
-**C72** - `ci.yml` dispara em `pull_request` e `push` em `main`, usa `node-version-file: .nvmrc` e cache `pnpm`, roda `pnpm install --frozen-lockfile`, `pnpm check`, `pnpm build` e `npx -y @anthropic-ai/claude-code@latest plugin validate .`, e não referencia `secrets.` (CI-01, AC 72)
+**C72** - ✅ `ci.yml` dispara em `pull_request` e `push` em `main`, usa `node-version-file: .nvmrc` e cache `pnpm`, roda `pnpm install --frozen-lockfile`, `pnpm check`, `pnpm build` e `npx -y @anthropic-ai/claude-code@latest plugin validate .`, e não referencia `secrets.` (CI-01, AC 72)
 Proof: `pnpm vitest run test/repo/workflows.test.ts -t "ci workflow"`
 
-**C73** - `pages.yml` dispara em `push` em `main`, tem `pages: write` e `id-token: write`, usa `withastro/action` com `path: apps/site` e `package-manager: pnpm@11`, e `actions/deploy-pages` (CI-01, AC 73)
+**C73** - ✅ `pages.yml` dispara em `push` em `main`, tem `pages: write` e `id-token: write`, usa `withastro/action` com `path: apps/site` e `package-manager: pnpm@11`, e `actions/deploy-pages` (CI-01, AC 73)
 Proof: `pnpm vitest run test/repo/workflows.test.ts -t "pages workflow"`
 
-**C74** - `security-scan.yml` dispara em `push` em `main` e `pull_request`, condiciona o passo Snyk a `push || head.repo.full_name == github.repository`, roda `uvx snyk-agent-scan@latest skills --ci` com `SNYK_TOKEN` e as `--ignore-risks` da allowlist (CI-02, AC 74)
+**C74** - ✅ `security-scan.yml` dispara em `push` em `main` e `pull_request`, condiciona o passo Snyk a `push || head.repo.full_name == github.repository`, roda `uvx snyk-agent-scan@latest skills --ci` com `SNYK_TOKEN` e as `--ignore-risks` da allowlist (CI-02, AC 74)
 Proof: `pnpm vitest run test/repo/workflows.test.ts -t "security scan workflow"`
 
-**C75** - `pnpm exec tsx tools/allowlist.ts` sai com `1` e `Allowlist entry expired: <risk> <skill> <expiresAt>` para entrada vencida, e imprime `--ignore-risks a,b` para entradas vigentes; o passo roda sem condição no workflow (CI-02, AC 75)
+**C75** - ✅ `pnpm exec tsx tools/allowlist.ts` sai com `1` e `Allowlist entry expired: <risk> <skill> <expiresAt>` para entrada vencida, e imprime `--ignore-risks a,b` para entradas vigentes; o passo roda sem condição no workflow (CI-02, AC 75)
 Proof: `pnpm vitest run test/repo/allowlist.test.ts -t "expired entry fails"` · `pnpm vitest run test/repo/allowlist.test.ts -t "valid entries become ignore flags"`
 
-**C76** - `stale-skills.yml` tem `cron: "0 9 * * 1"` e `workflow_dispatch`, e cria ou atualiza a issue `Stale skills` com label `stale-skill` a partir da saída de `pnpm stale` (CI-03, AC 76)
+**C76** - ✅ `stale-skills.yml` tem `cron: "0 9 * * 1"` e `workflow_dispatch`, e cria ou atualiza a issue `Stale skills` com label `stale-skill` a partir da saída de `pnpm stale` (CI-03, AC 76)
 Proof: `pnpm vitest run test/repo/workflows.test.ts -t "stale skills workflow"`
 
-**C77** - Com saída vazia de `pnpm stale`, o workflow não cria issue e tem um passo que fecha a issue `Stale skills` aberta (CI-03, AC 77)
+**C77** - ✅ Com saída vazia de `pnpm stale`, o workflow não cria issue e tem um passo que fecha a issue `Stale skills` aberta (CI-03, AC 77)
 Proof: `pnpm vitest run test/repo/workflows.test.ts -t "stale workflow closes when nothing is stale"`
 
-**C78** - `pnpm stale --days 90` imprime `<name> - reviewed <date> (<n> days)` por skill vencida e nada quando não há; exit `0` nos dois casos (CI-03, AC 78)
+**C78** - ✅ `pnpm stale --days 90` imprime `<name> - reviewed <date> (<n> days)` por skill vencida e nada quando não há; exit `0` nos dois casos (CI-03, AC 78)
 Proof: `pnpm vitest run test/repo/stale.test.ts -t "lists stale skills"` · `pnpm vitest run test/repo/stale.test.ts -t "prints nothing when none"`
 
 ### S8 - Release · 3 files · ~3 KB · ~1k
 
-**C79** - `.changeset/config.json` tem `baseBranch: "main"` e ignora `site`; os dois pacotes têm `name` `@mass-solutions/skills-core` e `@mass-solutions/skills-cli` (REL-01, AC 79)
+**C79** - ✅ `.changeset/config.json` tem `baseBranch: "main"` e ignora `site`; os dois pacotes têm `name` `@mass-solutions/skills-core` e `@mass-solutions/skills-cli` (REL-01, AC 79)
 Proof: `pnpm vitest run test/repo/release.test.ts -t "changesets config"`
 
-**C80** - `release.yml` dispara em tags `v*`, roda `pnpm check`, `pnpm build` e `gh release create ${{ github.ref_name }} --generate-notes` (REL-01, AC 80)
+**C80** - ✅ `release.yml` dispara em tags `v*`, roda `pnpm check`, `pnpm build` e `gh release create ${{ github.ref_name }} --generate-notes` (REL-01, AC 80)
 Proof: `pnpm vitest run test/repo/workflows.test.ts -t "release workflow"`
 
 **C81** - ✅ O registry commitado tem `version: 1` e `repo: "maiconsouza89/mass-solutions-skills"` (REL-01, AC 81)

@@ -32,7 +32,7 @@ Versões escolhidas em 2026-09-14 consultando `npm view` e a documentação ofic
 | Pacote | Versão | Por quê |
 | --- | --- | --- |
 | Node | 24 (`.nvmrc`), `engines >=22.12` | Astro 6+ exige 22.12; 24 é a LTS ativa instalada na máquina do mantenedor |
-| pnpm | 11.23.0 (`packageManager`) | workspaces sem orquestrador; `allowBuilds` em `pnpm-workspace.yaml` libera só o `esbuild` |
+| pnpm | 11.23.0 (`packageManager`) | workspaces sem orquestrador; `allowBuilds` em `pnpm-workspace.yaml` libera só o `esbuild`; `minimumReleaseAgeExclude` foi gravado pelo próprio pnpm ao instalar o Changesets (política de idade mínima de release) |
 | typescript | ^5.9.3 | linha 5.x estável; a 7.x (porta nativa) fica para quando o toolchain a acompanhar |
 | tsx | ^4.23.13 | roda os bins e tools em TypeScript sem passo de build |
 | vitest | ^5.0.0 | runner único para raiz, pacotes e site; seletor `-t` nas provas |
@@ -57,3 +57,11 @@ Versões escolhidas em 2026-09-14 consultando `npm view` e a documentação ofic
 - Chrome traduzido EN/PT em `src/lib/i18n.ts`; corpo das skills em inglês nas duas rotas. Tokens visuais em `src/styles/global.css`, a partir de `DESIGN.md`.
 - Único JavaScript do site: a busca e o filtro da home sobre `search-index.json` (`<script is:inline>`). As demais páginas não têm `<script>`.
 - Os testes constroem o site de verdade (`apps/site/test/helpers.ts`), removendo `BASE_URL` do ambiente que o vitest exporta e serializando builds concorrentes com um lock.
+
+## CI e release
+
+- `ci.yml` (PR e `main`): `pnpm check`, `pnpm build`, `npx -y @anthropic-ai/claude-code@latest plugin validate .`; sem secrets, roda em fork.
+- `pages.yml` (`main`): `withastro/action` em `apps/site` + `actions/deploy-pages`; o Node vem do `.nvmrc`.
+- `security-scan.yml` (`main` e PRs): `tools/allowlist.ts` roda sempre e falha com entrada vencida; `uvx snyk-agent-scan@latest skills --ci` só em push e PR do próprio repo (precisa de `SNYK_TOKEN`).
+- `stale-skills.yml` (segunda 09:00 UTC e manual): `pnpm --silent stale --days 90` alimenta a issue `Stale skills` (label `stale-skill`), fechada quando a lista fica vazia.
+- `release.yml` (tag `v*`): `pnpm check`, `pnpm build`, `gh release create --generate-notes`. Versões dos pacotes via Changesets (`pnpm changeset`); o site não é versionado.
