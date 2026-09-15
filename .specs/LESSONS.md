@@ -50,6 +50,12 @@ Seen once or not yet corroborated. Tracked, not trusted.
 - evidence: C86 - packages/core/test/rules.test.ts:17-19; packages/core/src/frontmatter.ts:27,34 (packages/core)
 - last seen: 2026-09-15T04:09:10Z
 
+### L-007 - Ao reforçar um check para exigir contagem exata e mensagem por caso, leve os casos pré-existentes para a mesma asserção: um caso que só assere a presença do id da regra deixa um mutante de rótulo sobreviver.
+- signal: `surviving_mutant` · recurrence: 1 feature(s) · scope: `packages/core` · harmful: 0
+- features: mass-solutions-skills
+- evidence: Fh - packages/core/src/frontmatter.ts:25; C86 - packages/core/test/rules.test.ts:19 (packages/core)
+- last seen: 2026-09-15T04:20:42Z
+
 ## Quarantined (failed when applied - ignore)
 
 A confirmed lesson that recurred alongside failure. Kept for the maintainer to review.
