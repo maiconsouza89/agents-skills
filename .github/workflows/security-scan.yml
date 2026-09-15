@@ -39,9 +39,12 @@ jobs:
           output=$(uvx snyk-agent-scan@latest skills --ci --dangerously-run-mcp-servers ${{ steps.allowlist.outputs.flags }} 2>&1)
           code=$?
           echo "$output"
+          # The CLI hard-wraps its own text at terminal width, so the quota sentence can be split across
+          # lines; collapse all whitespace/newlines before matching so the wrap point doesn't defeat the grep.
+          squashed=$(printf '%s' "$output" | tr '\n' ' ' | tr -s ' ')
           if [ "$code" -ne 0 ] \
-            && echo "$output" | grep -qF "[X007 info]: Daily usage limit reached for the public version of Agent-Scan." \
-            && echo "$output" | grep -qF "no mcp servers or skills found"; then
+            && printf '%s' "$squashed" | grep -qF "[X007 info]: Daily usage limit reached for the public version of Agent-Scan." \
+            && printf '%s' "$squashed" | grep -qF "no mcp servers or skills found"; then
             echo "::warning::Snyk Agent Scan hit its public-tier daily usage limit (X007) before scanning anything; treating as non-blocking."
             exit 0
           fi
