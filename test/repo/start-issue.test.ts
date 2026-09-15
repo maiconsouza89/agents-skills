@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { branchName, main, ownerAndName, type Exec, type FetchLike } from "../../tools/start-issue.js";
+import { branchName, main, ownerAndName, type FetchLike } from "../../tools/start-issue.js";
+import { ENOENT, fakeExec, fakeFetch, unusedFetch } from "./lib/gh-fakes.js";
 
 const ISSUE = {
   number: 8,
@@ -10,12 +11,8 @@ const ISSUE = {
   assignees: [] as Array<{ login: string }>,
 };
 
-const ENOENT = () => Object.assign(new Error("spawnSync gh ENOENT"), { code: "ENOENT" });
-
-// Answers each command by its longest matching prefix and records every call in order.
 function fake(overrides: Record<string, string | Error> = {}) {
-  const calls: string[] = [];
-  const responses: Record<string, string | Error> = {
+  return fakeExec({
     "git remote get-url origin": "https://github.com/acme/skills.git\n",
     "gh api repos/acme/skills/issues/8": JSON.stringify(ISSUE),
     "gh api user": JSON.stringify({ login: "octocat" }),
@@ -24,42 +21,8 @@ function fake(overrides: Record<string, string | Error> = {}) {
     "git branch --list": "",
     "git branch --show-current": "feat/8-session-branch\n",
     ...overrides,
-  };
-  const exec: Exec = (cmd, args) => {
-    const line = [cmd, ...args].join(" ");
-    calls.push(line);
-    const key = Object.keys(responses)
-      .filter((k) => line.startsWith(k))
-      .sort((a, b) => b.length - a.length)[0];
-    const res = key === undefined ? "" : responses[key];
-    if (res instanceof Error) throw res;
-    return res;
-  };
-  return { calls, exec };
+  });
 }
-
-// A fake `fetch` for the REST fallback used when `gh` itself is missing (ENOENT).
-function fakeFetch(handlers: Record<string, { status: number; body?: unknown }>) {
-  const calls: string[] = [];
-  const fn: FetchLike = (async (url: string | URL, init?: RequestInit) => {
-    const method = init?.method ?? "GET";
-    const key = `${method} ${url}`;
-    calls.push(key);
-    const h = handlers[key];
-    const { status, body } = h ?? { status: 404, body: { message: "not found" } };
-    return {
-      ok: status >= 200 && status < 300,
-      status,
-      text: async () => (body === undefined ? "" : JSON.stringify(body)),
-    } as unknown as Response;
-  }) as FetchLike;
-  return { calls, fn };
-}
-
-// Unused unless a test exercises the ENOENT-triggered fetch fallback; throws if called otherwise.
-const unusedFetch: FetchLike = (async () => {
-  throw new Error("fetch should not be called when gh is available");
-}) as FetchLike;
 
 async function run(argv: string[], f = fake(), env: NodeJS.ProcessEnv = {}, fetchImpl: FetchLike = unusedFetch) {
   let out = "";

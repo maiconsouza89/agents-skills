@@ -5,10 +5,10 @@
 // Projects v2 and the Claude Code cloud sandbox blocks GraphQL except a pinned set of PR
 // operations - this script only uses REST and plain git so it works the same way everywhere.
 // Usage: pnpm start-issue <number> [--base main] [--assignee <login>]
-import { execFileSync } from "node:child_process";
+import { defaultExec, ghApi, ownerAndName, type Exec, type FetchLike } from "./lib/gh.js";
 
-export type Exec = (cmd: string, args: string[]) => string;
-export type FetchLike = typeof fetch;
+export type { Exec, FetchLike };
+export { ownerAndName };
 
 export interface Issue {
   number: number;
@@ -23,7 +23,6 @@ interface Out {
 const USAGE = "Usage: pnpm start-issue <number> [--base main] [--assignee <login>]\n";
 const TYPE_BY_LABEL: Record<string, string> = { bug: "fix", "skill-bug": "fix", documentation: "docs" };
 const SLUG_MAX = 40;
-const MCP_HINT = "If this is a Claude Code web session, ask Claude to read/assign the issue through the GitHub MCP tool instead.";
 
 function flag(argv: string[], name: string): string | undefined {
   const i = argv.indexOf(name);
@@ -38,8 +37,6 @@ function positional(argv: string[]): string | undefined {
   return undefined;
 }
 
-const defaultExec: Exec = (cmd, args) => execFileSync(cmd, args, { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] });
-
 // `<type>/<number>-<slug>`: the type comes from the labels, the slug from the title without its `area:` prefix, cut at a word.
 export function branchName(issue: Issue): string {
   const type = issue.labels.map((l) => TYPE_BY_LABEL[l]).find(Boolean) ?? "feat";
@@ -51,51 +48,6 @@ export function branchName(issue: Issue): string {
     slug = next;
   }
   return `${type}/${issue.number}-${slug || words[0]?.slice(0, SLUG_MAX) || "issue"}`;
-}
-
-// Reads the repo's `owner/name` from the origin remote instead of `gh repo view`, which is GraphQL
-// and fails behind the Claude Code cloud sandbox's GitHub proxy.
-export function ownerAndName(remoteUrl: string): { owner: string; name: string } {
-  const m = remoteUrl.trim().match(/github\.com[:/]([^/]+)\/([^/.]+?)(?:\.git)?$/);
-  if (!m) throw new Error(`origin remote is not a github.com URL: ${remoteUrl.trim()}`);
-  return { owner: m[1], name: m[2] };
-}
-
-// Calls the GitHub REST API for one endpoint. Prefers the `gh` CLI (already authenticated, and
-// the only path exercised locally); if `gh` itself is missing (ENOENT - seen in some Claude Code
-// web sessions even though it's documented as pre-installed there), falls back to a direct HTTPS
-// call authenticated with GH_TOKEN/GITHUB_TOKEN, which the session's GitHub proxy populates.
-async function ghApi(
-  exec: Exec,
-  fetchImpl: FetchLike,
-  env: NodeJS.ProcessEnv,
-  method: "GET" | "POST",
-  path: string,
-  ghArgs: string[],
-  jsonBody?: unknown,
-): Promise<any> {
-  try {
-    const out = exec("gh", ghArgs);
-    return out.trim() ? JSON.parse(out) : undefined;
-  } catch (e) {
-    const err = e as NodeJS.ErrnoException;
-    if (err.code !== "ENOENT") throw e;
-    const token = env.GH_TOKEN || env.GITHUB_TOKEN;
-    if (!token) throw new Error(`gh CLI not found and no GH_TOKEN/GITHUB_TOKEN in the environment. ${MCP_HINT}`);
-    const res = await fetchImpl(`https://api.github.com/${path}`, {
-      method,
-      headers: {
-        authorization: `Bearer ${token}`,
-        accept: "application/vnd.github+json",
-        "x-github-api-version": "2022-11-28",
-        ...(jsonBody ? { "content-type": "application/json" } : {}),
-      },
-      body: jsonBody ? JSON.stringify(jsonBody) : undefined,
-    });
-    const text = await res.text();
-    if (!res.ok) throw new Error(`gh CLI not found; the GitHub REST API fallback also failed (${res.status} ${text.slice(0, 200)}). ${MCP_HINT}`);
-    return text.trim() ? JSON.parse(text) : undefined;
-  }
 }
 
 export async function main(

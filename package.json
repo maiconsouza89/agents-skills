@@ -18,7 +18,8 @@
     "scan": "uvx snyk-agent-scan@latest skills --ci",
     "new-skill": "tsx tools/new-skill.ts",
     "stale": "tsx tools/stale.ts",
-    "start-issue": "tsx tools/start-issue.ts"
+    "start-issue": "tsx tools/start-issue.ts",
+    "set-complexity": "tsx tools/set-complexity.ts"
   },
   "devDependencies": {
     "@changesets/cli": "^3.0.3",
