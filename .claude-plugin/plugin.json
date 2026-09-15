@@ -1,0 +1,12 @@
+{
+  "name": "mass-solutions-skills",
+  "version": "0.1.0",
+  "description": "The whole Mass Solutions skills catalog",
+  "author": {
+    "name": "Mass Solutions",
+    "url": "https://github.com/maiconsouza89"
+  },
+  "homepage": "https://maiconsouza89.github.io/agents-skills/",
+  "repository": "https://github.com/maiconsouza89/agents-skills",
+  "license": "CC-BY-4.0"
+}

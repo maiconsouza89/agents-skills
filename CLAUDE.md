@@ -1,22 +1,16 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Este é o repositório `agents-skills` (maiconsouza89/agents-skills): o catálogo público de Agent Skills da Mass Solutions, com validador, registry, CLI `mass-skills`, site bilíngue e governança de escrita. As regras de trabalho estão em [AGENTS.md](AGENTS.md); leia-o antes de mudar qualquer skill ou pacote.
 
 ## Linguagem
 
 - **Documentos e respostas ao usuário**: escrever em português (pt-BR)
 - **Processamento e pensamento do modelo**: manter em inglês (raciocínio interno, análise, planejamento)
-- **Integração**: toda comunicação com o usuário e documentação deve ser em português
-- **Código e comentários**: seguir as convenções do projeto (geralmente em inglês para compatibilidade)
+- **Código, skills, mensagens do CLI e comentários**: em inglês, para compatibilidade com todos os agentes
 
 ## Design System
 
-A referência completa do design system está documentada em [@DESIGN.md](./DESIGN.md). Consulte este arquivo para:
-- Paleta de cores e tokens
-- Tipografia e hierarquia
-- Componentes e suas variantes
-- Layout, espaçamento e breakpoints
-- Princípios de design e boas práticas
+A referência do design system do site está em [@DESIGN.md](./DESIGN.md): paleta, tipografia monoespaçada, componentes, espaçamento e princípios. O site em `apps/site` segue esses tokens.
 
 ## Instalação de Novas Funcionalidades
 
@@ -24,7 +18,7 @@ Antes de instalar ou integrar novas dependências, funcionalidades ou tecnologia
 - **Pesquisar versão atual**: usar Context7 (`mcp__context7__query-docs`) para documentação oficial
 - **Verificar boas práticas**: consultar padrões de mercado e recomendações atuais
 - **Usar web search** se Context7 não tiver informação recente
-- **Documentar decisões**: registrar versões e rationale no projeto
+- **Documentar decisões**: registrar versões e rationale na seção `## Dependências` do [AGENTS.md](AGENTS.md)
 
 ## Skills Disponíveis
 
@@ -32,4 +26,4 @@ Este projeto possui skills customizadas em `/skills`. Consulte sempre:
 - Verificar skills relevantes antes de implementar soluções manuais
 - Usar `Skill` tool para invocar funcionalidades do projeto
 
-
+As skills de tooling do próprio repo (`.claude/skills/`) não são versionadas; instale-as localmente com `npx skills add`.

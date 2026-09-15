@@ -1,0 +1,10 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "paths": {
+      "@mass-solutions/skills-core": ["./packages/core/src/index.ts"]
+    }
+  },
+  "include": ["tools", "test", "vitest.config.ts"]
+}

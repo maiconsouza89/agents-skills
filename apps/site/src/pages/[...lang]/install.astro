@@ -1,0 +1,37 @@
+---
+import Base from "../../layouts/Base.astro";
+import { REPO } from "@mass-solutions/skills-core";
+import { langPaths, localized, t, type Lang } from "../../lib/i18n";
+
+export function getStaticPaths() {
+  return langPaths();
+}
+
+const { lang } = Astro.props as { lang: Lang };
+const d = t(lang);
+const commands = [
+  `mass-skills install <skill> -a <agent>`,
+  `npx skills add ${REPO} --skill <skill>`,
+  `/plugin marketplace add ${REPO}\n/plugin install mass-solutions-skills@mass-solutions`,
+];
+---
+
+<Base lang={lang} title={d.installTitle} path="install/">
+  <h1>{d.installTitle}</h1>
+  <p>{d.installIntro}</p>
+  <ol class="rows" data-install-paths>
+    {
+      d.installPaths.map((p, i) => (
+        <li>
+          <h2>
+            <span class="marker">[+]</span>
+            {p.title}
+          </h2>
+          <code class="snippet">{commands[i]}</code>
+          <p>{p.verifies}</p>
+        </li>
+      ))
+    }
+  </ol>
+  <p><strong>{d.hashWarning}</strong> <a href={localized(lang, "agents/")}>{d.nav.agents} →</a></p>
+</Base>

@@ -1,0 +1,30 @@
+{
+  "name": "mass-solutions-skills",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Mass Solutions catalog of Agent Skills: validator, registry, CLI and site",
+  "license": "MIT",
+  "type": "module",
+  "packageManager": "pnpm@11.23.0",
+  "engines": {
+    "node": ">=22.12"
+  },
+  "scripts": {
+    "check": "pnpm validate && pnpm registry --check && pnpm test",
+    "validate": "tsx packages/core/src/bin/validate.ts",
+    "registry": "tsx packages/core/src/bin/registry.ts",
+    "build": "pnpm -r --if-present build",
+    "test": "vitest run",
+    "scan": "uvx snyk-agent-scan@latest skills --ci",
+    "new-skill": "tsx tools/new-skill.ts",
+    "stale": "tsx tools/stale.ts"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^3.0.3",
+    "@types/node": "^24.13.4",
+    "tsx": "^4.23.13",
+    "typescript": "^5.9.3",
+    "vitest": "^5.0.0",
+    "yaml": "^2.9.1"
+  }
+}

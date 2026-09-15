@@ -1,0 +1,167 @@
+---
+import { getCollection, render } from "astro:content";
+import Base from "../../../layouts/Base.astro";
+import { REPO } from "@mass-solutions/skills-core";
+import { extraFiles, registry, registrySkill, sourceUrl, splitDescription, categoryLabel } from "../../../lib/catalog";
+import { langPaths, localized, t, type Lang } from "../../../lib/i18n";
+
+export async function getStaticPaths() {
+  const entries = await getCollection("skills");
+  const paths = [];
+  for (const { params, props } of langPaths()) {
+    for (const entry of entries) {
+      paths.push({ params: { ...params, name: entry.id }, props: { ...props, entry } });
+    }
+    for (const [name, deprecation] of Object.entries(registry.deprecated)) {
+      paths.push({ params: { ...params, name }, props: { ...props, deprecated: { name, ...deprecation } } });
+    }
+  }
+  return paths;
+}
+
+type Entry = Awaited<ReturnType<typeof getCollection<"skills">>>[number];
+const { lang, entry, deprecated } = Astro.props as {
+  lang: Lang;
+  entry?: Entry;
+  deprecated?: { name: string; since: string; replacedBy: string[]; reason: string };
+};
+const d = t(lang);
+const name = entry?.id ?? deprecated!.name;
+const reg = entry ? registrySkill(entry.id) : undefined;
+const parts = entry ? splitDescription(entry.data.description) : undefined;
+const Content = entry ? (await render(entry)).Content : undefined;
+const extras = reg ? extraFiles(reg) : [];
+const meta = entry?.data.metadata ?? {};
+const commands = [
+  `mass-skills install ${name} -a <agent>`,
+  `npx skills add ${REPO} --skill ${name}`,
+  `/plugin marketplace add ${REPO}`,
+];
+---
+
+<Base lang={lang} title={name} path={`skills/${name}/`} description={entry?.data.description}>
+  <h1>{name}</h1>
+
+  {
+    deprecated && (
+      <section class="banner" data-deprecated>
+        <p>
+          <strong>{d.deprecatedSince(deprecated.since)}</strong>
+        </p>
+        <p>
+          {d.reason}: {deprecated.reason}
+        </p>
+        <p>
+          {d.replacedBy}:{" "}
+          {deprecated.replacedBy.map((r) => (
+            <a href={localized(lang, `skills/${r}/`)}>{r}</a>
+          ))}
+        </p>
+      </section>
+    )
+  }
+
+  {
+    entry && reg && parts && (
+      <>
+        <dl data-description>
+          <dt>{d.whatItDoes}</dt>
+          <dd data-what>{parts.what}</dd>
+          <dt>{d.useWhen}</dt>
+          <dd data-when>{parts.when}</dd>
+          <dt>{d.doNotUseFor}</dt>
+          <dd data-not>{parts.not}</dd>
+        </dl>
+
+        <section data-install>
+          <h2>
+            <span class="marker">[+]</span>
+            {d.install}
+          </h2>
+          <p>{d.installCli}</p>
+          <code class="snippet">{commands[0]}</code>
+          <p>{d.installNpx}</p>
+          <code class="snippet">{commands[1]}</code>
+          <p>{d.installMarketplace}</p>
+          <code class="snippet">{commands[2]}</code>
+          <p>
+            <strong>{d.hashWarning}</strong>
+          </p>
+        </section>
+
+        <section data-metadata>
+          <h2>
+            <span class="marker">[+]</span>
+            {d.metadata}
+          </h2>
+          <dl>
+            <dt>{d.author}</dt>
+            <dd>{meta.author}</dd>
+            <dt>{d.version}</dt>
+            <dd>{meta.version}</dd>
+            <dt>{d.reviewed}</dt>
+            <dd>{meta.reviewed}</dd>
+            <dt>{d.category}</dt>
+            <dd>{categoryLabel(meta.category, lang)}</dd>
+            <dt>{d.tags}</dt>
+            <dd>{reg.tags.join(", ")}</dd>
+            {meta.requires && (
+              <>
+                <dt>{d.requires}</dt>
+                <dd data-requires>{meta.requires}</dd>
+              </>
+            )}
+            {entry.data["allowed-tools"] && (
+              <>
+                <dt>{d.allowedTools}</dt>
+                <dd data-allowed-tools>{entry.data["allowed-tools"]}</dd>
+              </>
+            )}
+          </dl>
+        </section>
+
+        <section data-files>
+          <h2>
+            <span class="marker">[+]</span>
+            {d.files}
+          </h2>
+          <ul class="rows">
+            {reg.files.map((f) => (
+              <li data-file={f.path}>
+                <span class="marker">[+]</span>
+                <a href={sourceUrl(name, f.path)}>{f.path}</a> <span class="meta">{f.bytes} {d.bytes}</span>
+              </li>
+            ))}
+          </ul>
+          {extras.length > 0 && (
+            <div data-extra-files>
+              <h3>{d.extraFiles}</h3>
+              <ul>
+                {extras.map((g) => (
+                  <li>
+                    <span class="marker">[-]</span>
+                    <code>{g.folder}/</code> ({g.files.length})
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          <p class="meta">
+            {d.contentHash}: <code data-content-hash>{reg.contentHash}</code>
+          </p>
+          <p>
+            <a data-source href={sourceUrl(name)}>{d.source}</a>
+          </p>
+        </section>
+
+        <section class="skill-body" data-skill-body lang="en">
+          <h2>
+            <span class="marker">[+]</span>
+            {d.skillBody}
+          </h2>
+          <div data-content>{Content && <Content />}</div>
+        </section>
+      </>
+    )
+  }
+</Base>

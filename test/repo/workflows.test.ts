@@ -1,0 +1,104 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+import { fileURLToPath } from "node:url";
+import { describe, expect, it } from "vitest";
+import { parse } from "yaml";
+
+const ROOT = fileURLToPath(new URL("../..", import.meta.url));
+const read = (p: string) => readFileSync(join(ROOT, p), "utf8");
+const workflow = (name: string) => parse(read(`.github/workflows/${name}`));
+
+type Step = { uses?: string; run?: string; with?: Record<string, string>; if?: string; env?: Record<string, string>; id?: string };
+const steps = (job: { steps: Step[] }) => job.steps;
+const runs = (job: { steps: Step[] }) => steps(job).map((s) => s.run ?? "");
+
+function expectNodeSetup(job: { steps: Step[] }) {
+  const node = steps(job).find((s) => s.uses?.startsWith("actions/setup-node@"))!;
+  expect(node.with?.["node-version-file"]).toBe(".nvmrc");
+  expect(node.with?.cache).toBe("pnpm");
+  expect(steps(job).some((s) => s.uses?.startsWith("pnpm/action-setup@"))).toBe(true);
+  expect(runs(job)).toContain("pnpm install --frozen-lockfile");
+}
+
+describe("workflows", () => {
+  it("ci workflow runs check, build and the marketplace validation on PRs and main without secrets", () => {
+    const wf = workflow("ci.yml");
+    expect(Object.keys(wf.on).sort()).toEqual(["pull_request", "push"]);
+    expect(wf.on.push.branches).toEqual(["main"]);
+    const job = wf.jobs.ci;
+    expectNodeSetup(job);
+    const r = runs(job);
+    expect(r).toContain("pnpm check");
+    expect(r).toContain("pnpm build");
+    expect(r).toContain("npx -y @anthropic-ai/claude-code@latest plugin validate .");
+    expect(read(".github/workflows/ci.yml")).not.toContain("secrets.");
+  });
+
+  it("pages workflow deploys the astro site from apps/site with the nvmrc node version", () => {
+    const wf = workflow("pages.yml");
+    expect(wf.on.push.branches).toEqual(["main"]);
+    expect(wf.permissions.pages).toBe("write");
+    expect(wf.permissions["id-token"]).toBe("write");
+    const astro = steps(wf.jobs.build).find((s) => s.uses?.startsWith("withastro/action@"))!;
+    expect(astro.with?.path).toBe("apps/site");
+    expect(astro.with?.["package-manager"]).toBe("pnpm@11");
+    expect(astro.with?.["node-version"]).toContain("steps.node.outputs.version");
+    expect(runs(wf.jobs.build).some((r) => r.includes("cat .nvmrc"))).toBe(true);
+    expect(steps(wf.jobs.deploy).some((s) => s.uses?.startsWith("actions/deploy-pages@"))).toBe(true);
+    expect(wf.jobs.deploy.needs).toBe("build");
+  });
+
+  it("security scan workflow runs snyk only on push to main and same-repo PRs, with the allowlist flags", () => {
+    const wf = workflow("security-scan.yml");
+    expect(wf.on.push.branches).toEqual(["main"]);
+    expect("pull_request" in wf.on).toBe(true);
+    const job = wf.jobs.scan;
+    expectNodeSetup(job);
+    const allow = steps(job).find((s) => s.id === "allowlist")!;
+    expect(allow.if).toBeUndefined();
+    expect(allow.run).toContain("tools/allowlist.ts");
+    const snyk = steps(job).find((s) => s.run?.includes("snyk-agent-scan"))!;
+    expect(snyk.run).toContain("uvx snyk-agent-scan@latest skills --ci");
+    expect(snyk.run).toContain("steps.allowlist.outputs.flags");
+    expect(snyk.env?.SNYK_TOKEN).toBe("${{ secrets.SNYK_TOKEN }}");
+    const condition = "github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository";
+    expect(snyk.if).toContain(condition);
+    const uv = steps(job).find((s) => s.uses?.startsWith("astral-sh/setup-uv@"))!;
+    expect(uv.if).toContain(condition);
+  });
+
+  it("stale skills workflow runs weekly and on demand, and creates or updates the Stale skills issue from pnpm stale", () => {
+    const wf = workflow("stale-skills.yml");
+    expect(wf.on.schedule).toEqual([{ cron: "0 9 * * 1" }]);
+    expect("workflow_dispatch" in wf.on).toBe(true);
+    expect(wf.permissions.issues).toBe("write");
+    const job = wf.jobs.stale;
+    expectNodeSetup(job);
+    const list = steps(job).find((s) => s.id === "stale")!;
+    expect(list.run).toMatch(/pnpm (--silent )?stale --days 90/);
+    const script = steps(job).find((s) => s.uses?.startsWith("actions/github-script@"))!;
+    expect(script.with?.script).toContain('const title = "Stale skills"');
+    expect(script.with?.script).toContain('const label = "stale-skill"');
+    expect(script.with?.script).toContain("issues.create");
+    expect(script.with?.script).toContain("issues.update");
+    expect(script.with?.script).toContain("labels: [label]");
+  });
+
+  it("stale workflow closes when nothing is stale and creates nothing", () => {
+    const wf = workflow("stale-skills.yml");
+    const script = steps(wf.jobs.stale).find((s) => s.uses?.startsWith("actions/github-script@"))!.with!.script;
+    expect(script).toMatch(/if \(!list\) \{\s*if \(existing\) await github\.rest\.issues\.update\([^)]*state: "closed"[^)]*\);\s*return;/);
+  });
+
+  it("release workflow runs on v* tags, checks, builds and creates a github release with generated notes", () => {
+    const wf = workflow("release.yml");
+    expect(wf.on.push.tags).toEqual(["v*"]);
+    expect(wf.permissions.contents).toBe("write");
+    const job = wf.jobs.release;
+    expectNodeSetup(job);
+    const r = runs(job);
+    expect(r).toContain("pnpm check");
+    expect(r).toContain("pnpm build");
+    expect(r.some((x) => x.includes('gh release create "${{ github.ref_name }}" --generate-notes'))).toBe(true);
+  });
+});

@@ -1,0 +1,49 @@
+---
+import "../styles/global.css";
+import { href, localized, otherLang, t, type Lang } from "../lib/i18n";
+import { GITHUB_URL } from "../lib/catalog";
+
+interface Props {
+  lang: Lang;
+  title: string;
+  /** Path of this page without locale prefix, e.g. `""`, `"install/"`, `"skills/mass-x/"`. */
+  path: string;
+  description?: string;
+}
+
+const { lang, title, path, description } = Astro.props;
+const d = t(lang);
+const other = otherLang(lang);
+---
+
+<html lang={lang}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title} · {d.siteName}</title>
+    {description && <meta name="description" content={description} />}
+    <link rel="alternate" hreflang={other} href={localized(other, path)} />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container">
+        <a class="wordmark" href={localized(lang)} aria-label={d.siteName}>MASS SOLUTIONS SKILLS</a>
+        <nav class="site-nav" aria-label="main">
+          <a href={localized(lang)}>{d.nav.catalog}</a>
+          <a href={localized(lang, "install/")}>{d.nav.install}</a>
+          <a href={localized(lang, "agents/")}>{d.nav.agents}</a>
+          <a href={GITHUB_URL}>{d.nav.github}</a>
+          <a data-lang-switch href={localized(other, path)} hreflang={other}>{d.switchLang}</a>
+        </nav>
+      </div>
+    </header>
+    <main class="container">
+      <slot />
+    </main>
+    <footer class="site-footer">
+      <div class="container">
+        <span class="marker">[-]</span>{d.footer} · <a href={href("")}>EN</a> · <a href={href("pt-br/")}>PT-BR</a>
+      </div>
+    </footer>
+  </body>
+</html>

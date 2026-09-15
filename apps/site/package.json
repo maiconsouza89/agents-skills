@@ -1,0 +1,20 @@
+{
+  "name": "site",
+  "version": "0.1.0",
+  "description": "Bilingual static catalog site for Mass Solutions skills",
+  "license": "MIT",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview"
+  },
+  "dependencies": {
+    "@mass-solutions/skills-core": "workspace:*",
+    "astro": "^7.3.2"
+  },
+  "devDependencies": {
+    "jsdom": "^30.0.1"
+  }
+}

@@ -1,3 +1,5 @@
+> **Adaptação Mass Solutions (2026-09-15):** o site do catálogo usa este sistema em **tema escuro**, por decisão do mantenedor: `{colors.canvas}` = `#201d1d`, `{colors.ink}` = `#fdfcfc`, `color-scheme: dark`, superfícies `#2b2828` / `#353131`, hairline `rgba(253,252,252,0.18)`. As demais regras (uma fonte monoespaçada, raio 4px só em interativos, marcadores ASCII, sem sombra nem gradiente) valem como estão. O texto abaixo descreve o sistema de referência original em cream.
+
 ---
 version: alpha
 name: OpenCode-design-analysis

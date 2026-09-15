@@ -1,0 +1,52 @@
+name: Skill proposal
+description: Propose a new skill for the Mass Solutions catalog. Proposals are discussed here before any pull request.
+title: "[skill] mass-"
+labels: ["skill-proposal"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for proposing a skill. External contributions are **issue-first**: a pull request is welcome only after a maintainer agrees on this issue.
+  - type: input
+    id: name
+    attributes:
+      label: Skill name
+      description: Must start with `mass-`, kebab-case, at most 64 characters, and not collide with an existing skill.
+      placeholder: mass-release-checklist
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What does an agent get wrong or slow today without this skill?
+    validations:
+      required: true
+  - type: textarea
+    id: use-when
+    attributes:
+      label: Use when
+      description: Three phrases a user would type that should trigger the skill.
+      placeholder: '"write the release notes", "prepare a release", "tag a version"'
+    validations:
+      required: true
+  - type: textarea
+    id: do-not-use
+    attributes:
+      label: Do not use for
+      description: What this skill must not cover, and which existing skill covers it.
+    validations:
+      required: true
+  - type: checkboxes
+    id: agents
+    attributes:
+      label: Target agents
+      options:
+        - label: claude-code
+        - label: cursor
+        - label: codex
+        - label: github-copilot
+        - label: opencode
+        - label: windsurf
+        - label: gemini-cli
+        - label: cline

@@ -1,0 +1,40 @@
+---
+import Base from "../../layouts/Base.astro";
+import { AGENTS } from "@mass-solutions/skills-cli/agents";
+import { langPaths, t, type Lang } from "../../lib/i18n";
+
+export function getStaticPaths() {
+  return langPaths();
+}
+
+const { lang } = Astro.props as { lang: Lang };
+const d = t(lang);
+---
+
+<Base lang={lang} title={d.agentsTitle} path="agents/">
+  <h1>{d.agentsTitle}</h1>
+  <p>{d.agentsIntro}</p>
+  <div class="table-wrap">
+    <table data-agents>
+      <thead>
+        <tr>
+          <th>{d.agentId}</th>
+          <th>{d.projectPath}</th>
+          <th>{d.globalPath}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {
+          AGENTS.map((a) => (
+            <tr data-agent={a.id}>
+              <td><code>{a.id}</code></td>
+              <td><code>{a.projectDir}/</code></td>
+              <td><code>~/{a.globalDir}/</code></td>
+            </tr>
+          ))
+        }
+      </tbody>
+    </table>
+  </div>
+  <code class="snippet">mass-skills install &lt;skill&gt; -a auto</code>
+</Base>

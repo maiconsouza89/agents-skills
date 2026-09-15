@@ -1,0 +1,24 @@
+{
+  "name": "@mass-solutions/skills-cli",
+  "version": "0.1.0",
+  "description": "mass-skills: install Mass Solutions skills with integrity verification and a lockfile",
+  "license": "MIT",
+  "type": "module",
+  "private": true,
+  "bin": {
+    "mass-skills": "./bin/mass-skills.js"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "bin",
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@mass-solutions/skills-core": "workspace:*",
+    "commander": "^15.0.0"
+  }
+}

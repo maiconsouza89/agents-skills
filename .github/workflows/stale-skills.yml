@@ -1,0 +1,56 @@
+name: stale-skills
+
+on:
+  schedule:
+    - cron: "0 9 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  stale:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: List skills not reviewed in 90 days
+        id: stale
+        run: |
+          {
+            echo 'list<<STALE_EOF'
+            pnpm --silent stale --days 90
+            echo 'STALE_EOF'
+          } >> "$GITHUB_OUTPUT"
+      - name: Create, update or close the "Stale skills" issue
+        uses: actions/github-script@v9
+        env:
+          STALE: ${{ steps.stale.outputs.list }}
+        with:
+          script: |
+            const title = "Stale skills";
+            const label = "stale-skill";
+            const list = (process.env.STALE || "").trim();
+            const { owner, repo } = context.repo;
+            const { data: open } = await github.rest.issues.listForRepo({ owner, repo, state: "open", labels: label, per_page: 100 });
+            const existing = open.find((i) => i.title === title);
+            if (!list) {
+              if (existing) await github.rest.issues.update({ owner, repo, issue_number: existing.number, state: "closed" });
+              return;
+            }
+            const body = [
+              "Skills whose `metadata.reviewed` is older than 90 days. Review each one and update the date in its frontmatter.",
+              "",
+              ...list.split("\n").map((line) => `- ${line}`),
+            ].join("\n");
+            if (existing) {
+              await github.rest.issues.update({ owner, repo, issue_number: existing.number, body });
+            } else {
+              await github.rest.issues.create({ owner, repo, title, body, labels: [label] });
+            }
