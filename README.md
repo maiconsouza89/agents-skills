@@ -27,8 +27,6 @@
 
 <p align="center">
   <a href="https://maiconsouza89.github.io/agents-skills/"><strong>Browse the catalog</strong></a>
-  &nbsp;·&nbsp;
-  <a href="README.pt-br.md">Português</a>
 </p>
 
 ## Table of contents
@@ -211,7 +209,7 @@ Use the repository's [private security advisory](https://github.com/maiconsouza8
 ## License and attribution
 
 - **Code** (`packages/`, `apps/`, `tools/`): [MIT](LICENSE).
-- **Skill content** (`skills/`): [Creative Commons Attribution 4.0](skills/LICENSE). Reuse it freely, keep the attribution to Mass Solutions.
+- **Skill content** (`skills/`): [Creative Commons Attribution 4.0 (CC-BY-4.0)](skills/LICENSE). Reuse it freely, keep the attribution to Mass Solutions.
 
 If you are the author of any content included here and want it updated or removed, [open an issue](https://github.com/maiconsouza89/agents-skills/issues/new/choose).
 

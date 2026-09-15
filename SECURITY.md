@@ -1,32 +1,32 @@
-# Política de segurança
+# Security policy
 
-## Relatar uma vulnerabilidade
+## Reporting a vulnerability
 
-Use o **security advisory privado** do repositório:
+Use the repository's **private security advisory**:
 
 https://github.com/maiconsouza89/agents-skills/security/advisories/new
 
-Nunca abra uma issue pública para uma vulnerabilidade: uma skill instalada em muitos agentes é um alvo de cadeia de suprimentos, e a descrição pública chega antes da correção. Você recebe resposta em até 7 dias; a correção sai como uma versão nova da skill e, se for o caso, uma entrada em `skills/_deprecated.json`.
+Never open a public issue for a vulnerability: a skill installed into many agents is a supply-chain target, and a public description lands before the fix does. You get a reply within 7 days; the fix ships as a new version of the skill and, when needed, an entry in `skills/_deprecated.json`.
 
-## O que é verificado
+## What is checked
 
-**Validador (`pnpm validate`, em toda PR e push)**, sem serviço externo:
+**Validator (`pnpm validate`, on every PR and push)**, with no external service:
 
-- frontmatter só com as chaves da especificação Agent Skills, `name` igual à pasta, `description` na fórmula, `metadata` completo;
-- nenhum arquivo binário;
-- padrões de segredo: chaves AWS, tokens do GitHub, chaves privadas, `api_key = "..."`;
-- shell perigoso: download canalizado para `sh`/`bash`, payload decodificado e executado, `eval` de subshell, variáveis de ambiente enviadas pela rede;
-- frases de prompt injection ("ignore previous instructions" e afins);
-- scripts com `#!` e bit executável;
-- limite de tamanho do `SKILL.md`.
+- frontmatter with only the keys of the Agent Skills specification, `name` equal to the folder, `description` in the formula, complete `metadata`;
+- no binary files;
+- secret patterns: AWS keys, GitHub tokens, private keys, `api_key = "..."`;
+- dangerous shell: download piped into `sh`/`bash`, decoded and executed payloads, subshell `eval`, environment variables sent over the network;
+- prompt-injection phrases ("ignore previous instructions" and the like);
+- scripts with `#!` and the executable bit;
+- `SKILL.md` size limit.
 
-**Snyk Agent Scan (`security-scan.yml`)** roda `uvx snyk-agent-scan@latest skills --ci --dangerously-run-mcp-servers` em push para `main` e em PRs abertos do próprio repositório. PRs de fork não têm acesso ao `SNYK_TOKEN`, então o scan roda depois do merge; o validador roda sempre.
+**Snyk Agent Scan (`security-scan.yml`)** runs `uvx snyk-agent-scan@latest skills --ci --dangerously-run-mcp-servers` on pushes to `main` and on PRs opened from the repository itself. PRs from forks have no access to `SNYK_TOKEN`, so the scan runs after the merge; the validator always runs.
 
-**Integridade na instalação**: `skills-registry.json` carrega `sha256` por arquivo e `contentHash` por skill. O CLI `mass-skills` recusa um download cujo hash difere e não escreve nada no diretório do agente. `npx skills add` e o marketplace do Claude Code não verificam hash.
+**Integrity at install time**: `skills-registry.json` carries a `sha256` per file and a `contentHash` per skill. The `mass-skills` CLI refuses a download whose hash differs and writes nothing into the agent directory. `npx skills add` and the Claude Code marketplace do not verify hashes.
 
-## Allowlist de falsos positivos
+## Allowlist for false positives
 
-`security-scan-allowlist.yaml` na raiz lista achados do Snyk aceitos, com `risk`, `skill`, `reason` e `expiresAt` **obrigatório**. Uma entrada vencida faz a CI falhar até ser renovada ou removida, para que nenhuma exceção seja permanente por esquecimento.
+`security-scan-allowlist.yaml` at the root lists accepted Snyk findings, each with `risk`, `skill`, `reason` and a **required** `expiresAt`. An expired entry fails CI until it is renewed or removed, so no exception becomes permanent by being forgotten.
 
 ```yaml
 - risk: example-risk-name
@@ -35,6 +35,6 @@ Nunca abra uma issue pública para uma vulnerabilidade: uma skill instalada em m
   expiresAt: "2026-12-31"
 ```
 
-## Escopo
+## Scope
 
-Cobre o conteúdo de `skills/`, o CLI `mass-skills`, o site e os workflows deste repositório. Vulnerabilidades nos agentes que consomem as skills devem ser relatadas aos respectivos projetos.
+Covers the content of `skills/`, the `mass-skills` CLI, the site and the workflows of this repository. Vulnerabilities in the agents that consume the skills should be reported to their respective projects.
