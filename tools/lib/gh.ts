@@ -1,5 +1,5 @@
 // Shared git/GitHub helpers for the maintainer scripts in tools/. Used by start-issue.ts and
-// set-complexity.ts so both work the same way locally and in a Claude Code web session, where
+// triage-issue.ts so both work the same way locally and in a Claude Code web session, where
 // GraphQL is blocked (see ghApi below) and gh itself is sometimes missing from PATH.
 import { execFileSync } from "node:child_process";
 
@@ -28,7 +28,7 @@ export async function ghApi(
   exec: Exec,
   fetchImpl: FetchLike,
   env: NodeJS.ProcessEnv,
-  method: "GET" | "POST" | "PATCH",
+  method: "GET" | "POST" | "PATCH" | "PUT",
   path: string,
   ghArgs: string[],
   jsonBody?: unknown,
