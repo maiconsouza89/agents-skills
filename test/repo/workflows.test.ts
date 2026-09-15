@@ -101,4 +101,22 @@ describe("workflows", () => {
     expect(r).toContain("pnpm build");
     expect(r.some((x) => x.includes('gh release create "${{ github.ref_name }}" --generate-notes'))).toBe(true);
   });
+
+  it("project board workflow reacts to issue open/assign without GITHUB_TOKEN or third-party actions", () => {
+    const wf = workflow("project-board.yml");
+    expect(wf.on.issues.types).toEqual(["opened", "assigned"]);
+    expect(wf.permissions).toEqual({});
+    const job = wf.jobs.board;
+    expect(job.if).toBe("github.event.issue.state == 'open'");
+    expect(wf.concurrency.group).toContain("github.event.issue.number");
+    expect(wf.concurrency["cancel-in-progress"]).toBe(false);
+    expect(job.env.GH_TOKEN).toBe("${{ secrets.PROJECT_TOKEN }}");
+    expect(steps(job).every((s) => s.uses === undefined)).toBe(true);
+    const r = runs(job);
+    expect(r.some((x) => x.includes("addProjectV2ItemById"))).toBe(true);
+    expect(r.some((x) => x.includes("updateProjectV2ItemFieldValue"))).toBe(true);
+    const setStatus = steps(job).find((s) => s.run?.includes("updateProjectV2ItemFieldValue"))!;
+    expect(setStatus.if).toContain("In Review");
+    expect(setStatus.if).toContain("Done");
+  });
 });

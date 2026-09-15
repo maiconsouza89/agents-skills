@@ -1,33 +1,26 @@
 import { describe, expect, it } from "vitest";
-import { branchName, main, type Exec } from "../../tools/start-issue.js";
+import { branchName, main, ownerAndName, type Exec } from "../../tools/start-issue.js";
 
 const ISSUE = {
   number: 8,
   title: "cli: pin the default download ref to the release tag",
-  state: "OPEN",
-  url: "https://github.com/acme/skills/issues/8",
+  state: "open",
+  html_url: "https://github.com/acme/skills/issues/8",
   labels: [{ name: "enhancement" }],
+  assignees: [] as Array<{ login: string }>,
 };
 
 // Answers each command by its longest matching prefix and records every call in order.
 function fake(overrides: Record<string, string | Error> = {}) {
   const calls: string[] = [];
   const responses: Record<string, string | Error> = {
-    "gh repo view": JSON.stringify({ owner: { login: "acme" }, name: "skills" }),
-    "gh issue view": JSON.stringify(ISSUE),
-    "git status": "",
-    "gh project field-list": JSON.stringify({
-      fields: [
-        { id: "F_TITLE", name: "Title" },
-        { id: "F_STATUS", name: "Status", options: [{ id: "O_TODO", name: "Todo" }, { id: "O_PROGRESS", name: "In Progress" }] },
-      ],
-    }),
-    "gh project view": JSON.stringify({ id: "P_1" }),
-    "gh issue develop --list": "",
-    "gh api graphql": JSON.stringify({
-      data: { repository: { issue: { projectItems: { nodes: [{ id: "I_OTHER", project: { number: 3 } }, { id: "I_1", project: { number: 5 } }] } } } },
-    }),
-    "gh project item-add": JSON.stringify({ id: "I_NEW" }),
+    "git remote get-url origin": "https://github.com/acme/skills.git\n",
+    "gh api repos/acme/skills/issues/8": JSON.stringify(ISSUE),
+    "gh api user": JSON.stringify({ login: "octocat" }),
+    "git status --porcelain": "",
+    "git ls-remote --heads origin": "",
+    "git branch --list": "",
+    "git branch --show-current": "feat/8-session-branch\n",
     ...overrides,
   };
   const exec: Exec = (cmd, args) => {
@@ -43,14 +36,13 @@ function fake(overrides: Record<string, string | Error> = {}) {
   return { calls, exec };
 }
 
-function run(argv: string[], f = fake()) {
+function run(argv: string[], f = fake(), env: NodeJS.ProcessEnv = {}) {
   let out = "";
-  const code = main(argv, { write: (s: string) => (out += s) }, f.exec);
+  const code = main(argv, { write: (s: string) => (out += s) }, f.exec, env);
   return { code, out, calls: f.calls };
 }
 
-const writes = (calls: string[]) =>
-  calls.filter((c) => /^gh issue develop \d|^gh issue edit|^gh project item-(add|edit)|^git (fetch|switch)/.test(c));
+const writes = (calls: string[]) => calls.filter((c) => /^git (fetch|switch|push)|^gh api -X POST/.test(c));
 
 describe("start-issue", () => {
   it("names the branch from the labels and the title, cutting the slug at a word", () => {
@@ -58,54 +50,79 @@ describe("start-issue", () => {
     expect(branchName({ number: 15, title: "cli: `mass-skills --version` fails with unknown option", labels: ["bug"] })).toBe(
       "fix/15-mass-skills-version-fails-with-unknown",
     );
+    expect(branchName({ number: 9, title: "A skill fails to install", labels: ["skill-bug"] })).toBe("fix/9-a-skill-fails-to-install");
     expect(branchName({ number: 3, title: "Update the README", labels: ["documentation"] })).toBe("docs/3-update-the-readme");
   });
 
-  it("creates the linked branch, assigns the issue and moves the item to In Progress", () => {
+  it("reads owner and name from https and ssh origin remotes", () => {
+    expect(ownerAndName("https://github.com/acme/skills.git\n")).toEqual({ owner: "acme", name: "skills" });
+    expect(ownerAndName("git@github.com:acme/skills.git")).toEqual({ owner: "acme", name: "skills" });
+    expect(ownerAndName("https://github.com/acme/skills")).toEqual({ owner: "acme", name: "skills" });
+  });
+
+  it("creates and pushes a new branch, then assigns the issue", () => {
     const r = run(["8"]);
     expect(r.code).toBe(0);
-    expect(r.calls).toContain("gh project field-list 5 --owner acme --format json");
     expect(writes(r.calls)).toEqual([
-      "gh issue develop 8 --base main --checkout --name feat/8-pin-the-default-download-ref-to-the",
-      "gh issue edit 8 --add-assignee @me",
-      "gh project item-edit --id I_1 --project-id P_1 --field-id F_STATUS --single-select-option-id O_PROGRESS",
+      "git fetch origin main",
+      "git switch -c feat/8-pin-the-default-download-ref-to-the origin/main",
+      "git push -u origin feat/8-pin-the-default-download-ref-to-the",
+      "gh api -X POST repos/acme/skills/issues/8/assignees -f assignees[]=octocat",
     ]);
-    // The project is resolved before the branch exists.
-    expect(r.calls.findIndex((c) => c.startsWith("gh project field-list"))).toBeLessThan(
-      r.calls.findIndex((c) => c.startsWith("gh issue develop 8")),
-    );
-    expect(r.out).toContain("In Progress in project 5");
+    expect(r.out).toContain("assigned to octocat");
+    expect(r.out).toContain("project-board workflow moves it to In Progress");
   });
 
   it("switches to an already linked branch instead of creating another", () => {
-    const r = run(["8"], fake({ "gh issue develop --list": "feat/8-custom\thttps://github.com/acme/skills/tree/feat/8-custom\n" }));
+    const r = run(["8"], fake({ "git ls-remote --heads origin": "abc123\trefs/heads/feat/8-custom\n" }));
     expect(r.code).toBe(0);
-    expect(writes(r.calls).slice(0, 2)).toEqual(["git fetch origin feat/8-custom", "git switch feat/8-custom"]);
-    expect(r.calls.some((c) => c.startsWith("gh issue develop 8"))).toBe(false);
+    expect(writes(r.calls)).toEqual([
+      "git fetch origin feat/8-custom",
+      "git switch feat/8-custom",
+      "gh api -X POST repos/acme/skills/issues/8/assignees -f assignees[]=octocat",
+    ]);
   });
 
-  it("adds the issue to the project when it is not there yet", () => {
-    const r = run(["8"], fake({ "gh api graphql": JSON.stringify({ data: { repository: { issue: { projectItems: { nodes: [] } } } } }) }));
+  it("honours --base when creating a new branch", () => {
+    const r = run(["8", "--base", "develop"]);
     expect(r.code).toBe(0);
-    expect(r.calls).toContain("gh project item-add 5 --owner acme --url https://github.com/acme/skills/issues/8 --format json");
-    expect(r.calls.at(-1)).toContain("item-edit --id I_NEW");
+    expect(writes(r.calls)[0]).toBe("git fetch origin develop");
+    expect(writes(r.calls)[1]).toBe("git switch -c feat/8-pin-the-default-download-ref-to-the origin/develop");
   });
 
-  it("honours --project and --owner without mistaking their values for the issue number", () => {
-    const r = run(["--project", "3", "--owner", "other", "8"]);
+  it("honours --assignee instead of resolving the current gh user", () => {
+    const r = run(["8", "--assignee", "someone-else"]);
     expect(r.code).toBe(0);
-    expect(r.calls).toContain("gh project field-list 3 --owner other --format json");
-    expect(r.calls.at(-1)).toContain("item-edit --id I_OTHER");
+    expect(r.calls.some((c) => c === "gh api user")).toBe(false);
+    expect(writes(r.calls).at(-1)).toBe("gh api -X POST repos/acme/skills/issues/8/assignees -f assignees[]=someone-else");
+  });
+
+  it("does not re-assign an issue already assigned to the target user", () => {
+    const r = run(["8"], fake({ "gh api repos/acme/skills/issues/8": JSON.stringify({ ...ISSUE, assignees: [{ login: "octocat" }] }) }));
+    expect(r.code).toBe(0);
+    expect(r.out).toContain("already assigned to octocat");
+    expect(writes(r.calls).some((c) => c.startsWith("gh api -X POST"))).toBe(false);
+  });
+
+  it("stays on the session's branch and only assigns in a Claude Code web (cloud) session", () => {
+    const r = run(["8"], fake(), { CLAUDE_CODE_REMOTE: "true" });
+    expect(r.code).toBe(0);
+    expect(r.calls.some((c) => c.startsWith("git ls-remote") || c.startsWith("git fetch") || c.startsWith("git switch") || c.startsWith("git push"))).toBe(
+      false,
+    );
+    expect(r.out).toContain("staying on feat/8-session-branch");
+    expect(writes(r.calls)).toEqual(["gh api -X POST repos/acme/skills/issues/8/assignees -f assignees[]=octocat"]);
   });
 
   it("refuses without writing anything", () => {
     const cases = [
-      fake({ "gh issue view": JSON.stringify({ ...ISSUE, state: "CLOSED" }) }),
-      fake({ "git status": " M README.md\n" }),
-      fake({ "gh project field-list": JSON.stringify({ fields: [{ id: "F_STATUS", name: "Status", options: [{ id: "O_TODO", name: "Todo" }] }] }) }),
-      fake({ "gh issue view": Object.assign(new Error("exit 1"), { stderr: "no issue found\n" }) }),
+      fake({ "gh api repos/acme/skills/issues/8": JSON.stringify({ ...ISSUE, state: "closed" }) }),
+      fake({ "gh api repos/acme/skills/issues/8": JSON.stringify({ ...ISSUE, pull_request: {} }) }),
+      fake({ "git status --porcelain": " M README.md\n" }),
+      fake({ "gh api user": Object.assign(new Error("exit 1"), { stderr: "not logged in\n" }) }),
+      fake({ "gh api repos/acme/skills/issues/8": Object.assign(new Error("exit 1"), { stderr: "no issue found\n" }) }),
     ];
-    const outputs = ["is closed", "uncommitted changes", 'no Status option "In Progress"', "start-issue failed: no issue found"];
+    const outputs = ["is closed", "is a pull request", "uncommitted changes", "not logged in", "start-issue failed: no issue found"];
     cases.forEach((f, i) => {
       const r = run(["8"], f);
       expect(r.code, outputs[i]).toBe(1);
@@ -115,7 +132,7 @@ describe("start-issue", () => {
   });
 
   it("prints usage and exits 2 without an issue number", () => {
-    const r = run(["--project", "5"]);
+    const r = run(["--base", "main"]);
     expect(r.code).toBe(2);
     expect(r.out).toMatch(/^Usage: pnpm start-issue <number>/);
     expect(r.calls).toEqual([]);
