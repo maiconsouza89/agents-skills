@@ -8,6 +8,7 @@
 import { execFileSync } from "node:child_process";
 
 export type Exec = (cmd: string, args: string[]) => string;
+export type FetchLike = typeof fetch;
 
 export interface Issue {
   number: number;
@@ -22,6 +23,7 @@ interface Out {
 const USAGE = "Usage: pnpm start-issue <number> [--base main] [--assignee <login>]\n";
 const TYPE_BY_LABEL: Record<string, string> = { bug: "fix", "skill-bug": "fix", documentation: "docs" };
 const SLUG_MAX = 40;
+const MCP_HINT = "If this is a Claude Code web session, ask Claude to read/assign the issue through the GitHub MCP tool instead.";
 
 function flag(argv: string[], name: string): string | undefined {
   const i = argv.indexOf(name);
@@ -59,7 +61,50 @@ export function ownerAndName(remoteUrl: string): { owner: string; name: string }
   return { owner: m[1], name: m[2] };
 }
 
-export function main(argv: string[], out: Out = process.stdout, exec: Exec = defaultExec, env: NodeJS.ProcessEnv = process.env): number {
+// Calls the GitHub REST API for one endpoint. Prefers the `gh` CLI (already authenticated, and
+// the only path exercised locally); if `gh` itself is missing (ENOENT - seen in some Claude Code
+// web sessions even though it's documented as pre-installed there), falls back to a direct HTTPS
+// call authenticated with GH_TOKEN/GITHUB_TOKEN, which the session's GitHub proxy populates.
+async function ghApi(
+  exec: Exec,
+  fetchImpl: FetchLike,
+  env: NodeJS.ProcessEnv,
+  method: "GET" | "POST",
+  path: string,
+  ghArgs: string[],
+  jsonBody?: unknown,
+): Promise<any> {
+  try {
+    const out = exec("gh", ghArgs);
+    return out.trim() ? JSON.parse(out) : undefined;
+  } catch (e) {
+    const err = e as NodeJS.ErrnoException;
+    if (err.code !== "ENOENT") throw e;
+    const token = env.GH_TOKEN || env.GITHUB_TOKEN;
+    if (!token) throw new Error(`gh CLI not found and no GH_TOKEN/GITHUB_TOKEN in the environment. ${MCP_HINT}`);
+    const res = await fetchImpl(`https://api.github.com/${path}`, {
+      method,
+      headers: {
+        authorization: `Bearer ${token}`,
+        accept: "application/vnd.github+json",
+        "x-github-api-version": "2022-11-28",
+        ...(jsonBody ? { "content-type": "application/json" } : {}),
+      },
+      body: jsonBody ? JSON.stringify(jsonBody) : undefined,
+    });
+    const text = await res.text();
+    if (!res.ok) throw new Error(`gh CLI not found; the GitHub REST API fallback also failed (${res.status} ${text.slice(0, 200)}). ${MCP_HINT}`);
+    return text.trim() ? JSON.parse(text) : undefined;
+  }
+}
+
+export async function main(
+  argv: string[],
+  out: Out = process.stdout,
+  exec: Exec = defaultExec,
+  env: NodeJS.ProcessEnv = process.env,
+  fetchImpl: FetchLike = fetch,
+): Promise<number> {
   const number = Number(positional(argv));
   if (!Number.isInteger(number) || number <= 0) {
     out.write(USAGE);
@@ -70,7 +115,10 @@ export function main(argv: string[], out: Out = process.stdout, exec: Exec = def
   try {
     const { owner, name: repo } = ownerAndName(exec("git", ["remote", "get-url", "origin"]));
 
-    const view = JSON.parse(exec("gh", ["api", `repos/${owner}/${repo}/issues/${number}`])) as {
+    const view = (await ghApi(exec, fetchImpl, env, "GET", `repos/${owner}/${repo}/issues/${number}`, [
+      "api",
+      `repos/${owner}/${repo}/issues/${number}`,
+    ])) as {
       title: string;
       state: string;
       html_url: string;
@@ -90,7 +138,8 @@ export function main(argv: string[], out: Out = process.stdout, exec: Exec = def
     let assignee = flag(argv, "--assignee");
     if (!assignee) {
       try {
-        assignee = JSON.parse(exec("gh", ["api", "user"])).login as string;
+        const me = (await ghApi(exec, fetchImpl, env, "GET", "user", ["api", "user"])) as { login: string };
+        assignee = me.login;
       } catch (e) {
         const err = e as { stderr?: string; message?: string };
         out.write(
@@ -137,7 +186,15 @@ export function main(argv: string[], out: Out = process.stdout, exec: Exec = def
       out.write(`#${number} ${view.title}: already assigned to ${assignee}; the board keeps its current Status.\n`);
       return 0;
     }
-    exec("gh", ["api", "-X", "POST", `repos/${owner}/${repo}/issues/${number}/assignees`, "-f", `assignees[]=${assignee}`]);
+    await ghApi(
+      exec,
+      fetchImpl,
+      env,
+      "POST",
+      `repos/${owner}/${repo}/issues/${number}/assignees`,
+      ["api", "-X", "POST", `repos/${owner}/${repo}/issues/${number}/assignees`, "-f", `assignees[]=${assignee}`],
+      { assignees: [assignee] },
+    );
 
     out.write(`#${number} ${view.title}: assigned to ${assignee}; the project-board workflow moves it to In Progress.\n`);
     return 0;
@@ -149,5 +206,5 @@ export function main(argv: string[], out: Out = process.stdout, exec: Exec = def
 }
 
 if (process.argv[1]?.endsWith("start-issue.ts") || process.argv[1]?.endsWith("start-issue.js")) {
-  process.exit(main(process.argv.slice(2)));
+  main(process.argv.slice(2)).then((code) => process.exit(code));
 }

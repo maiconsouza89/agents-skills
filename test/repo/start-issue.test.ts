@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { branchName, main, ownerAndName, type Exec } from "../../tools/start-issue.js";
+import { branchName, main, ownerAndName, type Exec, type FetchLike } from "../../tools/start-issue.js";
 
 const ISSUE = {
   number: 8,
@@ -9,6 +9,8 @@ const ISSUE = {
   labels: [{ name: "enhancement" }],
   assignees: [] as Array<{ login: string }>,
 };
+
+const ENOENT = () => Object.assign(new Error("spawnSync gh ENOENT"), { code: "ENOENT" });
 
 // Answers each command by its longest matching prefix and records every call in order.
 function fake(overrides: Record<string, string | Error> = {}) {
@@ -36,9 +38,32 @@ function fake(overrides: Record<string, string | Error> = {}) {
   return { calls, exec };
 }
 
-function run(argv: string[], f = fake(), env: NodeJS.ProcessEnv = {}) {
+// A fake `fetch` for the REST fallback used when `gh` itself is missing (ENOENT).
+function fakeFetch(handlers: Record<string, { status: number; body?: unknown }>) {
+  const calls: string[] = [];
+  const fn: FetchLike = (async (url: string | URL, init?: RequestInit) => {
+    const method = init?.method ?? "GET";
+    const key = `${method} ${url}`;
+    calls.push(key);
+    const h = handlers[key];
+    const { status, body } = h ?? { status: 404, body: { message: "not found" } };
+    return {
+      ok: status >= 200 && status < 300,
+      status,
+      text: async () => (body === undefined ? "" : JSON.stringify(body)),
+    } as unknown as Response;
+  }) as FetchLike;
+  return { calls, fn };
+}
+
+// Unused unless a test exercises the ENOENT-triggered fetch fallback; throws if called otherwise.
+const unusedFetch: FetchLike = (async () => {
+  throw new Error("fetch should not be called when gh is available");
+}) as FetchLike;
+
+async function run(argv: string[], f = fake(), env: NodeJS.ProcessEnv = {}, fetchImpl: FetchLike = unusedFetch) {
   let out = "";
-  const code = main(argv, { write: (s: string) => (out += s) }, f.exec, env);
+  const code = await main(argv, { write: (s: string) => (out += s) }, f.exec, env, fetchImpl);
   return { code, out, calls: f.calls };
 }
 
@@ -60,8 +85,8 @@ describe("start-issue", () => {
     expect(ownerAndName("https://github.com/acme/skills")).toEqual({ owner: "acme", name: "skills" });
   });
 
-  it("creates and pushes a new branch, then assigns the issue", () => {
-    const r = run(["8"]);
+  it("creates and pushes a new branch, then assigns the issue", async () => {
+    const r = await run(["8"]);
     expect(r.code).toBe(0);
     expect(writes(r.calls)).toEqual([
       "git fetch origin main",
@@ -73,8 +98,8 @@ describe("start-issue", () => {
     expect(r.out).toContain("project-board workflow moves it to In Progress");
   });
 
-  it("switches to an already linked branch instead of creating another", () => {
-    const r = run(["8"], fake({ "git ls-remote --heads origin": "abc123\trefs/heads/feat/8-custom\n" }));
+  it("switches to an already linked branch instead of creating another", async () => {
+    const r = await run(["8"], fake({ "git ls-remote --heads origin": "abc123\trefs/heads/feat/8-custom\n" }));
     expect(r.code).toBe(0);
     expect(writes(r.calls)).toEqual([
       "git fetch origin feat/8-custom",
@@ -83,29 +108,29 @@ describe("start-issue", () => {
     ]);
   });
 
-  it("honours --base when creating a new branch", () => {
-    const r = run(["8", "--base", "develop"]);
+  it("honours --base when creating a new branch", async () => {
+    const r = await run(["8", "--base", "develop"]);
     expect(r.code).toBe(0);
     expect(writes(r.calls)[0]).toBe("git fetch origin develop");
     expect(writes(r.calls)[1]).toBe("git switch -c feat/8-pin-the-default-download-ref-to-the origin/develop");
   });
 
-  it("honours --assignee instead of resolving the current gh user", () => {
-    const r = run(["8", "--assignee", "someone-else"]);
+  it("honours --assignee instead of resolving the current gh user", async () => {
+    const r = await run(["8", "--assignee", "someone-else"]);
     expect(r.code).toBe(0);
     expect(r.calls.some((c) => c === "gh api user")).toBe(false);
     expect(writes(r.calls).at(-1)).toBe("gh api -X POST repos/acme/skills/issues/8/assignees -f assignees[]=someone-else");
   });
 
-  it("does not re-assign an issue already assigned to the target user", () => {
-    const r = run(["8"], fake({ "gh api repos/acme/skills/issues/8": JSON.stringify({ ...ISSUE, assignees: [{ login: "octocat" }] }) }));
+  it("does not re-assign an issue already assigned to the target user", async () => {
+    const r = await run(["8"], fake({ "gh api repos/acme/skills/issues/8": JSON.stringify({ ...ISSUE, assignees: [{ login: "octocat" }] }) }));
     expect(r.code).toBe(0);
     expect(r.out).toContain("already assigned to octocat");
     expect(writes(r.calls).some((c) => c.startsWith("gh api -X POST"))).toBe(false);
   });
 
-  it("stays on the session's branch and only assigns in a Claude Code web (cloud) session", () => {
-    const r = run(["8"], fake(), { CLAUDE_CODE_REMOTE: "true" });
+  it("stays on the session's branch and only assigns in a Claude Code web (cloud) session", async () => {
+    const r = await run(["8"], fake(), { CLAUDE_CODE_REMOTE: "true" });
     expect(r.code).toBe(0);
     expect(r.calls.some((c) => c.startsWith("git ls-remote") || c.startsWith("git fetch") || c.startsWith("git switch") || c.startsWith("git push"))).toBe(
       false,
@@ -114,7 +139,44 @@ describe("start-issue", () => {
     expect(writes(r.calls)).toEqual(["gh api -X POST repos/acme/skills/issues/8/assignees -f assignees[]=octocat"]);
   });
 
-  it("refuses without writing anything", () => {
+  it("falls back to a direct REST call over fetch when gh itself is missing (ENOENT), using GH_TOKEN", async () => {
+    const f = fake({
+      "gh api repos/acme/skills/issues/8": ENOENT(),
+      "gh api -X POST repos/acme/skills/issues/8/assignees": ENOENT(),
+    });
+    const { fn, calls: fetchCalls } = fakeFetch({
+      "GET https://api.github.com/repos/acme/skills/issues/8": { status: 200, body: ISSUE },
+      "POST https://api.github.com/repos/acme/skills/issues/8/assignees": { status: 201, body: { id: 1 } },
+    });
+    const r = await run(["8", "--assignee", "octocat"], f, { GH_TOKEN: "proxy-injected" }, fn);
+    expect(r.code).toBe(0);
+    expect(fetchCalls).toEqual([
+      "GET https://api.github.com/repos/acme/skills/issues/8",
+      "POST https://api.github.com/repos/acme/skills/issues/8/assignees",
+    ]);
+    expect(r.out).toContain("assigned to octocat");
+  });
+
+  it("fails with a clear message pointing at the GitHub MCP tool when gh is missing and no token is available", async () => {
+    const f = fake({ "gh api repos/acme/skills/issues/8": ENOENT() });
+    const r = await run(["8"], f, {});
+    expect(r.code).toBe(1);
+    expect(r.out).toContain("gh CLI not found");
+    expect(r.out).toContain("GitHub MCP tool");
+  });
+
+  it("fails with a clear message when gh is missing and the REST fallback itself fails", async () => {
+    const f = fake({ "gh api repos/acme/skills/issues/8": ENOENT() });
+    const { fn } = fakeFetch({
+      "GET https://api.github.com/repos/acme/skills/issues/8": { status: 401, body: { message: "Bad credentials" } },
+    });
+    const r = await run(["8"], f, { GH_TOKEN: "bad-token" }, fn);
+    expect(r.code).toBe(1);
+    expect(r.out).toContain("401");
+    expect(r.out).toContain("GitHub MCP tool");
+  });
+
+  it("refuses without writing anything", async () => {
     const cases = [
       fake({ "gh api repos/acme/skills/issues/8": JSON.stringify({ ...ISSUE, state: "closed" }) }),
       fake({ "gh api repos/acme/skills/issues/8": JSON.stringify({ ...ISSUE, pull_request: {} }) }),
@@ -123,16 +185,16 @@ describe("start-issue", () => {
       fake({ "gh api repos/acme/skills/issues/8": Object.assign(new Error("exit 1"), { stderr: "no issue found\n" }) }),
     ];
     const outputs = ["is closed", "is a pull request", "uncommitted changes", "not logged in", "start-issue failed: no issue found"];
-    cases.forEach((f, i) => {
-      const r = run(["8"], f);
+    for (const [i, f] of cases.entries()) {
+      const r = await run(["8"], f);
       expect(r.code, outputs[i]).toBe(1);
       expect(r.out).toContain(outputs[i]);
       expect(writes(r.calls)).toEqual([]);
-    });
+    }
   });
 
-  it("prints usage and exits 2 without an issue number", () => {
-    const r = run(["--base", "main"]);
+  it("prints usage and exits 2 without an issue number", async () => {
+    const r = await run(["--base", "main"]);
     expect(r.code).toBe(2);
     expect(r.out).toMatch(/^Usage: pnpm start-issue <number>/);
     expect(r.calls).toEqual([]);
