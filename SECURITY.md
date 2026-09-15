@@ -20,7 +20,7 @@ Nunca abra uma issue pública para uma vulnerabilidade: uma skill instalada em m
 - scripts com `#!` e bit executável;
 - limite de tamanho do `SKILL.md`.
 
-**Snyk Agent Scan (`security-scan.yml`)** roda `uvx snyk-agent-scan@latest skills --ci` em push para `main` e em PRs abertos do próprio repositório. PRs de fork não têm acesso ao `SNYK_TOKEN`, então o scan roda depois do merge; o validador roda sempre.
+**Snyk Agent Scan (`security-scan.yml`)** roda `uvx snyk-agent-scan@latest skills --ci --dangerously-run-mcp-servers` em push para `main` e em PRs abertos do próprio repositório. PRs de fork não têm acesso ao `SNYK_TOKEN`, então o scan roda depois do merge; o validador roda sempre.
 
 **Integridade na instalação**: `skills-registry.json` carrega `sha256` por arquivo e `contentHash` por skill. O CLI `mass-skills` recusa um download cujo hash difere e não escreve nada no diretório do agente. `npx skills add` e o marketplace do Claude Code não verificam hash.
 

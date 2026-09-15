@@ -259,7 +259,7 @@ Proof: `pnpm vitest run test/repo/workflows.test.ts -t "ci workflow"`
 **C73** - ✅ `pages.yml` dispara em `push` em `main`, tem `pages: write` e `id-token: write`, usa `withastro/action` com `path: apps/site` e `package-manager: pnpm@11`, e `actions/deploy-pages` (CI-01, AC 73)
 Proof: `pnpm vitest run test/repo/workflows.test.ts -t "pages workflow"`
 
-**C74** - ✅ `security-scan.yml` dispara em `push` em `main` e `pull_request`, condiciona o passo Snyk a `push || head.repo.full_name == github.repository`, roda `uvx snyk-agent-scan@latest skills --ci` com `SNYK_TOKEN` e as `--ignore-risks` da allowlist (CI-02, AC 74)
+**C74** - ✅ `security-scan.yml` dispara em `push` em `main` e `pull_request`, condiciona o passo Snyk a `push || head.repo.full_name == github.repository`, roda `uvx snyk-agent-scan@latest skills --ci --dangerously-run-mcp-servers` com `SNYK_TOKEN` e as `--ignore-risks` da allowlist (CI-02, AC 74; flag acrescentada em 2026-09-15: `--ci` da versão 0.6.3 exige `--dangerously-run-mcp-servers`, sem efeito aqui pois não há MCP config)
 Proof: `pnpm vitest run test/repo/workflows.test.ts -t "security scan workflow"`
 
 **C75** - ✅ `pnpm exec tsx tools/allowlist.ts` sai com `1` e `Allowlist entry expired: <risk> <skill> <expiresAt>` para entrada vencida, e imprime `--ignore-risks a,b` para entradas vigentes; o passo roda sem condição no workflow (CI-02, AC 75)

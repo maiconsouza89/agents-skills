@@ -27,4 +27,6 @@ jobs:
         if: ${{ github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository }}
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        run: uvx snyk-agent-scan@latest skills --ci ${{ steps.allowlist.outputs.flags }}
+        # --dangerously-run-mcp-servers: --ci now requires it (snyk-agent-scan 0.6.3). We scan a plain
+        # skills directory, not an MCP config, so no stdio server is ever started - the flag is inert here.
+        run: uvx snyk-agent-scan@latest skills --ci --dangerously-run-mcp-servers ${{ steps.allowlist.outputs.flags }}
