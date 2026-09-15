@@ -1,0 +1,11 @@
+{
+  "extends": "astro/tsconfigs/strict",
+  "compilerOptions": {
+    "paths": {
+      "@mass-solutions/skills-core": ["../../packages/core/src/index.ts"],
+      "@mass-solutions/skills-cli/agents": ["../../packages/cli/src/agents.ts"]
+    }
+  },
+  "include": [".astro/types.d.ts", "src/**/*"],
+  "exclude": ["dist"]
+}

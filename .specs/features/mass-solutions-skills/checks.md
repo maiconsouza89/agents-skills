@@ -206,37 +206,37 @@ Proof: `pnpm vitest run packages/cli/test/download.test.ts -t "default base url"
 
 ### S6 - Site bilíngue · ~25 files · ~90 KB · ~22k
 
-**C61** - `pnpm build` gera `/`, `/skills/<name>/` ×5, `/install/`, `/agents/`, `/search-index.json`, `/404.html` e os equivalentes sob `/pt-br/`, e todo link interno começa com `/mass-solutions-skills/` (SITE-01, AC 61)
+**C61** - ✅ `pnpm build` gera `/`, `/skills/<name>/` ×5, `/install/`, `/agents/`, `/search-index.json`, `/404.html` e os equivalentes sob `/pt-br/`, e todo link interno começa com `/mass-solutions-skills/` (SITE-01, AC 61)
 Proof: `pnpm vitest run apps/site/test/build.test.ts -t "generates every route"`
 
-**C62** - `content.config.ts` usa `glob()` com `base` no catálogo (`../../skills` ou `MASS_CATALOG_ROOT`) e não existe cópia de `SKILL.md` sob `apps/site/` (SITE-01, AC 62)
+**C62** - ✅ `content.config.ts` usa `glob()` com `base` no catálogo (`../../skills` ou `MASS_CATALOG_ROOT`) e não existe cópia de `SKILL.md` sob `apps/site/` (SITE-01, AC 62)
 Proof: `pnpm vitest run apps/site/test/build.test.ts -t "reads the catalog in place"`
 
-**C63** - A home lista as 5 skills agrupadas por categoria com rótulo do idioma, ordenadas por `name`, com `name`, `description`, `version`, campo de busca, filtro por categoria e link para a mesma página no outro idioma (SITE-01, AC 63)
+**C63** - ✅ A home lista as 5 skills agrupadas por categoria com rótulo do idioma, ordenadas por `name`, com `name`, `description`, `version`, campo de busca, filtro por categoria e link para a mesma página no outro idioma (SITE-01, AC 63)
 Proof: `pnpm vitest run apps/site/test/build.test.ts -t "home lists grouped and ordered"`
 
-**C64** - Busca sem resultado mostra `No skills match "<termo>"` / `Nenhuma skill corresponde a "<termo>"` sem esconder o campo (jsdom sobre o HTML gerado) (SITE-01, AC 64)
+**C64** - ✅ Busca sem resultado mostra `No skills match "<termo>"` / `Nenhuma skill corresponde a "<termo>"` sem esconder o campo (jsdom sobre o HTML gerado) (SITE-01, AC 64)
 Proof: `pnpm vitest run apps/site/test/search.test.ts -t "no match message"`
 
-**C65** - A página da skill mostra os 3 pedaços da description, corpo em inglês nas duas rotas, `metadata`, `files[]` com `bytes`, `contentHash`, link do fonte e o painel com os 3 comandos e o aviso de hash (SITE-02, AC 65)
+**C65** - ✅ A página da skill mostra os 3 pedaços da description, corpo em inglês nas duas rotas, `metadata`, `files[]` com `bytes`, `contentHash`, link do fonte e o painel com os 3 comandos e o aviso de hash (SITE-02, AC 65)
 Proof: `pnpm vitest run apps/site/test/build.test.ts -t "skill page content"`
 
-**C66** - Skill sem `references/`, `scripts/`, `assets/` omite a seção de arquivos adicionais e lista só `SKILL.md` (SITE-02, AC 66)
+**C66** - ✅ Skill sem `references/`, `scripts/`, `assets/` omite a seção de arquivos adicionais e lista só `SKILL.md` (SITE-02, AC 66)
 Proof: `pnpm vitest run apps/site/test/build.test.ts -t "minimal skill omits extra files"`
 
-**C67** - Nome em `deprecated` gera `/skills/<old>/` com `Deprecated since <since>`, `replacedBy` e sem painel de instalação (build sobre fixture com `MASS_CATALOG_ROOT`) (SITE-02, AC 67)
+**C67** - ✅ Nome em `deprecated` gera `/skills/<old>/` com `Deprecated since <since>`, `replacedBy` e sem painel de instalação (build sobre fixture com `MASS_CATALOG_ROOT`) (SITE-02, AC 67)
 Proof: `pnpm vitest run apps/site/test/deprecated.test.ts -t "deprecated page"`
 
-**C68** - `/install/` apresenta os 3 caminhos em ordem com o que cada um verifica; `/agents/` lista os 8 agentes com id, path de projeto e global (SITE-02, AC 68)
+**C68** - ✅ `/install/` apresenta os 3 caminhos em ordem com o que cada um verifica; `/agents/` lista os 8 agentes com id, path de projeto e global (SITE-02, AC 68)
 Proof: `pnpm vitest run apps/site/test/build.test.ts -t "install and agents pages"`
 
-**C69** - `/404.html` existe e liga para `/` e `/pt-br/` (SITE-01, AC 69)
+**C69** - ✅ `/404.html` existe e liga para `/` e `/pt-br/` (SITE-01, AC 69)
 Proof: `pnpm vitest run apps/site/test/build.test.ts -t "404 page"`
 
-**C70** - O CSS gerado usa fonte monoespaçada em `body`, `#fdfcfc` de fundo, `#201d1d` de tinta, `border-radius: 4px` só em seletores interativos, nenhum `box-shadow` nem `gradient`; a home usa `[+]`/`[-]` como marcadores (SITE-01, AC 70)
+**C70** - ✅ O CSS gerado usa fonte monoespaçada em `body`, `#fdfcfc` de fundo, `#201d1d` de tinta, `border-radius: 4px` só em seletores interativos, nenhum `box-shadow` nem `gradient`; a home usa `[+]`/`[-]` como marcadores (SITE-01, AC 70)
 Proof: `pnpm vitest run apps/site/test/build.test.ts -t "design tokens"`
 
-**C71** - Nenhuma página além da home contém `<script`; a home contém um único `<script` (SITE-01, AC 71)
+**C71** - ✅ Nenhuma página além da home contém `<script`; a home contém um único `<script` (SITE-01, AC 71)
 Proof: `pnpm vitest run apps/site/test/build.test.ts -t "zero client js outside home"`
 
 ### S7 - CI, Pages e scan de segurança · 8 files · ~15 KB · ~4k

@@ -7,3 +7,4 @@ dist/
 apps/site/dist/
 .astro/
 *.tsbuildinfo
+.astro-build.lock

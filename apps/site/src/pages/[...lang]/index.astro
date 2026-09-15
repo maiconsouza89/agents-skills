@@ -1,0 +1,106 @@
+---
+import Base from "../../layouts/Base.astro";
+import { groupedByCategory } from "../../lib/catalog";
+import { href, langPaths, localized, t, type Lang } from "../../lib/i18n";
+
+export function getStaticPaths() {
+  return langPaths();
+}
+
+const { lang } = Astro.props as { lang: Lang };
+const d = t(lang);
+const groups = groupedByCategory();
+const indexUrl = href("search-index.json");
+const noMatchTemplate = d.noMatch("__TERM__");
+---
+
+<Base lang={lang} title={d.nav.catalog} path="" description={d.tagline}>
+  <h1>{d.siteName}</h1>
+  <p>{d.tagline}</p>
+
+  <form class="search" data-search role="search" onsubmit="return false">
+    <label>
+      {d.searchLabel}
+      <input type="search" name="q" id="q" placeholder={d.searchPlaceholder} autocomplete="off" />
+    </label>
+    <label>
+      {d.filterLabel}
+      <select name="category" id="category">
+        <option value="">{d.allCategories}</option>
+        {groups.map(({ category }) => <option value={category.id}>{category[lang]}</option>)}
+      </select>
+    </label>
+  </form>
+
+  <p data-no-match hidden data-template={noMatchTemplate}></p>
+
+  <div data-catalog data-ready="0">
+    {
+      groups.map(({ category, skills }) => (
+        <section data-category={category.id}>
+          <h2>
+            <span class="marker">[+]</span>
+            {category[lang]}
+          </h2>
+          <ul class="rows">
+            {skills.map((s) => (
+              <li data-skill data-name={s.name} data-category={s.category} data-tags={s.tags.join(" ")}>
+                <span class="marker">[+]</span>
+                <a href={localized(lang, `skills/${s.name}/`)}>
+                  <strong>{s.name}</strong>
+                </a>
+                <span class="meta">
+                  {" "}
+                  {d.version} {s.version}
+                </span>
+                <p data-description>{s.description}</p>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))
+    }
+  </div>
+
+  <script is:inline define:vars={{ indexUrl }}>
+    // Search and category filter over search-index.json; everything else on this site ships without JavaScript.
+    (async () => {
+      const q = document.getElementById("q");
+      const category = document.getElementById("category");
+      const noMatch = document.querySelector("[data-no-match]");
+      const catalog = document.querySelector("[data-catalog]");
+      const template = noMatch.getAttribute("data-template");
+      let index = [];
+      try {
+        const res = await fetch(indexUrl);
+        index = await res.json();
+      } catch {
+        index = [];
+      }
+      const byName = new Map(index.map((s) => [s.name, s]));
+      const items = Array.from(catalog.querySelectorAll("[data-skill]"));
+      const apply = () => {
+        const term = q.value.trim().toLowerCase();
+        const cat = category.value;
+        let visible = 0;
+        for (const li of items) {
+          const name = li.getAttribute("data-name");
+          const entry = byName.get(name) || { name, description: "", tags: [], category: li.getAttribute("data-category") };
+          const hay = [entry.name, entry.description, ...(entry.tags || [])].join(" ").toLowerCase();
+          const show = (!term || hay.includes(term)) && (!cat || entry.category === cat);
+          li.hidden = !show;
+          if (show) visible++;
+        }
+        for (const section of catalog.querySelectorAll("section[data-category]")) {
+          section.hidden = Array.from(section.querySelectorAll("[data-skill]")).every((li) => li.hidden);
+        }
+        noMatch.hidden = visible > 0;
+        noMatch.textContent = visible > 0 ? "" : template.replace("__TERM__", q.value.trim());
+      };
+      q.addEventListener("input", apply);
+      category.addEventListener("change", apply);
+      apply();
+      catalog.setAttribute("data-ready", "1");
+    })();
+  </script>
+</Base>

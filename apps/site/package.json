@@ -5,7 +5,16 @@
   "license": "MIT",
   "type": "module",
   "private": true,
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview"
+  },
   "dependencies": {
-    "@mass-solutions/skills-core": "workspace:*"
+    "@mass-solutions/skills-core": "workspace:*",
+    "astro": "^7.3.2"
+  },
+  "devDependencies": {
+    "jsdom": "^30.0.1"
   }
 }
