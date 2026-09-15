@@ -114,7 +114,7 @@ describe("site build", () => {
     expect(bodies[0]).toBe(bodies[1]);
   });
 
-  it("minimal skill omits the extra-files section and lists only SKILL.md; a skill with references/ shows it", () => {
+  it("minimal skill omits extra files section and lists only SKILL.md; a skill with references/ shows it", () => {
     const minimal = dom(DIST, "skills/mass-security-checklist/index.html");
     expect(minimal.querySelector("[data-extra-files]")).toBeNull();
     expect([...minimal.querySelectorAll("[data-file]")].map((r) => r.getAttribute("data-file"))).toEqual(["SKILL.md"]);
