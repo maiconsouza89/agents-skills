@@ -4,6 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { buildRegistry, type Registry } from "@mass-solutions/skills-core";
 import { makeRoot, makeSkill, validFrontmatter } from "../../core/test/helpers.js";
+import { DEFAULT_REF } from "../src/download.js";
 import { run } from "../src/run.js";
 import type { RunContext } from "../src/types.js";
 
@@ -44,7 +45,7 @@ export interface Fixture {
 }
 
 /** Serve `<root>` over HTTP the way raw.githubusercontent.com would: `/<ref>/skills-registry.json` and `/<ref>/<path>`. */
-export async function serveCatalog(root: string, ref = "main"): Promise<Fixture> {
+export async function serveCatalog(root: string, ref = DEFAULT_REF): Promise<Fixture> {
   const registry = buildRegistry(root, { now: NOW });
   const overrides = new Map<string, Override>();
   const hits = new Map<string, number>();

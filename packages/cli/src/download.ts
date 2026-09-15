@@ -1,8 +1,13 @@
+import { createRequire } from "node:module";
 import { REGISTRY_FILE, REPO, type Registry } from "@mass-solutions/skills-core";
 import { CliError } from "./types.js";
 
+const require = createRequire(import.meta.url);
+const { version: PACKAGE_VERSION } = require("../package.json") as { version: string };
+
 export const DEFAULT_BASE_URL = `https://raw.githubusercontent.com/${REPO}/`;
-export const DEFAULT_REF = "main";
+/** The release tag matching this CLI build, e.g. `v0.1.1`. `--ref` overrides it for any other ref. */
+export const DEFAULT_REF = `v${PACKAGE_VERSION}`;
 export const FETCH_TIMEOUT_MS = 30_000;
 
 /** Base URL (ending in `/`) from `MASS_SKILLS_BASE_URL`, else the raw GitHub URL of the catalog repo. */
