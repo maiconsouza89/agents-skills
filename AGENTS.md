@@ -54,7 +54,7 @@ Versões escolhidas em 2026-09-14 consultando `npm view` e a documentação ofic
 
 - `pnpm --filter site build` (ou `pnpm build` na raiz) gera `apps/site/dist/` com `base: /agents-skills/`, rotas `/` (EN) e `/pt-br/`.
 - O catálogo é lido em `../../skills` via `glob()`; `MASS_CATALOG_ROOT` aponta para outro catálogo (os testes constroem um fixture com skill deprecada). `skills-registry.json` é lido do diretório pai do catálogo, então rode `pnpm registry` antes de construir o site.
-- Chrome traduzido EN/PT em `src/lib/i18n.ts`; corpo das skills em inglês nas duas rotas. Tokens visuais em `src/styles/global.css`, a partir de `DESIGN.md`.
+- Chrome traduzido EN/PT em `src/lib/i18n.ts`; corpo das skills em inglês nas duas rotas. Tokens visuais em `src/styles/global.css`, com os mesmos nomes de token do `DESIGN.md` (`--color-surface-1`, `--radius-lg`, ...); a nota de adaptação no topo do `DESIGN.md` diz o que foi substituído. Fontes (Inter, JetBrains Mono) vêm da Fonts API do Astro com `fontProviders.npm()`, lidas do `node_modules`, sem rede no build.
 - Único JavaScript do site: a busca e o filtro da home sobre `search-index.json` (`<script is:inline>`). As demais páginas não têm `<script>`.
 - Os testes constroem o site de verdade (`apps/site/test/helpers.ts`), removendo `BASE_URL` do ambiente que o vitest exporta e serializando builds concorrentes com um lock.
 
