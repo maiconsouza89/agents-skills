@@ -18,9 +18,9 @@
 ## Handoff
 
 **Feature**: mass-solutions-skills
-**Where**: build completo - B1 (S1-S4), B2 (S5) e B3 (S6-S8) fechados e verdes; 82/82 checks marcados em `checks.md`
+**Where**: rodada 1 do Verifier (`5c157b1`) devolveu FAIL com 5 lacunas; B4 corrigiu todas (C83-C86, provas de C45/C58/C59/C68 reforçadas); 86/86 checks marcados
 **In progress**: nada
-**Next step**: o orquestrador despacha o Verifier (fresh, não autor) sobre `0fff8f7..HEAD` com os 82 checks, perfil `standard`; depois `validate_verification.py mass-solutions-skills`; go-live (repo, push, branch protection, Pages, `SNYK_TOKEN`, arquivar rascunho) só com go-ahead explícito
+**Next step**: o orquestrador despacha o Verifier para a **rodada 2 - scoped** (diff do B4 + os vereditos não-PASS da rodada 1: F5, cobertura de exits e 404 de arquivo, test policy de `agents.ts`/`update.ts`/`new-skill.ts`, rule ids 17), provas em full no novo HEAD; depois `validate_verification.py mass-solutions-skills`; go-live só com go-ahead explícito
 **Blockers**: open questions 1-4 (go-live) não bloqueiam a verificação local
 **Uncommitted**: nada
-**Branch**: main
+**Branch**: feature/implement-v1

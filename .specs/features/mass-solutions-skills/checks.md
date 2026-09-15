@@ -5,7 +5,7 @@ Plan: `.specs/features/mass-solutions-skills/plan.md`
 
 ## Intent
 
-82 checks in 8 slices · 11 one-way doors · 4 open (go-live), of which 0 block the build
+86 checks in 8 slices · 11 one-way doors · 4 open (go-live), of which 0 block the build (C83-C86 acrescentados após a rodada 1 do Verifier)
 
 Runner: `vitest` 5 na raiz (workspace), invocado como `pnpm vitest run <arquivo> -t "<nome>"`. Testes de repositório em `test/repo/`, testes de pacote em `packages/*/test/` e `apps/site/test/`. Provas de spike são scripts em `tools/spike/` com exit code. O CLI expõe `run(argv, { cwd, env, stdout, stderr })` para os testes chamarem em processo, e lê a base de download de `MASS_SKILLS_BASE_URL` (default `https://raw.githubusercontent.com/maiconsouza89/agents-skills/`), o que permite servir um clone por HTTP local nos testes.
 
@@ -24,6 +24,9 @@ Proof: `pnpm vitest run test/repo/new-skill.test.ts -t "scaffolds a skill that v
 
 **C4** - ✅ `pnpm new-skill` com nome fora de `^mass-[a-z0-9]+(-[a-z0-9]+)*$` sai com `2`, imprime a regra e não cria arquivo (GOV-01, AC 4)
 Proof: `pnpm vitest run test/repo/new-skill.test.ts -t "rejects an invalid name with exit 2"`
+
+**C85** - ✅ `pnpm new-skill` com o nome de uma skill que já existe sai com `2`, imprime `skills/<name>/ already exists` e não altera o `SKILL.md` existente (GOV-01, AC 4; acrescentado após a rodada 1)
+Proof: `pnpm vitest run test/repo/new-skill.test.ts -t "refuses an existing skill with exit 2"`
 
 **C5** - ✅ `LICENSE` é MIT, `skills/LICENSE` é CC-BY-4.0, e ambos os READMEs declaram a divisão (GOV-02, AC 5)
 Proof: `pnpm vitest run test/repo/docs.test.ts -t "licenses"`
@@ -62,6 +65,9 @@ Proof: `pnpm vitest run packages/core/test/validate.test.ts -t "walks only the c
 
 **C16** - ✅ Um achado é impresso como `<rule-id> <path>:<line> <mensagem>` e o processo sai com `1` (CORE-01, AC 16)
 Proof: `pnpm vitest run packages/core/test/validate-bin.test.ts -t "prints one line per finding and exits 1"`
+
+**C86** - ✅ Frontmatter ausente, não terminado ou YAML inválido gera `frontmatter/parse` (CORE-01, AC 16; 17º rule id, acrescentado após a rodada 1)
+Proof: `pnpm vitest run packages/core/test/rules.test.ts -t "frontmatter parse error"`
 
 **C17** - ✅ Chave fora das 6 do spec gera `frontmatter/unknown-key` (CORE-01, AC 17)
 Proof: `pnpm vitest run packages/core/test/rules.test.ts -t "unknown key"`
@@ -156,6 +162,9 @@ Proof: `pnpm vitest run packages/cli/test/list.test.ts -t "search matches case-i
 **C45** - ✅ `install` grava os arquivos em `<agent path>/<name>/` para cada um dos 8 agentes (projeto e, com `--global`, o path global) e registra a entrada no lockfile (CLI-02, AC 45)
 Proof: `pnpm vitest run packages/cli/test/install.test.ts -t "installs into every agent path"`
 
+**C83** - ✅ A tabela `AGENTS` é igual à door 10, comparada com uma tabela literal (8 ids, path de projeto e global) que nenhuma prova deriva do módulo (CLI-02, AC 45; acrescentado após a rodada 1: mutante F5)
+Proof: `pnpm vitest run packages/cli/test/agents.test.ts -t "agents table matches door 10"`
+
 **C46** - ✅ `sha256` de arquivo ou `contentHash` divergente: imprime `Integrity check failed for <name>: <path>`, exit `1`, nenhum arquivo no agente e lockfile intacto (2 casos) (CLI-02, AC 46)
 Proof: `pnpm vitest run packages/cli/test/install.test.ts -t "integrity failure writes nothing"`
 
@@ -180,6 +189,9 @@ Proof: `pnpm vitest run packages/cli/test/lockfile.test.ts -t "lockfile shape an
 **C53** - ✅ `update`: hash local ≠ gravado → `locally modified, skipped (use --force)` sem tocar; igual e registry maior → reinstala e atualiza o lockfile; igual e igual → `up to date` (3 casos) (CLI-03, AC 53)
 Proof: `pnpm vitest run packages/cli/test/update.test.ts -t "update three outcomes"`
 
+**C84** - ✅ `update` sobre skill do lockfile cuja pasta sumiu imprime `<name>: missing (run mass-skills install)`; sobre skill ausente do registry imprime `<name>: not in registry`; nos dois casos nada é escrito (CLI-03, AC 53; acrescentado após a rodada 1)
+Proof: `pnpm vitest run packages/cli/test/update.test.ts -t "update reports missing and not-in-registry"`
+
 **C54** - ✅ `update --force` sobrescreve a skill modificada e grava `installedAt` novo (CLI-03, AC 54)
 Proof: `pnpm vitest run packages/cli/test/update.test.ts -t "force overwrites local edits"`
 
@@ -192,7 +204,7 @@ Proof: `pnpm vitest run packages/cli/test/doctor.test.ts -t "doctor reports ever
 **C57** - ✅ `remove` apaga só nos agentes registrados para a skill e remove a entrada do lockfile, exit `0` (CLI-03, AC 57)
 Proof: `pnpm vitest run packages/cli/test/remove.test.ts -t "removes only registered agents"`
 
-**C58** - ✅ Registry ou arquivo `404`, ou erro de rede: `Failed to fetch <url>: <status ou erro>`, exit `1`, nada alterado (2 casos) (CLI-02, AC 58)
+**C58** - ✅ Registry `404`, arquivo de `files[]` `404` (HTTP real, registry `200`), ou erro de rede: `Failed to fetch <url>: <status ou erro>`, exit `1`, nada alterado (3 casos) (CLI-02, AC 58)
 Proof: `pnpm vitest run packages/cli/test/install.test.ts -t "fetch failure"`
 
 **C59** - ✅ Tabela de exit codes: `0` sucesso, `1` execução, `2` uso; erros vão para `stderr` e não para `stdout` (CLI-01, AC 59)
@@ -277,7 +289,7 @@ Proof: `pnpm vitest run packages/core/test/registry.test.ts -t "committed regist
 
 | Set (size) | Member -> proof | Unproven |
 | --- | --- | --- |
-| validator rule ids (16) | `frontmatter/unknown-key` C17 · `frontmatter/name` C18 · `frontmatter/description` C19 · `frontmatter/metadata` C20 · `frontmatter/compatibility` C21 · `content/binary` C22 · `security/secret` C23 · `security/shell` C24 · `security/prompt-injection` C25 · `scripts/shebang` C26 · `scripts/executable` C26 · `size/tokens-warn` C27 · `size/tokens` C27 · `links/missing` C28 · `evals/shape` C29 · `deprecated/conflict` C32 | - |
+| validator rule ids (17) | `frontmatter/parse` C86 · `frontmatter/unknown-key` C17 · `frontmatter/name` C18 · `frontmatter/description` C19 · `frontmatter/metadata` C20 · `frontmatter/compatibility` C21 · `content/binary` C22 · `security/secret` C23 · `security/shell` C24 · `security/prompt-injection` C25 · `scripts/shebang` C26 · `scripts/executable` C26 · `size/tokens-warn` C27 · `size/tokens` C27 · `links/missing` C28 · `evals/shape` C29 · `deprecated/conflict` C32 | - |
 | secret patterns (4) | C23, table-driven over all 4 | - |
 | shell patterns (5) | C24, table-driven over all 5 | - |
 | prompt-injection phrases (5) | C25, table-driven over all 5 | - |
@@ -286,17 +298,17 @@ Proof: `pnpm vitest run packages/core/test/registry.test.ts -t "committed regist
 | description cases (3) | empty C19 · over 1024 C19 · off formula C19 | - |
 | size thresholds (3) | 3001 tokens warn C27 · 6001 tokens fail C27 · 501 lines fail C27 | - |
 | CLI commands (8) | `list` C43 · `search` C44 · `install` C45 · `update` C53 · `remove` C57 · `doctor` C56 · `validate` C60 · `registry` C60 | - |
-| agent adapters (8) | `claude-code` C45 · `cursor` C45 · `codex` C45 · `github-copilot` C45 · `opencode` C45 · `windsurf` C45 · `gemini-cli` C45 · `cline` C45 | - |
+| agent adapters (8) | `claude-code` C45, C83 · `cursor` C45, C83 · `codex` C45, C83 · `github-copilot` C45, C83 · `opencode` C45, C83 · `windsurf` C45, C83 · `gemini-cli` C45, C83 · `cline` C45, C83 - esperado literal em `packages/cli/test/door10.ts`, não derivado de `AGENTS` | - |
 | install refusals (5) | integrity C46 · unsupported agent C48 · deprecated C50 · unknown skill C50 · unsafe path C51 | - |
 | unsafe path cases (3) | `..` C51 · leading `/` C51 · bad name C51 | - |
-| update outcomes (4) | `locally modified` C53 · `update available` C53 · `up to date` C53 · `--force` C54 | - |
+| update outcomes (6) | `locally modified` C53 · `update available` C53 · `up to date` C53 · `--force` C54 · `missing` C84 · `not in registry` C84 | - |
 | doctor states (4) | `ok` C56 · `missing` C56 · `modified` C56 · `deprecated` C56 | - |
-| CLI exit codes (3) | `0` C59 · `1` C59 · `2` C59 | - |
+| CLI exit codes (3) | `0` C59 · `1` C59 · `2` C59 (14 linhas, cobrindo `list`, `install`, `update`, `doctor`, `remove`) | - |
 | `GET raw/.../skills-registry.json` statuses (2) | 200 C43 · 404 C58 | - |
-| `GET raw/.../skills/<name>/<path>` statuses (2) | 200 C45 · 404 C58 | - |
+| `GET raw/.../skills/<name>/<path>` statuses (2) | 200 C45 · 404 C58 (HTTP 404 real de um arquivo com registry 200) | - |
 | `mass-skills list`/`search` exits (3) | 0 C43 · 1 C58 · 2 C59 | - |
 | `mass-skills install` exits (3) | 0 C45 · 1 C46 · 2 C48 | - |
-| `mass-skills update`/`doctor` exits (3) | 0 C55 · 1 C56 · 2 C59 | - |
+| `mass-skills update`/`doctor` exits (3) | 0 C55 · 1 C56 · 2 C59 (`update --bogus`, `doctor --bogus`, `remove` sem args na tabela) | - |
 | site routes under `/agents-skills/` (8) | `/` C63 · `/pt-br/` C61 · `/skills/<name>/` C65 · `/pt-br/skills/<name>/` C61 · `/install/` C68 · `/agents/` C68 · `/search-index.json` C61 · `/404.html` C69 | - |
 | site route statuses (2) | 200 C61 · 404 C69 | - |
 | `.claude-plugin/marketplace.json` readers (3) | Claude Code validate C41 · Claude Code install C42 · `npx skills` C40 | - |
@@ -327,12 +339,12 @@ Evidence:
 
 - `packages/core/src/rules/*.ts`: 16 rule ids, ~30 branch points -> decides, not across a boundary -> C17-C29, C32 at its own layer
 - `packages/core/src/registry.ts`: ordering, hashing, `deprecated` merge, 4 branch points -> decides -> C30, C31
-- `packages/cli/src/commands/install.ts`: agent resolution (8 + auto), integrity, deprecated, unsafe path, temp-then-move; ~12 branch points -> decides, reached across a boundary (HTTP + fs) -> C45-C51 at the boundary (HTTP local) and `agents.ts` table at its own layer (C45 table-driven)
-- `packages/cli/src/commands/update.ts`: 3-way outcome + `--force` + `--check` -> decides -> C53-C55
+- `packages/cli/src/commands/install.ts`: agent resolution (8 + auto), integrity, deprecated, unsafe path, temp-then-move; ~12 branch points -> decides, reached across a boundary (HTTP + fs) -> C45-C51 at the boundary (HTTP local) and `agents.ts` table at its own layer (C83, literal table)
+- `packages/cli/src/commands/update.ts`: 3-way outcome + `missing` + `not-in-registry` + `--force` + `--check` -> decides -> C53-C55, C84
 - `packages/cli/src/commands/doctor.ts`: 4 states -> decides -> C56
 - `packages/cli/src/download.ts`: forwards `fetch`, maps status to error -> instrumentation, covered by C58
 - `apps/site/src/**`: templates that map registry + collection to HTML, decisions only in grouping/ordering and deprecated branch -> entry points proven at the boundary (built output) -> C61-C71
-- `tools/*.ts` (`new-skill`, `stale`, `allowlist`): each 2-3 branch points -> decides -> C3, C4, C75, C78
+- `tools/*.ts` (`new-skill`, `stale`, `allowlist`): each 2-3 branch points -> decides -> C3, C4, C85, C75, C78
 
 Cost: 9 proofs at their own layer across 6 files, beyond the boundary proofs. Sem estas linhas, a tabela de agentes e as 16 regras seriam provadas só pelo caminho que o `install` e o `pnpm validate` atravessam. Estas linhas não foram gravadas em `AGENTS.md`; o build roda sob elas.
 
@@ -373,3 +385,9 @@ Appended by builder B3 (S6-S8):
 - **Boundary:** C61-C80 fechados em `ce493cc` (site), `91f5156` (workflows e tools), `c064016` (Changesets), `d3c5424` (nome do teste de C66 alinhado ao seletor da prova). Com C81/C82 de B1/B2, os 82 checks estão marcados. `pnpm check` (140 testes, 29 arquivos) e `pnpm build` (core, cli, site) verdes; cada prova de C61-C80 rodada individualmente, 22/22 PASS.
 - **Settled mid-build:** o site lê o catálogo por `MASS_CATALOG_ROOT`, que `astro.config.mjs` fixa em `../../skills` quando ausente (o código empacotado em `dist/.prerender/` não pode derivar o caminho de `import.meta.url`); `skills-registry.json` é lido do diretório pai do catálogo, então o fixture da página deprecada gera um registry com `buildRegistry`. O core e a tabela de agentes do CLI entram no site por alias do Vite para o `src` (sem passo de build antes do site; `@mass-solutions/skills-cli/agents` aponta para `packages/cli/src/agents.ts`). O vitest exporta `BASE_URL=/` em `process.env`, o que sobrescreve o `base` do Astro num build filho: `apps/site/test/helpers.ts` remove a variável e serializa builds concorrentes com um lock em disco. `search.test.ts` roda no ambiente node e monta um JSDOM explícito com `runScripts` (um `@vitest-environment jsdom` quebra `import.meta.url` dos helpers); o `fetch` do script é servido pelo próprio `search-index.json` gerado. A busca da home busca `search-index.json` por `fetch` e marca `data-ready="1"` ao terminar. `pages.yml` lê o `.nvmrc` num passo e passa o valor a `withastro/action` (a action só aceita `node-version` literal). `stale-skills.yml` usa `pnpm --silent stale` para não capturar o banner do pnpm. Changesets: `privatePackages.version: true` porque `@mass-solutions/skills-cli` é privado e um changeset misto era rejeitado; changeset inicial `minor` para os dois pacotes. O pnpm gravou `minimumReleaseAgeExclude` em `pnpm-workspace.yaml` ao instalar o Changesets (política de idade mínima); mantido e documentado em `AGENTS.md`. Sem door nova; `Flow` e `Impact` do plano continuam verdadeiros.
 - **Abandoned:** derivar o caminho do catálogo de `import.meta.url` em `src/lib/paths.ts` (resolvia para `apps/skills-registry.json` no bundle); comparar o corpo renderizado incluindo o `<h2>` do chrome (difere por idioma; a comparação usa `[data-content]`); `actions/configure-pages` separado (a `withastro/action` já sobe o artefato). Fora do escopo, observado: links relativos dentro do corpo de uma skill (`references/x.md`) apontam para uma rota inexistente do site; a lista de arquivos ao lado liga cada um ao GitHub.
+
+Batch B4 (correção após a rodada 1 do Verifier, `5c157b1`):
+
+- **Boundary:** C83-C86 abertos e fechados; C45, C58, C59, C68 reforçados. Lacunas 1-5 do `verification.md` (rodada 1) endereçadas: tabela literal da door 10 em `packages/cli/test/door10.ts` usada por `install.test.ts`, `agents.test.ts` e `apps/site/test/build.test.ts` (mutante F5 re-injetado e morto pelas duas provas); `update --bogus`, `doctor --bogus` e `remove` sem args na tabela de exit codes; `update` com `missing` e `not-in-registry` asserido; `new-skill` sobre skill existente; 404 HTTP real de um arquivo de `files[]`; `frontmatter/parse` com check id e a linha de rule ids em 17.
+- **Settled mid-build:** nenhuma decisão nova; só provas acrescentadas e reforçadas, nenhum código de produção alterado.
+- **Abandoned:** nada.
