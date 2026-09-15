@@ -56,6 +56,7 @@ Antes de instalar ou integrar novas dependências, funcionalidades ou tecnologia
 - `security-scan.yml` (`main` e PRs): `tools/allowlist.ts` roda sempre e falha com entrada vencida; `uvx snyk-agent-scan@latest skills --ci` só em push e PR do próprio repo (precisa de `SNYK_TOKEN`). O erro `X007` (limite diário da versão pública do Snyk Agent-Scan) é tratado como não-bloqueante — o step captura a saída, e só falha o job se o código de saída for diferente de zero *e* a saída não contiver `X007`; qualquer outra falha (achado real, erro de auth, etc.) continua bloqueando.
 - `stale-skills.yml` (segunda 09:00 UTC e manual): `pnpm --silent stale --days 90` alimenta a issue `Stale skills` (label `stale-skill`), fechada quando a lista fica vazia.
 - `release.yml` (tag `v*`): `pnpm check`, `pnpm build`, `gh release create --generate-notes`. Versões dos pacotes via Changesets (`pnpm changeset`); o site não é versionado.
+- O CLI baixa o catálogo por padrão em `v${version}` (`DEFAULT_REF` em `packages/cli/src/download.ts`), então toda publicação do `@mass-solutions/skills-cli` precisa de uma tag `v<versão do CLI>` no commit publicado, criada antes ou junto do `npm publish`: `pnpm changeset version` para aplicar o bump, `pnpm check` e `pnpm build`, depois a tag empurrada para que `release.yml` gere o GitHub Release, e só então o publish no npm. Uma versão publicada sem a tag correspondente quebra `install`, `update` e `search` para quem não passar `--ref`.
 
 ## Fluxo com o GitHub Project
 
