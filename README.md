@@ -175,7 +175,7 @@ The lockfile is `mass-skills.lock.json` in the project, or `~/.config/mass-skill
 
 ## How it works
 
-1. **Resolve.** The CLI reads `skills-registry.json` at the requested ref (default `main`) and resolves every skill name and agent id before touching anything. A deprecated skill is refused with a pointer to its replacement.
+1. **Resolve.** The CLI reads `skills-registry.json` at the requested ref (default is the release tag matching the installed CLI version, e.g. `v0.1.1`; override with `--ref`) and resolves every skill name and agent id before touching anything. A deprecated skill is refused with a pointer to its replacement.
 2. **Stage and verify.** Each file is downloaded into a temporary directory and its `sha256` compared with the registry; then the whole skill's `contentHash` is checked. Any mismatch aborts the run with nothing written.
 3. **Place.** Verified skills are copied into the skill directory of each target agent, in project or global scope.
 4. **Lock.** `mass-skills.lock.json` records the version, ref, hash and agents. `update`, `doctor` and `remove` work from this file, so the CLI only ever touches what it installed.

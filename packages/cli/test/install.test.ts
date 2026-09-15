@@ -1,9 +1,12 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { DEFAULT_REF } from "../src/download.js";
 import type { Lockfile } from "../src/types.js";
 import { DOOR_10 } from "./door10.js";
 import { cli, makeCatalog, makeProject, readJson, serveCatalog, type Fixture } from "./helpers.js";
+
+const REF = DEFAULT_REF.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 let fx: Fixture;
 beforeAll(async () => {
@@ -49,7 +52,7 @@ describe("install", () => {
     expect(lock.skills["mass-alpha"]).toEqual({
       version: "0.1.0",
       contentHash: alpha.contentHash,
-      ref: "main",
+      ref: DEFAULT_REF,
       agents: ["claude-code", "cursor"],
       installedAt: "2026-09-14T12:00:00.000Z",
     });
@@ -94,7 +97,7 @@ describe("install", () => {
     try {
       const r = await cli(p, ["install", "mass-alpha", "-a", "claude-code"]);
       expect(r.code).toBe(1);
-      expect(r.stderr).toMatch(/^Failed to fetch http:\/\/127\.0\.0\.1:\d+\/main\/skills\/mass-alpha\/references\/guide\.md: /);
+      expect(r.stderr).toMatch(new RegExp(`^Failed to fetch http://127\\.0\\.0\\.1:\\d+/${REF}/skills/mass-alpha/references/guide\\.md: `));
       expect(fx.hits.get("skills/mass-alpha/SKILL.md")).toBeGreaterThan(0);
       untouched(p);
     } finally {
@@ -190,7 +193,7 @@ describe("install", () => {
     try {
       const r = await cli(p, ["install", "mass-alpha", "-a", "claude-code"]);
       expect(r.code).toBe(1);
-      expect(r.stderr).toMatch(/^Failed to fetch http:\/\/127\.0\.0\.1:\d+\/main\/skills-registry\.json: 404\n$/);
+      expect(r.stderr).toMatch(new RegExp(`^Failed to fetch http://127\\.0\\.0\\.1:\\d+/${REF}/skills-registry\\.json: 404\n$`));
       untouched(p);
     } finally {
       fx.overrides.clear();
@@ -199,7 +202,7 @@ describe("install", () => {
     q.env.MASS_SKILLS_BASE_URL = "http://127.0.0.1:1/";
     const n = await cli(q, ["list"]);
     expect(n.code).toBe(1);
-    expect(n.stderr).toMatch(/^Failed to fetch http:\/\/127\.0\.0\.1:1\/main\/skills-registry\.json: .+\n$/);
+    expect(n.stderr).toMatch(new RegExp(`^Failed to fetch http://127\\.0\\.0\\.1:1/${REF}/skills-registry\\.json: .+\n$`));
     expect(n.stderr).not.toMatch(/: \d{3}\n$/);
     untouched(q);
 
@@ -209,7 +212,7 @@ describe("install", () => {
     try {
       const r = await cli(f, ["install", "mass-alpha", "-a", "claude-code"]);
       expect(r.code).toBe(1);
-      expect(r.stderr).toMatch(/^Failed to fetch http:\/\/127\.0\.0\.1:\d+\/main\/skills\/mass-alpha\/references\/guide\.md: 404\n$/);
+      expect(r.stderr).toMatch(new RegExp(`^Failed to fetch http://127\\.0\\.0\\.1:\\d+/${REF}/skills/mass-alpha/references/guide\\.md: 404\n$`));
       untouched(f);
     } finally {
       fx.overrides.clear();

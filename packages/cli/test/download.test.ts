@@ -1,14 +1,22 @@
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
-import { baseUrl, DEFAULT_BASE_URL, fileUrl, registryUrl } from "../src/download.js";
+import { baseUrl, DEFAULT_BASE_URL, DEFAULT_REF, fileUrl, registryUrl } from "../src/download.js";
+
+const packageJson = JSON.parse(readFileSync(fileURLToPath(new URL("../package.json", import.meta.url)), "utf8")) as { version: string };
 
 describe("download base url", () => {
-  it("default base url is the raw github url of the catalog repo with ref main", () => {
+  it("default base url is the raw github url of the catalog repo", () => {
     expect(DEFAULT_BASE_URL).toBe("https://raw.githubusercontent.com/maiconsouza89/agents-skills/");
     expect(baseUrl({})).toBe(DEFAULT_BASE_URL);
     expect(registryUrl({}, "main")).toBe("https://raw.githubusercontent.com/maiconsouza89/agents-skills/main/skills-registry.json");
     expect(fileUrl({}, "main", "skills/mass-x", "references/a.md")).toBe(
       "https://raw.githubusercontent.com/maiconsouza89/agents-skills/main/skills/mass-x/references/a.md",
     );
+  });
+
+  it("default ref is the release tag matching this CLI build", () => {
+    expect(DEFAULT_REF).toBe(`v${packageJson.version}`);
   });
 
   it("MASS_SKILLS_BASE_URL overrides the base and a ref is inserted after it", () => {
