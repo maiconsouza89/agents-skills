@@ -11,7 +11,7 @@ export function getStaticPaths() {
 const { lang } = Astro.props as { lang: Lang };
 const d = t(lang);
 const commands = [
-  `mass-skills install <skill> -a <agent>`,
+  `npx @mass-solutions/skills-cli install <skill> -a <agent>`,
   `npx skills add ${REPO} --skill <skill>`,
   `/plugin marketplace add ${REPO}\n/plugin install mass-solutions-skills@mass-solutions`,
 ];

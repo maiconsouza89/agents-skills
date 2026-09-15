@@ -45,6 +45,12 @@ Versões escolhidas em 2026-09-14 consultando `npm view` e a documentação ofic
 | @changesets/cli | ^3.0.3 (dev, raiz) | versiona `packages/core` e `packages/cli`; `apps/site` fica fora (`ignore` no config) |
 | commander | ^15.0.0 | parser de comandos do `mass-skills`; `exitOverride` + `configureOutput` permitem rodar o CLI em processo nos testes, sem `process.exit`; exige Node >=22.12, igual ao repo |
 
+### Decisão: publicar `@mass-solutions/skills-cli` e `@mass-solutions/skills-core` no npm (2026-09-15)
+
+O caminho de instalação 1 do site (`mass-skills install <skill> -a <agent>`) pressupunha um binário `mass-skills` já instalado globalmente, o que nunca funcionou fora do monorepo — `packages/cli` estava marcado `private: true` e nunca foi publicado, ao contrário do padrão `npx` usado no caminho 2 (`npx skills add`). Correção: removido `private: true` de `packages/cli/package.json`, adicionado `publishConfig.access: "public"` em `packages/cli` e `packages/core` (pacotes com escopo `@mass-solutions/` publicam privados por padrão), e todos os comandos exibidos no site e nos READMEs passaram a usar `npx @mass-solutions/skills-cli install <skill> -a <agent>`.
+
+Publicado em 2026-09-15 pelo mantenedor (login npm `mass-solutions`, 2FA obrigatório): `@mass-solutions/skills-core@0.1.0` e `@mass-solutions/skills-cli@0.1.1`. A primeira tentativa de publicar o `cli` na versão `0.1.0` saiu com `"@mass-solutions/skills-core": "workspace:*"` na dependência — `npm publish` (ao contrário de `pnpm publish`) não reescreve o protocolo `workspace:*`, e o registry aceitou o valor inválido sem validar; como o npm não permite sobrescrever uma versão já publicada, a correção (`"^0.1.0"`) foi publicada como `0.1.1`. **A versão `0.1.0` do `cli` ficou publicada e quebrada (dependência não resolvível) — considerar `npm deprecate @mass-solutions/skills-cli@0.1.0 "broken dependency, use >=0.1.1"`.** Verificado ponta a ponta com `npx @mass-solutions/skills-cli@0.1.1 install mass-code-review -a claude-code` em diretório limpo.
+
 ## CLI `mass-skills`
 
 - `packages/cli/bin/mass-skills.js` importa `dist/`, gerado por `pnpm build` (o core builda antes, por ordem topológica do pnpm). Em desenvolvimento: `pnpm --filter @mass-solutions/skills-cli exec tsx src/bin.ts <args>`.
@@ -64,6 +70,6 @@ Versões escolhidas em 2026-09-14 consultando `npm view` e a documentação ofic
 
 - `ci.yml` (PR e `main`): `pnpm check`, `pnpm build`, `npx -y @anthropic-ai/claude-code@latest plugin validate .`; sem secrets, roda em fork.
 - `pages.yml` (`main`): `withastro/action` em `apps/site` + `actions/deploy-pages`; o Node vem do `.nvmrc`.
-- `security-scan.yml` (`main` e PRs): `tools/allowlist.ts` roda sempre e falha com entrada vencida; `uvx snyk-agent-scan@latest skills --ci` só em push e PR do próprio repo (precisa de `SNYK_TOKEN`).
+- `security-scan.yml` (`main` e PRs): `tools/allowlist.ts` roda sempre e falha com entrada vencida; `uvx snyk-agent-scan@latest skills --ci` só em push e PR do próprio repo (precisa de `SNYK_TOKEN`). O erro `X007` (limite diário da versão pública do Snyk Agent-Scan) é tratado como não-bloqueante — o step captura a saída, e só falha o job se o código de saída for diferente de zero *e* a saída não contiver `X007`; qualquer outra falha (achado real, erro de auth, etc.) continua bloqueando.
 - `stale-skills.yml` (segunda 09:00 UTC e manual): `pnpm --silent stale --days 90` alimenta a issue `Stale skills` (label `stale-skill`), fechada quando a lista fica vazia.
 - `release.yml` (tag `v*`): `pnpm check`, `pnpm build`, `gh release create --generate-notes`. Versões dos pacotes via Changesets (`pnpm changeset`); o site não é versionado.

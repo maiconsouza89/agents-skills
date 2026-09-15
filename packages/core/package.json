@@ -4,6 +4,9 @@
   "description": "Frontmatter contract, validation rules, hashing and registry generation for Mass Solutions skills",
   "license": "MIT",
   "type": "module",
+  "publishConfig": {
+    "access": "public"
+  },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
