@@ -18,6 +18,21 @@ describe("frontmatter parse error", () => {
     const f = findingsFor("mass-x", { frontmatter: undefined, body: "no frontmatter", noSkillMd: true });
     expect(rules(f)).toContain("frontmatter/parse");
   });
+
+  // One asserted case per cause the parser distinguishes (C86 names three; the fourth is the parser's own).
+  it.each([
+    ["unterminated frontmatter", "---\nname: mass-x\ndescription: never closed\n"],
+    ["invalid YAML", "---\nname: [unclosed\n---\nbody\n"],
+    ["frontmatter is not a mapping", "---\n- just\n- a list\n---\nbody\n"],
+  ])("reports frontmatter/parse for %s", (_cause, raw) => {
+    const root = makeRoot();
+    const dir = makeSkill(root, "mass-x", { noSkillMd: true });
+    writeFileSync(join(dir, "SKILL.md"), raw);
+    const f = validateSkill(dir, { categories: CATEGORIES, today: TODAY, root });
+    const hit = f.filter((x) => x.rule === "frontmatter/parse");
+    expect(hit).toHaveLength(1);
+    expect(hit[0].message).toContain(_cause);
+  });
 });
 
 describe("unknown key", () => {

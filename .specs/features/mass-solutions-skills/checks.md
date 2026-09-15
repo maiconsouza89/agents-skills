@@ -66,7 +66,7 @@ Proof: `pnpm vitest run packages/core/test/validate.test.ts -t "walks only the c
 **C16** - ✅ Um achado é impresso como `<rule-id> <path>:<line> <mensagem>` e o processo sai com `1` (CORE-01, AC 16)
 Proof: `pnpm vitest run packages/core/test/validate-bin.test.ts -t "prints one line per finding and exits 1"`
 
-**C86** - ✅ Frontmatter ausente, não terminado ou YAML inválido gera `frontmatter/parse` (CORE-01, AC 16; 17º rule id, acrescentado após a rodada 1)
+**C86** - ✅ Cada uma das 4 causas do parser (frontmatter ausente, não terminado, YAML inválido, não-mapa) gera exatamente um `frontmatter/parse` cuja mensagem nomeia a causa (CORE-01, AC 16; 17º rule id, acrescentado após a rodada 1; reforçado após a rodada 2)
 Proof: `pnpm vitest run packages/core/test/rules.test.ts -t "frontmatter parse error"`
 
 **C17** - ✅ Chave fora das 6 do spec gera `frontmatter/unknown-key` (CORE-01, AC 17)
@@ -289,6 +289,7 @@ Proof: `pnpm vitest run packages/core/test/registry.test.ts -t "committed regist
 
 | Set (size) | Member -> proof | Unproven |
 | --- | --- | --- |
+| frontmatter parse causes (4) | `missing` C86 · `unterminated` C86 · `invalid YAML` C86 · `not a mapping` C86, one asserted case each | - |
 | validator rule ids (17) | `frontmatter/parse` C86 · `frontmatter/unknown-key` C17 · `frontmatter/name` C18 · `frontmatter/description` C19 · `frontmatter/metadata` C20 · `frontmatter/compatibility` C21 · `content/binary` C22 · `security/secret` C23 · `security/shell` C24 · `security/prompt-injection` C25 · `scripts/shebang` C26 · `scripts/executable` C26 · `size/tokens-warn` C27 · `size/tokens` C27 · `links/missing` C28 · `evals/shape` C29 · `deprecated/conflict` C32 | - |
 | secret patterns (4) | C23, table-driven over all 4 | - |
 | shell patterns (5) | C24, table-driven over all 5 | - |
