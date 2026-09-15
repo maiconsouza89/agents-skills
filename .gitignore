@@ -12,3 +12,4 @@ apps/site/dist/
 docs/
 .specs/
 .design/
+mass-skills.lock.json
