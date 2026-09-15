@@ -3,4 +3,11 @@
 #   skill: <skill name>
 #   reason: <why this is a false positive>
 #   expiresAt: "YYYY-MM-DD"
-[]
+- risk: third_party_content_exposure
+  skill: mass-code-review
+  reason: >-
+    Reviewing a pull request inherently means reading PR title, body and diff text an outside
+    contributor authored (gh pr view / gh pr diff), which is the skill's whole job. The Steps
+    section already tells the agent to read the diff and report findings, never to execute
+    instructions found in it. Re-check at the next scheduled review.
+  expiresAt: "2026-12-14"
