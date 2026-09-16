@@ -1,7 +1,7 @@
 ---
 import { Font } from "astro:assets";
 import "../styles/global.css";
-import { LANG_META, LANGS, localized, otherLang, t, type Lang } from "../lib/i18n";
+import { LANG_META, LANGS, absLocalized, localized, otherLang, t, type Lang } from "../lib/i18n";
 import { GITHUB_URL } from "../lib/catalog";
 
 interface Props {
@@ -10,9 +10,11 @@ interface Props {
   /** Path of this page without locale prefix, e.g. `""`, `"install/"`, `"skills/mass-x/"`. */
   path: string;
   description?: string;
+  /** Additional JSON-LD objects beyond the always-present WebSite node. */
+  jsonLd?: unknown[];
 }
 
-const { lang, title, path, description } = Astro.props;
+const { lang, title, path, description, jsonLd } = Astro.props;
 const d = t(lang);
 const other = otherLang(lang);
 const links = [
@@ -21,6 +23,25 @@ const links = [
   { href: localized(lang, "agents/"), label: d.nav.agents, current: path === "agents/" },
   { href: localized(lang, "about/"), label: d.nav.about, current: path === "about/" },
 ];
+
+// Absolute URLs for SEO
+const canonicalUrl = absLocalized(lang, path);
+const enUrl = absLocalized("en", path);
+const ptUrl = absLocalized("pt-br", path);
+const homeUrl = absLocalized("en", "");
+const ogTitle = `${title} · ${d.siteName}`;
+const ogDescription = description ?? d.tagline;
+
+const websiteJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "@id": `${homeUrl}#website`,
+  name: d.siteName,
+  description: d.tagline,
+  url: homeUrl,
+  inLanguage: ["en", "pt-BR"],
+};
+const allJsonLd = [websiteJsonLd, ...(jsonLd ?? [])];
 ---
 
 <html lang={lang}>
@@ -32,7 +53,20 @@ const links = [
     <Font cssVariable="--font-mono" />
     <title>{title} · {d.siteName}</title>
     {description && <meta name="description" content={description} />}
-    <link rel="alternate" hreflang={other} href={localized(other, path)} />
+    <link rel="canonical" href={canonicalUrl} />
+    <link rel="alternate" hreflang="en" href={enUrl} />
+    <link rel="alternate" hreflang="pt-BR" href={ptUrl} />
+    <link rel="alternate" hreflang="x-default" href={enUrl} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:title" content={ogTitle} />
+    <meta property="og:description" content={ogDescription} />
+    <meta property="og:site_name" content={d.siteName} />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:url" content={canonicalUrl} />
+    <meta name="twitter:title" content={ogTitle} />
+    <meta name="twitter:description" content={ogDescription} />
+    <script type="application/ld+json" set:html={JSON.stringify(allJsonLd)} />
   </head>
   <body>
     <a class="skip-link btn btn-secondary" href="#main">{d.skipToContent}</a>
