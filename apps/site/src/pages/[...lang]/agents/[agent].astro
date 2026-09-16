@@ -1,0 +1,41 @@
+---
+import Base from "../../../layouts/Base.astro";
+import Snippet from "../../../components/Snippet.astro";
+import CategoryLinks from "../../../components/CategoryLinks.astro";
+import { AGENTS, type Agent } from "@mass-solutions/skills-cli/agents";
+import { langPaths, localized, t, type Lang } from "../../../lib/i18n";
+
+export function getStaticPaths() {
+  return langPaths().flatMap(({ params, props }) => AGENTS.map((agent) => ({ params: { ...params, agent: agent.id }, props: { ...props, agent } })));
+}
+
+const { lang, agent } = Astro.props as { lang: Lang; agent: Agent };
+const d = t(lang);
+---
+
+<Base lang={lang} title={d.agentTitle(agent.id)} path={`agents/${agent.id}/`} description={d.agentIntro(agent.id)}>
+  <header class="page-head" data-agent-page={agent.id}>
+    <p class="eyebrow"><a class="subtle" href={localized(lang, "agents/")}>{d.nav.agents}</a> / <code>{agent.id}</code></p>
+    <h1 class="display-lg">{d.agentTitle(agent.id)}</h1>
+    <p class="body-lg muted">{d.agentIntro(agent.id)}</p>
+  </header>
+  <div class="grid-2 section-tight">
+    <section class="card" data-agent-install>
+      <h2 class="card-title">{d.agentInstall}</h2>
+      <Snippet label={d.installCli} code={`npx @mass-solutions/skills-cli install <skill> -a ${agent.id}`} />
+    </section>
+    <section class="card" data-agent-paths>
+      <h2 class="card-title">{d.agentPaths}</h2>
+      <dl class="meta-list">
+        <dt>{d.projectPath}</dt>
+        <dd><code>{agent.projectDir}/</code></dd>
+        <dt>{d.globalPath}</dt>
+        <dd><code>~/{agent.globalDir}/</code></dd>
+      </dl>
+    </section>
+  </div>
+  <section class="section" aria-labelledby="browse-title">
+    <h2 class="eyebrow" id="browse-title">{d.browseByCategory}</h2>
+    <CategoryLinks lang={lang} />
+  </section>
+</Base>

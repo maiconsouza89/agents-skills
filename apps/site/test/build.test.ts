@@ -255,6 +255,23 @@ describe("site build", () => {
         const row = text(d.querySelector(`[data-agent="${a.id}"]`));
         expect(row).toContain(`${a.project}/`);
         expect(row).toContain(`~/${a.global}/`);
+        expect(d.querySelector(`[data-agent="${a.id}"] a`)!.getAttribute("href")).toBe(`${BASE}${page.startsWith("pt-br/") ? "pt-br/" : ""}agents/${a.id}/`);
+      }
+    }
+  });
+
+  it("agent pages: one per supported agent with the install command, both paths and the category links", () => {
+    expect(files.filter((f) => /^agents\/[^/]+\/index\.html$/.test(f)).sort()).toEqual(DOOR_10.map((a) => `agents/${a.id}/index.html`).sort());
+    for (const lang of LANGS) {
+      for (const a of DOOR_10) {
+        const d = dom(DIST, `${lang === "en" ? "" : "pt-br/"}agents/${a.id}/index.html`);
+        expect(text(d.querySelector("h1"))).toBe(t(lang).agentTitle(a.id));
+        expect(text(d.querySelector("[data-agent-install] code"))).toBe(`npx @mass-solutions/skills-cli install <skill> -a ${a.id}`);
+        const paths = text(d.querySelector("[data-agent-paths]"));
+        expect(paths).toContain(`${a.project}/`);
+        expect(paths).toContain(`~/${a.global}/`);
+        expect(d.querySelectorAll("[data-category-links] a")).toHaveLength(usedCategoryIds().length);
+        expect(d.querySelector("[data-category-links] [aria-current]")).toBeNull();
       }
     }
   });

@@ -2,7 +2,7 @@
 import Base from "../../layouts/Base.astro";
 import Snippet from "../../components/Snippet.astro";
 import { AGENTS } from "@mass-solutions/skills-cli/agents";
-import { langPaths, t, type Lang } from "../../lib/i18n";
+import { langPaths, localized, t, type Lang } from "../../lib/i18n";
 
 export function getStaticPaths() {
   return langPaths();
@@ -31,7 +31,7 @@ const d = t(lang);
         {
           AGENTS.map((a) => (
             <tr data-agent={a.id}>
-              <td><code>{a.id}</code></td>
+              <td><a href={localized(lang, `agents/${a.id}/`)}><code>{a.id}</code></a></td>
               <td><code>{a.projectDir}/</code></td>
               <td><code>~/{a.globalDir}/</code></td>
             </tr>
