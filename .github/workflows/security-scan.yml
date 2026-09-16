@@ -4,12 +4,16 @@ on:
   push:
     branches: [main]
   pull_request:
+  workflow_dispatch:
 
 jobs:
   scan:
     runs-on: ubuntu-latest
     steps:
+      # Full history: the targets step diffs this PR against its base commit.
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
       - uses: pnpm/action-setup@v6
       - uses: actions/setup-node@v7
         with:
@@ -20,13 +24,41 @@ jobs:
       - name: Check the allowlist and build the ignore flags
         id: allowlist
         run: echo "flags=$(pnpm exec tsx tools/allowlist.ts)" >> "$GITHUB_OUTPUT"
+      # Rescanning the whole catalog on every PR is what exhausts the public tier's daily quota (X007),
+      # so a PR only scans the skills it actually changed; push to main and workflow_dispatch still scan
+      # everything. Path filters on the trigger would be cheaper but `scan` is a required check, and a
+      # workflow skipped by a path filter never reports one, which would block every PR that touches no
+      # skill: https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/collaborating-on-repositories-with-code-quality-features/troubleshooting-required-status-checks
+      - name: Pick the scan targets
+        id: targets
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          set -euo pipefail
+          if [ "${{ github.event_name }}" != "pull_request" ]; then
+            echo "paths=skills" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if ! git show "$BASE_SHA:skills-registry.json" > "$RUNNER_TEMP/base-registry.json" 2>/dev/null; then
+            echo "::warning::The pull request base has no skills-registry.json; scanning the whole catalog."
+            echo "paths=skills" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          paths=$(git diff --name-only "$BASE_SHA" HEAD -- skills \
+            | pnpm exec tsx tools/changed-skills.ts --base "$RUNNER_TEMP/base-registry.json")
+          echo "Scan targets: ${paths:-<none>}"
+          echo "paths=$paths" >> "$GITHUB_OUTPUT"
       # Snyk needs SNYK_TOKEN, which forks do not receive: push to main and same-repo PRs only.
       - uses: astral-sh/setup-uv@v10.1.0
-        if: ${{ github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository }}
+        if: ${{ steps.targets.outputs.paths != '' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) }}
       - name: Snyk Agent Scan
-        if: ${{ github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository }}
+        if: ${{ steps.targets.outputs.paths != '' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) }}
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+          TARGETS: ${{ steps.targets.outputs.paths }}
+        # $TARGETS is deliberately unquoted: it is a space-separated list of skill directories, and
+        # tools/changed-skills.ts refuses to emit anything but `skills/<name>` so a crafted registry
+        # entry cannot smuggle a shell word in.
         # --dangerously-run-mcp-servers: --ci now requires it (snyk-agent-scan 0.6.3). We scan a plain
         # skills directory, not an MCP config, so no stdio server is ever started - the flag is inert here.
         # X007 is the public tier's daily usage limit, not a finding: treat it as non-blocking so quota
@@ -36,7 +68,7 @@ jobs:
         # on scan output could let a crafted skill spoof the quota message and suppress real findings.
         run: |
           set +e
-          output=$(uvx snyk-agent-scan@latest skills --ci --dangerously-run-mcp-servers ${{ steps.allowlist.outputs.flags }} 2>&1)
+          output=$(uvx snyk-agent-scan@latest $TARGETS --ci --dangerously-run-mcp-servers ${{ steps.allowlist.outputs.flags }} 2>&1)
           code=$?
           echo "$output"
           # The CLI hard-wraps its own text at terminal width, so the quota sentence can be split across
