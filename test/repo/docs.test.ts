@@ -109,6 +109,13 @@ describe("documents", () => {
     expect(rule).toContain(".github/");
   });
 
+  it("claude md names the triage routine", () => {
+    const section = read("CLAUDE.md").split("\n## ").find((s) => s.startsWith("Fluxo com o GitHub Project"))!;
+    expect(section).toContain("Triage issue");
+    expect(section).toContain("tools/routines/triage-issue.md");
+    expect(section).toMatch(/colar o texto novo na rotina/);
+  });
+
   it("readme lists the maintainer commands", () => {
     const text = read("README.md");
     expect(text).toMatch(/tools\/ +maintainer scripts \([^)]*triage-issue[^)]*\)/);
