@@ -1,7 +1,8 @@
-import { existsSync, readdirSync, writeFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { lockPath, readLock, writeLock } from "../src/lockfile.js";
+import { CliError } from "../src/types.js";
 import type { Lockfile } from "../src/types.js";
 import { cli, makeCatalog, makeProject, readJson, serveCatalog, type Fixture } from "./helpers.js";
 
@@ -42,5 +43,38 @@ describe("lockfile", () => {
     writeLock(path, lock);
     expect(existsSync(`${path}.tmp`)).toBe(false);
     expect(readLock(path)).toEqual(lock);
+  });
+
+  it("readLock reports a corrupted lockfile (invalid JSON) as a CliError and backs it up to .bak", () => {
+    const p = makeProject(fx);
+    const path = join(p.cwd, "mass-skills.lock.json");
+    writeFileSync(path, "{not json");
+    let error: unknown;
+    try {
+      readLock(path);
+    } catch (e) {
+      error = e;
+    }
+    expect(error).toBeInstanceOf(CliError);
+    expect((error as CliError).exitCode).toBe(1);
+    expect((error as CliError).message).toMatch(/JSON inválido/);
+    expect(readFileSync(`${path}.bak`, "utf8")).toBe("{not json");
+  });
+
+  it("readLock reports a lockfile with an entry missing a required field as a CliError and backs it up to .bak", () => {
+    const p = makeProject(fx);
+    const path = join(p.cwd, "mass-skills.lock.json");
+    const raw = JSON.stringify({ version: 1, skills: { "mass-z": { version: "1.0.0", ref: "main", agents: ["cursor"], installedAt: "2026-01-01T00:00:00.000Z" } } });
+    writeFileSync(path, raw);
+    let error: unknown;
+    try {
+      readLock(path);
+    } catch (e) {
+      error = e;
+    }
+    expect(error).toBeInstanceOf(CliError);
+    expect((error as CliError).exitCode).toBe(1);
+    expect((error as CliError).message).toMatch(/mass-z/);
+    expect(readFileSync(`${path}.bak`, "utf8")).toBe(raw);
   });
 });

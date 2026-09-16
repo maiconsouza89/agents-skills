@@ -1,6 +1,6 @@
-import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
+import { copyFileSync, existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
-import type { Lockfile } from "./types.js";
+import { CliError, EXIT_FAILURE, type LockEntry, type Lockfile } from "./types.js";
 
 export const PROJECT_LOCK = "mass-skills.lock.json";
 export const GLOBAL_LOCK_DIR = "mass-skills";
@@ -24,10 +24,43 @@ export function emptyLock(): Lockfile {
   return { version: 1, skills: {} };
 }
 
+/** Returns a validation error message for a lock entry, or null if it is well-formed. */
+function invalidEntryReason(name: string, value: unknown): string | null {
+  if (typeof value !== "object" || value === null) return `entrada "${name}" não é um objeto`;
+  const entry = value as Record<string, unknown>;
+  const stringFields: (keyof LockEntry)[] = ["version", "contentHash", "ref", "installedAt"];
+  for (const field of stringFields) {
+    if (typeof entry[field] !== "string") return `entrada "${name}" tem "${field}" inválido`;
+  }
+  if (!Array.isArray(entry.agents) || !entry.agents.every((a) => typeof a === "string")) {
+    return `entrada "${name}" tem "agents" inválido`;
+  }
+  return null;
+}
+
 export function readLock(path: string): Lockfile {
   if (!existsSync(path)) return emptyLock();
-  const parsed = JSON.parse(readFileSync(path, "utf8")) as Partial<Lockfile>;
-  return { version: 1, skills: parsed.skills && typeof parsed.skills === "object" ? parsed.skills : {} };
+  const raw = readFileSync(path, "utf8");
+
+  const fail = (reason: string): never => {
+    copyFileSync(path, `${path}.bak`);
+    throw new CliError(`Lockfile corrompido em ${path}: ${reason} (backup salvo em ${path}.bak)`, EXIT_FAILURE);
+  };
+
+  let parsed: Partial<Lockfile>;
+  try {
+    parsed = JSON.parse(raw) as Partial<Lockfile>;
+  } catch {
+    return fail("JSON inválido");
+  }
+  if (parsed.version !== 1 || typeof parsed.skills !== "object" || parsed.skills === null) {
+    return fail("formato inválido");
+  }
+  for (const [name, entry] of Object.entries(parsed.skills)) {
+    const reason = invalidEntryReason(name, entry);
+    if (reason) return fail(reason);
+  }
+  return { version: 1, skills: parsed.skills as Record<string, LockEntry> };
 }
 
 /** Atomic write: serialize to `<path>.tmp`, then rename over the target. */
