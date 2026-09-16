@@ -1,0 +1,75 @@
+---
+import Base from "../../layouts/Base.astro";
+import { GITHUB_URL } from "../../lib/catalog";
+import { langPaths, t, type Lang } from "../../lib/i18n";
+
+export function getStaticPaths() {
+  return langPaths();
+}
+
+const { lang } = Astro.props as { lang: Lang };
+const d = t(lang);
+const MAINTAINER = { name: "Maicon Souza", handle: "maiconsouza89", url: "https://github.com/maiconsouza89" };
+---
+
+<Base lang={lang} title={d.aboutTitle} path="about/" description={d.aboutIntro}>
+  <article data-about>
+    <header class="page-head">
+      <p class="eyebrow">{d.siteName}</p>
+      <h1 class="display-lg">{d.aboutTitle}</h1>
+      <p class="body-lg muted">{d.aboutIntro}</p>
+    </header>
+
+    <div class="grid-2 section-tight">
+      {
+        d.aboutSections.map((s) => (
+          <section class="card" data-about-section>
+            <h2 class="card-title">{s.title}</h2>
+            <p class="body-sm muted">{s.body}</p>
+          </section>
+        ))
+      }
+    </div>
+
+    <section class="section" aria-labelledby="about-trust-title" data-about-trust>
+      <div class="page-head">
+        <h2 class="display-md" id="about-trust-title">{d.aboutTrustTitle}</h2>
+      </div>
+      <ul class="grid-3 section-tight">
+        {
+          d.aboutTrust.map((point) => (
+            <li class="card" data-about-trust-point>
+              <h3 class="card-title">{point.title}</h3>
+              <p class="body-sm muted">{point.body}</p>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+
+    <section class="section" aria-labelledby="about-team-title" data-about-team>
+      <div class="page-head">
+        <h2 class="display-md" id="about-team-title">{d.aboutTeamTitle}</h2>
+        <p class="body-lg muted">{d.aboutTeamBody}</p>
+      </div>
+      <div class="section-tight">
+        <a class="card card--link maintainer" href={MAINTAINER.url} data-maintainer>
+          <span class="eyebrow">{d.aboutMaintainer}</span>
+          <span class="card-title">{MAINTAINER.name}</span>
+          <code>@{MAINTAINER.handle}</code>
+        </a>
+      </div>
+    </section>
+
+    <div class="cta-banner section" data-about-cta>
+      <div>
+        <p class="headline">{d.aboutCtaTitle}</p>
+        <p class="body muted">{d.aboutCtaBody}</p>
+      </div>
+      <div class="actions">
+        <a class="btn btn-primary" href={`${GITHUB_URL}/blob/main/CONTRIBUTING.md`}>{d.footerContributing}</a>
+        <a class="btn btn-secondary" href={`${GITHUB_URL}/blob/main/SECURITY.md`}>{d.footerSecurity}</a>
+      </div>
+    </div>
+  </article>
+</Base>

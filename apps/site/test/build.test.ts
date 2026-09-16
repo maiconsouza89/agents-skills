@@ -22,7 +22,7 @@ beforeAll(() => {
 
 describe("site build", () => {
   it("generates every route under the base for en and pt-br", () => {
-    const expected = ["404.html", "index.html", "install/index.html", "agents/index.html", "search-index.json", "pt-br/index.html", "pt-br/install/index.html", "pt-br/agents/index.html"];
+    const expected = ["404.html", "index.html", "install/index.html", "agents/index.html", "about/index.html", "search-index.json", "pt-br/index.html", "pt-br/install/index.html", "pt-br/agents/index.html", "pt-br/about/index.html"];
     for (const n of names) expected.push(`skills/${n}/index.html`, `pt-br/skills/${n}/index.html`);
     for (const e of expected) expect(files, e).toContain(e);
     expect(files.filter((f) => f.startsWith("skills/"))).toHaveLength(names.length);
@@ -206,6 +206,39 @@ describe("site build", () => {
         expect(row).toContain(`~/${a.global}/`);
       }
     }
+  });
+
+  it("about page: localized sections in each language, nav entry marked current, language switch to the other about", () => {
+    const seen: string[] = [];
+    for (const [page, lang, switchTo] of [
+      ["about/index.html", "en", `${BASE}pt-br/about/`],
+      ["pt-br/about/index.html", "pt-br", `${BASE}about/`],
+    ] as const) {
+      const d = dom(DIST, page);
+      const dict = t(lang);
+      const about = d.querySelector("[data-about]")!;
+      expect(about, page).toBeTruthy();
+      expect(text(about.querySelector("h1"))).toBe(dict.aboutTitle);
+      expect(text(about.querySelector(".page-head p.body-lg"))).toBe(dict.aboutIntro);
+      const sections = [...about.querySelectorAll("[data-about-section]")];
+      expect(sections.map((s) => text(s.querySelector("h2")))).toEqual(dict.aboutSections.map((s) => s.title));
+      for (const [i, s] of sections.entries()) expect(text(s.querySelector("p"))).toBe(dict.aboutSections[i].body);
+      const trust = [...about.querySelectorAll("[data-about-trust-point]")];
+      expect(trust.map((p) => text(p.querySelector("h3")))).toEqual(dict.aboutTrust.map((p) => p.title));
+      expect(text(about.querySelector("[data-about-team] p.body-lg"))).toBe(dict.aboutTeamBody);
+      expect(about.querySelector("[data-maintainer]")!.getAttribute("href")).toBe("https://github.com/maiconsouza89");
+      const cta = [...about.querySelectorAll("[data-about-cta] a")].map((a) => a.getAttribute("href"));
+      expect(cta).toEqual([`https://github.com/${REPO}/blob/main/CONTRIBUTING.md`, `https://github.com/${REPO}/blob/main/SECURITY.md`]);
+      const current = d.querySelector('.nav-links a[aria-current="page"]')!;
+      expect(text(current)).toBe(dict.nav.about);
+      expect(current.getAttribute("href")).toBe(`${BASE}${lang === "en" ? "" : "pt-br/"}about/`);
+      expect(d.querySelector("[data-lang-switch]")!.getAttribute("href")).toBe(switchTo);
+      expect(d.querySelector(`link[rel="alternate"]`)!.getAttribute("href")).toBe(switchTo);
+      // The footer "Site" column follows the nav, so About is reachable from every page.
+      expect([...d.querySelectorAll(".footer a")].map((a) => a.getAttribute("href"))).toContain(`${BASE}${lang === "en" ? "" : "pt-br/"}about/`);
+      seen.push(text(about));
+    }
+    expect(seen[0]).not.toBe(seen[1]);
   });
 
   it("404 page links to both catalogs", () => {
