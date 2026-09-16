@@ -104,5 +104,11 @@ jobs:
                 exit 1
               fi
               echo "'$sibling' was already removed from issue #$number"
+            # A successful call is not a removal. gh follows a redirect and reissues it as a GET
+            # (measured against gh 2.92.0), so the call exits 0 and answers the label list
+            # unchanged. The response is the evidence, not the exit code.
+            elif printf '%s' "$body" | jq -e --arg s "$sibling" 'any(.[]?; .name == $s)' >/dev/null 2>&1; then
+              echo "::error::'$sibling' is still on issue #$number after the removal call"
+              exit 1
             fi
           done <<< "$siblings"
