@@ -90,16 +90,34 @@ describe("workflows", () => {
     expect(script).toMatch(/if \(!list\) \{\s*if \(existing\) await github\.rest\.issues\.update\([^)]*state: "closed"[^)]*\);\s*return;/);
   });
 
-  it("release workflow runs on v* tags, checks, builds and creates a github release with generated notes", () => {
+  it("release workflow runs on v* tags, checks, builds, publishes to npm with OIDC provenance and creates a github release", () => {
     const wf = workflow("release.yml");
     expect(wf.on.push.tags).toEqual(["v*"]);
     expect(wf.permissions.contents).toBe("write");
+    expect(wf.permissions["id-token"]).toBe("write");
+    expect(wf.concurrency["cancel-in-progress"]).toBe(false);
     const job = wf.jobs.release;
     expectNodeSetup(job);
     const r = runs(job);
+    const index = (needle: string) => r.findIndex((x) => x.includes(needle));
     expect(r).toContain("pnpm check");
     expect(r).toContain("pnpm build");
-    expect(r.some((x) => x.includes('gh release create "${{ github.ref_name }}" --generate-notes'))).toBe(true);
+    expect(r).toContain("pnpm -r publish --access public --provenance --no-git-checks");
+    // Trusted publishing: no registry token anywhere in the workflow.
+    expect(read(".github/workflows/release.yml")).not.toMatch(/NPM_TOKEN|NODE_AUTH_TOKEN|_authToken/);
+    // Both guards run before publish, after check and build.
+    const publish = index("pnpm -r publish");
+    const tagGuard = index("require('./packages/cli/package.json').version");
+    const workspaceGuard = index("grep -q 'workspace:'");
+    expect(tagGuard).toBeGreaterThan(index("pnpm build"));
+    expect(tagGuard).toBeLessThan(publish);
+    expect(workspaceGuard).toBeGreaterThan(index("pnpm build"));
+    expect(workspaceGuard).toBeLessThan(publish);
+    expect(r[tagGuard]).toContain('[ "$TAG" != "v$version" ]');
+    // The GitHub Release comes after publish and tolerates a rerun.
+    const release = index('gh release create "$TAG" --generate-notes');
+    expect(release).toBeGreaterThan(publish);
+    expect(r[release]).toContain('gh release view "$TAG"');
   });
 
   it("project board workflow reacts to issue open/assign without GITHUB_TOKEN or third-party actions", () => {

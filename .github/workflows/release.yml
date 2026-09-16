@@ -4,8 +4,15 @@ on:
   push:
     tags: ["v*"]
 
+# The tag is the only trigger, so one run per tag; never cancel a run that may
+# be halfway through an immutable npm publish.
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
 permissions:
   contents: write
+  id-token: write # npm trusted publishing (OIDC) and provenance
 
 jobs:
   release:
@@ -20,7 +27,46 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm check
       - run: pnpm build
+      - name: Assert the tag matches the CLI version
+        # The CLI downloads the catalog from `v<its own version>` by default
+        # (DEFAULT_REF in packages/cli/src/download.ts), so a CLI published from
+        # any other tag would install nothing.
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          version=$(node -p "require('./packages/cli/package.json').version")
+          if [ "$TAG" != "v$version" ]; then
+            echo "::error::Tag $TAG does not match packages/cli version $version; tag the commit that bumps the CLI as v$version"
+            exit 1
+          fi
+      - name: Assert the packed manifests have no workspace ranges
+        # CLI 0.1.0 shipped with a `workspace:*` dependency because it was
+        # published by hand from an unpacked tree. Inspect the exact tarballs
+        # that publish will upload.
+        run: |
+          set -euo pipefail
+          out=$(mktemp -d)
+          for dir in packages/*; do
+            tarball=$(cd "$dir" && pnpm pack --out "$out/%s-%v.tgz" --json | node -p "JSON.parse(require('fs').readFileSync(0,'utf8')).filename")
+            if tar -xOf "$tarball" package/package.json | grep -q 'workspace:'; then
+              echo "::error::$tarball still contains a workspace: range"
+              tar -xOf "$tarball" package/package.json
+              exit 1
+            fi
+            echo "$tarball: ok"
+          done
+      - name: Publish to npm
+        # Trusted publishing: no registry token, the OIDC token from id-token:
+        # write authenticates, and --provenance attaches the SLSA attestation.
+        # Versions already on the registry are skipped, so a rerun is safe.
+        run: pnpm -r publish --access public --provenance --no-git-checks
       - name: Create the GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "${{ github.ref_name }}" --generate-notes
+          TAG: ${{ github.ref_name }}
+        run: |
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "Release $TAG already exists; skipping"
+          else
+            gh release create "$TAG" --generate-notes
+          fi
