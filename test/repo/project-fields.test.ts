@@ -158,19 +158,20 @@ describe("project-fields workflow", () => {
     expect(r.code).not.toBe(0);
   });
 
-  // 301 is the fourth status the labels endpoint documents; it reaches this code only when gh
-  // surfaces the redirect instead of following it, which happens on a renamed or transferred
-  // repository. Failing loudly is the wanted outcome - the alternative is deleting a label on a
-  // repository that is no longer the one the workflow was configured for.
+  // 301 is the fourth status the labels endpoint documents. Measured against gh 2.92.0 with a
+  // local server answering 301 + Location: gh follows the redirect, reissues it as a GET, and
+  // exits 0 with the label list unchanged. So the failure to catch is a call that succeeds and
+  // removes nothing - which is what this asserts, and it holds for any silent no-op, not only a
+  // redirect.
   it("fails when the label endpoint answers a redirect", () => {
     const r = runWorkflow(WORKFLOW, {
       label: "complexity:low",
       labels: ["complexity:high", "complexity:low"],
-      failures: [notFound("301", "Moved Permanently")],
+      failures: [{ match: "labels/complexity%3Ahigh", exit: 0, stdout: JSON.stringify([{ name: "complexity:high" }, { name: "complexity:low" }]), stderr: "" }],
     });
     expect(deletes(r.calls)).toHaveLength(1);
     expect(r.code).not.toBe(0);
-    expect(r.output).toContain("Could not remove 'complexity:high'");
+    expect(r.output).toContain("'complexity:high' is still on issue #8 after the removal call");
   });
 
   it("uses PROJECT_TOKEN for the project and github.token for labels", () => {
