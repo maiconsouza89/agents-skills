@@ -1,9 +1,8 @@
 ---
 import Base from "../../layouts/Base.astro";
-import SkillCard from "../../components/SkillCard.astro";
 import TerminalPanel, { type TerminalLine } from "../../components/TerminalPanel.astro";
-import { GITHUB_URL, groupedByCategory, registry, registrySkill } from "../../lib/catalog";
-import { href, langPaths, localized, t, type Lang } from "../../lib/i18n";
+import { GITHUB_URL, registrySkill, registry } from "../../lib/catalog";
+import { langPaths, localized, t, type Lang } from "../../lib/i18n";
 
 export function getStaticPaths() {
   return langPaths();
@@ -11,9 +10,6 @@ export function getStaticPaths() {
 
 const { lang } = Astro.props as { lang: Lang };
 const d = t(lang);
-const groups = groupedByCategory();
-const indexUrl = href("search-index.json");
-const noMatchTemplate = d.noMatch("__TERM__");
 
 // The session reproduces the CLI's real output lines (packages/cli/src/commands/install.ts and installer.ts).
 const demo = registrySkill("mass-code-review") ?? registry.skills[0];
@@ -28,7 +24,7 @@ const session: TerminalLine[] = [
 ];
 ---
 
-<Base lang={lang} title={d.nav.catalog} path="" description={d.tagline}>
+<Base lang={lang} title={d.siteName} path="" description={d.tagline}>
   <section class="hero">
     <p class="eyebrow">{d.heroEyebrow}</p>
     <h1 class="display-xl">{d.siteName}</h1>
@@ -60,107 +56,8 @@ const session: TerminalLine[] = [
     </ul>
   </section>
 
-  <section class="section" aria-labelledby="catalog-title">
-    <div class="page-head">
-      <p class="eyebrow">{d.skillCount(registry.skills.length)}</p>
-      <h2 class="display-md" id="catalog-title">{d.nav.catalog}</h2>
-    </div>
-
-    <form class="search section-tight" data-search role="search" onsubmit="return false">
-      <label class="field">
-        <span class="eyebrow">{d.searchLabel}</span>
-        <input class="text-input" type="search" name="q" id="q" placeholder={d.searchPlaceholder} autocomplete="off" />
-      </label>
-      <fieldset class="tabs">
-        <legend class="sr-only">{d.filterLabel}</legend>
-        <label class="tab"><input type="radio" name="category" value="" checked /><span>{d.allCategories}</span></label>
-        {
-          groups.map(({ category }) => (
-            <label class="tab">
-              <input type="radio" name="category" value={category.id} />
-              <span>{category[lang]}</span>
-            </label>
-          ))
-        }
-      </fieldset>
-    </form>
-
-    <p class="empty" data-no-match hidden data-template={noMatchTemplate}></p>
-
-    <div data-catalog data-ready="0">
-      {
-        groups.map(({ category, skills }) => (
-          <section class="category" data-category={category.id}>
-            <h2 class="subhead category-title">{category[lang]}</h2>
-            <ul class="grid-2">
-              {skills.map((s) => (
-                <SkillCard lang={lang} skill={s} />
-              ))}
-            </ul>
-          </section>
-        ))
-      }
-    </div>
-  </section>
-
-  <script is:inline define:vars={{ indexUrl }}>
-    // Search and category filter over search-index.json; everything else on this site ships without JavaScript.
-    (async () => {
-      const form = document.querySelector("[data-search]");
-      const q = document.getElementById("q");
-      const noMatch = document.querySelector("[data-no-match]");
-      const catalog = document.querySelector("[data-catalog]");
-      const template = noMatch.getAttribute("data-template");
-      let index = [];
-      try {
-        const res = await fetch(indexUrl);
-        index = await res.json();
-      } catch {
-        index = [];
-      }
-      const byName = new Map(index.map((s) => [s.name, s]));
-      const items = Array.from(catalog.querySelectorAll("[data-skill]"));
-      // Search is accent-insensitive: "critica" matches "crítica" and the other way round.
-      const fold = (s) => s.normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase();
-      // The state is mirrored in the URL (?q=, ?category=) so a filtered view can be linked.
-      const params = new URL(location.href).searchParams;
-      const radios = Array.from(form.querySelectorAll('input[name="category"]'));
-      const wanted = params.get("category") || "";
-      // An unknown category falls back to the "all categories" radio.
-      const radio = radios.find((r) => r.value === wanted) || radios.find((r) => r.value === "");
-      if (radio) radio.checked = true;
-      q.value = params.get("q") || "";
-      const apply = () => {
-        const raw = q.value.trim();
-        const term = fold(raw);
-        const checked = form.querySelector('input[name="category"]:checked');
-        const cat = checked ? checked.value : "";
-        const url = new URL(location.href);
-        for (const [key, value] of [["q", raw], ["category", cat]]) {
-          if (value) url.searchParams.set(key, value);
-          else url.searchParams.delete(key);
-        }
-        // replaceState, not pushState: typing must not add a history entry per keystroke.
-        history.replaceState(null, "", url);
-        let visible = 0;
-        for (const li of items) {
-          const name = li.getAttribute("data-name");
-          const entry = byName.get(name) || { name, description: "", tags: [], category: li.getAttribute("data-category") };
-          const hay = fold([entry.name, entry.description, ...(entry.tags || [])].join(" "));
-          const show = (!term || hay.includes(term)) && (!cat || entry.category === cat);
-          li.hidden = !show;
-          if (show) visible++;
-        }
-        for (const section of catalog.querySelectorAll("section[data-category]")) {
-          section.hidden = Array.from(section.querySelectorAll("[data-skill]")).every((li) => li.hidden);
-        }
-        noMatch.hidden = visible > 0;
-        noMatch.textContent = visible > 0 ? "" : template.replace("__TERM__", raw);
-      };
-      q.addEventListener("input", apply);
-      form.addEventListener("change", apply);
-      apply();
-      catalog.setAttribute("data-ready", "1");
-    })();
-  </script>
+  <div class="cta-banner section">
+    <p class="headline">{d.nav.catalog}</p>
+    <a class="btn btn-primary" href={localized(lang, "catalog/")} data-catalog-cta>{d.nav.catalog} →</a>
+  </div>
 </Base>
