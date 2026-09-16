@@ -13,6 +13,12 @@ export function localized(lang: Lang, path = ""): string {
   return href(lang === "en" ? path : `pt-br/${path}`);
 }
 
+/** Display code and native name of each language; the same in every locale, so it lives outside the dictionary. */
+export const LANG_META: Record<Lang, { code: string; name: string }> = {
+  en: { code: "EN", name: "English" },
+  "pt-br": { code: "PT", name: "Português (BR)" },
+};
+
 export function otherLang(lang: Lang): Lang {
   return lang === "en" ? "pt-br" : "en";
 }
@@ -22,7 +28,6 @@ const dict = {
     siteName: "Mass Skills",
     tagline: "Agent Skills for coding agents, validated in CI and installed with integrity checks.",
     nav: { catalog: "Catalog", install: "Install", agents: "Agents", about: "About", github: "GitHub" },
-    switchLang: "Português (BR)",
     searchLabel: "Search skills",
     searchPlaceholder: "name, description or tag",
     filterLabel: "Category",
@@ -104,7 +109,7 @@ const dict = {
     terminalCaption: "Every file is checked against the sha256 in the registry before anything is written. A file that no longer matches stops the install.",
     footerSite: "Site",
     footerProject: "Project",
-    footerLanguages: "Language",
+    language: "Language",
     footerSecurity: "Security policy",
     footerContributing: "Contributing",
     aboutTitle: "About",
@@ -146,7 +151,6 @@ const dict = {
     siteName: "Mass Skills",
     tagline: "Agent Skills para agentes de código, validadas em CI e instaladas com verificação de integridade.",
     nav: { catalog: "Catálogo", install: "Instalação", agents: "Agentes", about: "Sobre", github: "GitHub" },
-    switchLang: "English",
     searchLabel: "Buscar skills",
     searchPlaceholder: "nome, descrição ou tag",
     filterLabel: "Categoria",
@@ -228,7 +232,7 @@ const dict = {
     terminalCaption: "Cada arquivo é conferido contra o sha256 do registry antes de qualquer escrita. Um arquivo que não bate mais interrompe a instalação.",
     footerSite: "Site",
     footerProject: "Projeto",
-    footerLanguages: "Idioma",
+    language: "Idioma",
     footerSecurity: "Política de segurança",
     footerContributing: "Como contribuir",
     aboutTitle: "Sobre",
