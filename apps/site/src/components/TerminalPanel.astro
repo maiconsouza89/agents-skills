@@ -11,10 +11,19 @@ interface Props {
 }
 
 const { title, caption, lines } = Astro.props;
+// Collect only prompt lines so the copy button copies the actual commands, not the output.
+const promptText = lines.filter((l) => l.kind === "prompt").map((l) => l.text ?? "").join("\n");
 ---
 
 <figure class="panel terminal-panel">
-  <div class="terminal-bar" aria-hidden="true"><span></span><span></span><span></span><span class="terminal-title caption">{title}</span></div>
+  <div class="terminal-bar">
+    <span aria-hidden="true"></span><span aria-hidden="true"></span><span aria-hidden="true"></span>
+    <span class="terminal-title caption" aria-hidden="true">{title}</span>
+    <button class="copy-btn terminal-copy-btn" type="button" aria-label="Copy commands" data-copy={promptText}>
+      <svg class="icon-copy" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+      <svg class="icon-check" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+    </button>
+  </div>
   <pre class="terminal" lang="en">{lines.map((l) => <span class={`line ${l.kind}`}>{l.text ?? ""}</span>)}</pre>
   <figcaption class="body-sm subtle">{caption}</figcaption>
 </figure>

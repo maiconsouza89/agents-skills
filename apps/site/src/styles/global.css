@@ -680,6 +680,84 @@ main {
   border-radius: var(--radius-md);
 }
 
+/* Copy buttons */
+
+.copy-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  color: var(--color-ink-subtle);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition:
+    color 120ms ease,
+    background-color 120ms ease,
+    border-color 120ms ease;
+}
+
+.copy-btn:hover {
+  color: var(--color-ink);
+  background: var(--color-surface-2);
+  border-color: var(--color-hairline);
+}
+
+.copy-btn:focus-visible {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+
+.copy-btn .icon-check {
+  display: none;
+}
+
+.copy-btn--copied {
+  color: var(--color-semantic-success);
+}
+
+.copy-btn--copied .icon-copy {
+  display: none;
+}
+
+.copy-btn--copied .icon-check {
+  display: block;
+}
+
+/* Snippet copy button: overlaid top-right */
+
+.snippet-wrap {
+  position: relative;
+}
+
+.snippet-wrap .snippet {
+  padding-right: 44px;
+}
+
+.snippet-wrap .copy-btn {
+  position: absolute;
+  top: var(--space-xs);
+  right: var(--space-xs);
+}
+
+/* Terminal copy button: flex item pushed to the right in the bar */
+
+.terminal-copy-btn {
+  margin-left: auto;
+}
+
+/* Prose code-block copy button: overlaid top-right */
+
+.prose-copy-btn {
+  position: absolute;
+  top: var(--space-xs);
+  right: var(--space-xs);
+}
+
 .terminal-panel {
   display: grid;
   gap: var(--space-md);
