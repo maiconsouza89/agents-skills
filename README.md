@@ -1,4 +1,4 @@
-<h1 align="center">Mass Solutions Skills</h1>
+<h1 align="center">Mass Skills</h1>
 
 <p align="center">
   <strong>A small, verified catalog of Agent Skills for AI coding agents</strong>

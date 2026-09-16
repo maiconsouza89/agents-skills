@@ -19,7 +19,7 @@ export function otherLang(lang: Lang): Lang {
 
 const dict = {
   en: {
-    siteName: "Mass Solutions Skills",
+    siteName: "Mass Skills",
     tagline: "Agent Skills for coding agents, validated in CI and installed with integrity checks.",
     nav: { catalog: "Catalog", install: "Install", agents: "Agents", github: "GitHub" },
     switchLang: "Português (BR)",
@@ -109,7 +109,7 @@ const dict = {
     footerContributing: "Contributing",
   },
   "pt-br": {
-    siteName: "Mass Solutions Skills",
+    siteName: "Mass Skills",
     tagline: "Agent Skills para agentes de código, validadas em CI e instaladas com verificação de integridade.",
     nav: { catalog: "Catálogo", install: "Instalação", agents: "Agentes", github: "GitHub" },
     switchLang: "English",
