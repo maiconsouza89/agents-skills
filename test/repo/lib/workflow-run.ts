@@ -38,10 +38,15 @@ export interface GhCall {
 }
 
 export interface RunOptions {
-  label: string;
+  label?: string;
   labels?: string[];
   failures?: Failure[];
   otherResponse?: string;
+  // Values for expressions the workflow uses beyond the built-in table (step outputs, inputs).
+  expressions?: Record<string, string>;
+  // Skip `uses:` steps instead of refusing them, for a workflow whose action step is exercised
+  // elsewhere and whose `run` steps are what the test is about.
+  skipActions?: boolean;
 }
 
 interface Step {
@@ -76,6 +81,8 @@ if (failure) {
     stdout = JSON.stringify({ data: { addProjectV2ItemById: { item: { id: cfg.itemId } } } });
   } else if (text.includes("updateProjectV2ItemFieldValue")) {
     stdout = JSON.stringify({ data: { updateProjectV2ItemFieldValue: { projectV2Item: { id: cfg.itemId } } } });
+  } else if (text.includes("fields(first")) {
+    stdout = JSON.stringify({ data: { user: { projectV2: { id: cfg.projectId, fields: { nodes: Object.values(cfg.fields) } } } } });
   } else {
     const m = text.match(/field=(\\w+)/) || text.match(/field\\(name:\\s*\\\\?"(\\w+)/);
     const field = m && cfg.fields[m[1]] ? cfg.fields[m[1]] : null;
@@ -126,10 +133,12 @@ export function runWorkflow(name: string, opts: RunOptions) {
     "github.token": "github-token",
     "secrets.GITHUB_TOKEN": "github-token",
     "github.event.issue.number": "8",
+    "github.event.issue.number || inputs.issue": "8",
     "github.event.issue.node_id": ISSUE_NODE_ID,
-    "github.event.label.name": opts.label,
+    "github.event.label.name": opts.label ?? "",
     "github.repository": "acme/skills",
     "github.repository_owner": "acme",
+    ...opts.expressions,
   };
   const resolve = (env: Record<string, string> = {}) =>
     Object.fromEntries(
@@ -165,9 +174,9 @@ export function runWorkflow(name: string, opts: RunOptions) {
     writeFileSync(
       event,
       JSON.stringify({
-        action: "labeled",
-        label: { name: opts.label },
-        issue: { number: 8, node_id: ISSUE_NODE_ID, labels: (opts.labels ?? [opts.label]).map((l) => ({ name: l })) },
+        action: opts.label ? "labeled" : "opened",
+        label: opts.label ? { name: opts.label } : undefined,
+        issue: { number: 8, node_id: ISSUE_NODE_ID, labels: (opts.labels ?? (opts.label ? [opts.label] : [])).map((l) => ({ name: l })) },
         repository: { full_name: "acme/skills", owner: { login: "acme" } },
       }),
     );
@@ -178,7 +187,10 @@ export function runWorkflow(name: string, opts: RunOptions) {
     let output = "";
     let code = 0;
     for (const step of job.steps) {
-      if (step.uses) throw new Error(`${name}: runWorkflow cannot run action steps (${step.uses})`);
+      if (step.uses) {
+        if (opts.skipActions) continue;
+        throw new Error(`${name}: runWorkflow cannot run action steps (${step.uses})`);
+      }
       if (step.if) throw new Error(`${name}: runWorkflow cannot evaluate step conditions (${step.if})`);
       if (!step.run) continue;
       writeFileSync(envFile, "");
