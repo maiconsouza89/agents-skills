@@ -13,6 +13,7 @@ const categories = JSON.parse(readFileSync(join(REPO_ROOT, "skills", "_categorie
 }>;
 const names: string[] = registry.skills.map((s: { name: string }) => s.name);
 const REPO = "maiconsouza89/agents-skills";
+const SITE_URL = "https://maiconsouza89.github.io";
 
 /** Category ids that have at least one skill, in `_categories.json` order. */
 function usedCategoryIds(): string[] {
@@ -301,7 +302,8 @@ describe("site build", () => {
       expect(text(current)).toBe(dict.nav.about);
       expect(current.getAttribute("href")).toBe(`${BASE}${lang === "en" ? "" : "pt-br/"}about/`);
       expectLangSwitch(d, lang, switchTo);
-      expect(d.querySelector(`link[rel="alternate"]`)!.getAttribute("href")).toBe(switchTo);
+      const otherHreflang = lang === "en" ? "pt-BR" : "en";
+      expect(d.querySelector(`link[rel="alternate"][hreflang="${otherHreflang}"]`)!.getAttribute("href")).toBe(`${SITE_URL}${switchTo}`);
       // The footer "Site" column follows the nav, so About is reachable from every page.
       expect([...d.querySelectorAll(".footer a")].map((a) => a.getAttribute("href"))).toContain(`${BASE}${lang === "en" ? "" : "pt-br/"}about/`);
       seen.push(text(about));
@@ -357,11 +359,11 @@ describe("site build", () => {
     }
   });
 
-  it("one script on every page (copy-to-clipboard), two on the catalog page (+ search)", () => {
+  it("two scripts on every page (JSON-LD + copy-to-clipboard), three on the catalog page (+ search)", () => {
     for (const f of files.filter((f) => f.endsWith(".html"))) {
       const count = (html(DIST, f).match(/<script/g) ?? []).length;
-      if (f === "catalog/index.html" || f === "pt-br/catalog/index.html") expect(count, f).toBe(2);
-      else expect(count, f).toBe(1);
+      if (f === "catalog/index.html" || f === "pt-br/catalog/index.html") expect(count, f).toBe(3);
+      else expect(count, f).toBe(2);
     }
     expect(html(DIST, "catalog/index.html")).toContain("search-index.json");
   });

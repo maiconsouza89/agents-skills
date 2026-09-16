@@ -290,6 +290,12 @@ export function t(lang: Lang): Dict {
   return dict[lang] as Dict;
 }
 
+/** Absolute URL for a page in `lang`: uses the `SITE` env var set by Astro from `astro.config.mjs`. */
+export function absLocalized(lang: Lang, path = ""): string {
+  const site = (import.meta.env.SITE as string | undefined)?.replace(/\/$/, "") ?? "";
+  return `${site}${localized(lang, path)}`;
+}
+
 /** Route params for `[...lang]` pages: `undefined` is the default locale at the root. */
 export function langPaths(): Array<{ params: { lang: string | undefined }; props: { lang: Lang } }> {
   return [
