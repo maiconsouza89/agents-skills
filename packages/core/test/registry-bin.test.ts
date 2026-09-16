@@ -1,15 +1,20 @@
-import { spawnSync } from "node:child_process";
 import { appendFileSync, existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
+import { main } from "../src/bin/registry.js";
 import { makeRoot, makeSkill } from "./helpers.js";
 
-const BIN = fileURLToPath(new URL("../src/bin/registry.ts", import.meta.url));
-const REPO_ROOT = fileURLToPath(new URL("../../..", import.meta.url));
+function sink() {
+  let text = "";
+  return { write: (s: string) => (text += s), text: () => text };
+}
 
+// The bin runs in-process: `pnpm registry --check` inside `pnpm check` already exercises the process entry.
 function run(args: string[]) {
-  return spawnSync("pnpm", ["exec", "tsx", BIN, ...args], { cwd: REPO_ROOT, encoding: "utf8" });
+  const out = sink();
+  const err = sink();
+  const status = main(args, out, err);
+  return { status, stdout: out.text(), stderr: err.text() };
 }
 
 describe("registry bin", () => {

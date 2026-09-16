@@ -5,6 +5,7 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { validateSkill } from "@mass-solutions/skills-core";
+import { main } from "../../tools/new-skill";
 
 const REPO_ROOT = fileURLToPath(new URL("../..", import.meta.url));
 const TOOL = join(REPO_ROOT, "tools", "new-skill.ts");
@@ -17,14 +18,23 @@ function makeRoot(): string {
   return root;
 }
 
+function sink() {
+  let text = "";
+  return { write: (s: string) => (text += s), text: () => text };
+}
+
 function run(args: string[]) {
-  return spawnSync("pnpm", ["exec", "tsx", TOOL, ...args], { cwd: REPO_ROOT, encoding: "utf8" });
+  const out = sink();
+  const err = sink();
+  const status = main(args, out, err);
+  return { status, stdout: out.text(), stderr: err.text() };
 }
 
 describe("pnpm new-skill", () => {
+  // The only spawn: nothing else in CI runs the script through its bin entry.
   it("scaffolds a skill that validates", () => {
     const root = makeRoot();
-    const res = run(["mass-exemplo", "--root", root]);
+    const res = spawnSync("pnpm", ["exec", "tsx", TOOL, "mass-exemplo", "--root", root], { cwd: REPO_ROOT, encoding: "utf8" });
     expect(res.status, res.stderr).toBe(0);
     const dir = join(root, "skills", "mass-exemplo");
     const skill = readFileSync(join(dir, "SKILL.md"), "utf8");
