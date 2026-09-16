@@ -255,7 +255,7 @@ components:
     padding: 64px 32px
 ---
 
-> **Mass Solutions adaptation (2026-09-15):** the catalog site at `apps/site` uses this system as written, dark theme only, with these substitutions: the wordmark is "Mass Solutions Skills" (no Linear branding); **Inter** replaces Linear Display/Text and **JetBrains Mono** replaces Linear Mono, both self-hosted through the Astro Fonts API; a terminal session of the `mass-skills` CLI inside a `product-screenshot-card` stands in for product UI screenshots; `pricing-card` / `pricing-card-featured` frame the install paths and `pricing-tab-*` pills filter catalog categories. CSS custom properties in `apps/site/src/styles/global.css` reuse the token names below (`--color-surface-1`, `--radius-lg`, `--space-section`, ...).
+> **Mass Solutions adaptation (2026-09-15):** the catalog site at `apps/site` uses this system as written, dark theme only, with these substitutions: the wordmark is "Mass Skills" (no Linear branding); **Inter** replaces Linear Display/Text and **JetBrains Mono** replaces Linear Mono, both self-hosted through the Astro Fonts API; a terminal session of the `mass-skills` CLI inside a `product-screenshot-card` stands in for product UI screenshots; `pricing-card` / `pricing-card-featured` frame the install paths and `pricing-tab-*` pills filter catalog categories. CSS custom properties in `apps/site/src/styles/global.css` reuse the token names below (`--color-surface-1`, `--radius-lg`, `--space-section`, ...).
 
 ## Overview
 
