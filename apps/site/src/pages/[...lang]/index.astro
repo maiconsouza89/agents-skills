@@ -103,15 +103,17 @@ const session: TerminalLine[] = [
       }
       const byName = new Map(index.map((s) => [s.name, s]));
       const items = Array.from(catalog.querySelectorAll("[data-skill]"));
+      // Search is accent-insensitive: "critica" matches "crítica" and the other way round.
+      const fold = (s) => s.normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase();
       const apply = () => {
-        const term = q.value.trim().toLowerCase();
+        const term = fold(q.value.trim());
         const checked = form.querySelector('input[name="category"]:checked');
         const cat = checked ? checked.value : "";
         let visible = 0;
         for (const li of items) {
           const name = li.getAttribute("data-name");
           const entry = byName.get(name) || { name, description: "", tags: [], category: li.getAttribute("data-category") };
-          const hay = [entry.name, entry.description, ...(entry.tags || [])].join(" ").toLowerCase();
+          const hay = fold([entry.name, entry.description, ...(entry.tags || [])].join(" "));
           const show = (!term || hay.includes(term)) && (!cat || entry.category === cat);
           li.hidden = !show;
           if (show) visible++;
