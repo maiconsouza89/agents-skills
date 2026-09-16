@@ -122,7 +122,7 @@ export async function main(
         .find((b) => new RegExp(`^(feat|fix|docs)/${number}-`).test(b));
       branch = remoteMatch ?? localMatch;
       if (branch) {
-        exec("git", ["fetch", "origin", branch]);
+        if (remoteMatch) exec("git", ["fetch", "origin", branch]);
         exec("git", ["switch", branch]);
         out.write(`Switched to the linked branch ${branch}\n`);
       } else {
