@@ -20,11 +20,11 @@ const d = t(lang);
     <p class="body-lg muted">{d.agentIntro(agent.id)}</p>
   </header>
   <div class="grid-2 section-tight">
-    <section class="card" data-agent-install>
+    <section class="card install-path" data-agent-install>
       <h2 class="card-title">{d.agentInstall}</h2>
       <Snippet label={d.installCli} code={`npx @mass-solutions/skills-cli install <skill> -a ${agent.id}`} />
     </section>
-    <section class="card" data-agent-paths>
+    <section class="card install-path" data-agent-paths>
       <h2 class="card-title">{d.agentPaths}</h2>
       <dl class="meta-list">
         <dt>{d.projectPath}</dt>
