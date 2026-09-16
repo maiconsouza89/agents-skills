@@ -309,11 +309,11 @@ describe("site build", () => {
     }
   });
 
-  it("zero client js outside the catalog page, one script on the catalog page", () => {
+  it("one script on every page (copy-to-clipboard), two on the catalog page (+ search)", () => {
     for (const f of files.filter((f) => f.endsWith(".html"))) {
       const count = (html(DIST, f).match(/<script/g) ?? []).length;
-      if (f === "catalog/index.html" || f === "pt-br/catalog/index.html") expect(count, f).toBe(1);
-      else expect(count, f).toBe(0);
+      if (f === "catalog/index.html" || f === "pt-br/catalog/index.html") expect(count, f).toBe(2);
+      else expect(count, f).toBe(1);
     }
     expect(html(DIST, "catalog/index.html")).toContain("search-index.json");
   });
