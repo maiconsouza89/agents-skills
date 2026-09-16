@@ -71,6 +71,16 @@ describe("start-issue", () => {
     ]);
   });
 
+  it("switches to a branch that exists only locally without fetching it from the remote", async () => {
+    const r = await run(["8"], fake({ "git branch --list": "* feat/8-local-only\n" }));
+    expect(r.code).toBe(0);
+    expect(writes(r.calls)).toEqual([
+      "git switch feat/8-local-only",
+      "gh api -X POST repos/acme/skills/issues/8/assignees -f assignees[]=octocat",
+    ]);
+    expect(r.out).toContain("assigned to octocat");
+  });
+
   it("honours --base when creating a new branch", async () => {
     const r = await run(["8", "--base", "develop"]);
     expect(r.code).toBe(0);
