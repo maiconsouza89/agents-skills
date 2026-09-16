@@ -8,10 +8,17 @@ const PROMPT = readFileSync(join(ROOT, "tools/routines/triage-issue.md"), "utf8"
 // The prefixes of the Area rule: the prompt must point at CLAUDE.md instead of repeating them.
 const AREA_PREFIXES = ["cli:", "core:", "mcp:", "site:", "ci:", "release:", "catalog:", "skill:"];
 
+// A numbered step of the prompt, so an assertion about one step cannot be satisfied by another.
+const step = (n: number) => PROMPT.split(/\n\d+\. /)[n];
+
 describe("triage routine prompt", () => {
   it("ships the routine prompt in the repository", () => {
     expect(PROMPT.trim().length).toBeGreaterThan(500);
-    expect(PROMPT).toContain("Triage issue");
+    // The whole file is what gets pasted into the routine, so nothing in it may talk about the
+    // file itself: no title, and no instruction about pasting or versioning.
+    expect(PROMPT.startsWith("An issue was just opened in this repository.")).toBe(true);
+    expect(PROMPT).not.toMatch(/^# /m);
+    expect(PROMPT).not.toMatch(/paste|versioned|claude\.ai/i);
   });
 
   it("treats the issue text as data", () => {
@@ -27,17 +34,23 @@ describe("triage routine prompt", () => {
   });
 
   it("defers the area rule to CLAUDE.md", () => {
-    expect(PROMPT).toContain("## Fluxo com o GitHub Project");
-    expect(PROMPT).toContain("CLAUDE.md");
-    // Pointing at the rule, not restating it: no prefix of the rule may appear here.
+    // Both halves: an instruction to go read the rule where it lives, and no trace of the rule
+    // itself - absence alone would also hold for a prompt that paraphrased it.
+    expect(step(3)).toMatch(/Decide the Area by the rule in the `## Fluxo com o GitHub Project` section of `CLAUDE\.md`/);
+    expect(step(3)).toMatch(/Read\s+it rather than guessing/);
     for (const prefix of AREA_PREFIXES) expect(PROMPT, `area prefix ${prefix}`).not.toContain(prefix);
   });
 
   it("writes the full label set once", () => {
-    expect(PROMPT).toMatch(/one call to `issue_write`/);
-    expect(PROMPT).toMatch(/sending the full set/i);
-    for (const family of ["priority:", "area:", "complexity:"]) expect(PROMPT, family).toContain(family);
-    expect(PROMPT).toMatch(/exactly one new label of\s+each of those three families, all lowercase/i);
+    expect(step(1), "step 1 reads the labels the issue already has").toMatch(/plus its current labels/);
+    // Scoped to the writing step: `priority:` also appears in the comment format, so a
+    // whole-file match would pass with the write instruction naming no family at all.
+    const write = step(4);
+    expect(write).toMatch(/one call to `issue_write`/);
+    expect(write).toMatch(/sending the full set/i);
+    expect(write).toMatch(/every current label whose\s+name does not start with/i);
+    for (const family of ["priority:", "area:", "complexity:"]) expect(write, family).toContain(family);
+    expect(write).toMatch(/exactly one new label of\s+each of those three families, all lowercase/i);
   });
 
   it("fixes the comment format", () => {

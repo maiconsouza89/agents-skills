@@ -1,11 +1,3 @@
-# Triage issue — routine prompt
-
-This file is the text of the `Triage issue` routine on claude.ai, kept in the repository because
-the platform does not version a routine prompt. Changing it here changes nothing by itself: paste
-the section below into the routine, or the two drift apart.
-
----
-
 An issue was just opened in this repository. Triage it: decide its Priority, Area and Complexity,
 write them as labels, and explain the three in one comment.
 
