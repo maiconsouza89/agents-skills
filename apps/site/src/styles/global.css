@@ -316,6 +316,7 @@ main {
   color: var(--color-ink);
 }
 
+.nav-end,
 .nav-actions {
   display: flex;
   align-items: center;
@@ -325,15 +326,76 @@ main {
 .nav-menu {
   display: none;
   position: relative;
-  margin-left: auto;
 }
 
-.nav-menu summary {
+.nav-menu summary,
+.lang-menu summary {
   list-style: none;
 }
 
-.nav-menu summary::-webkit-details-marker {
+.nav-menu summary::-webkit-details-marker,
+.lang-menu summary::-webkit-details-marker {
   display: none;
+}
+
+/* Language switch: looks like a select, but is a disclosure of plain links so the header ships no JavaScript. */
+.lang-menu {
+  position: relative;
+}
+
+.lang-menu summary {
+  gap: 6px;
+  padding-inline: 10px;
+}
+
+.lang-menu .chevron {
+  color: var(--color-ink-subtle);
+  transition: transform 120ms ease;
+}
+
+.lang-menu[open] .chevron {
+  transform: rotate(180deg);
+}
+
+.lang-menu[open] summary {
+  background: var(--color-surface-1);
+}
+
+.lang-menu-panel {
+  position: absolute;
+  right: 0;
+  top: calc(100% + var(--space-xs));
+  z-index: 1;
+  display: grid;
+  gap: var(--space-xxs);
+  min-width: 200px;
+  padding: var(--space-xs);
+  background: var(--color-surface-3);
+  border: 1px solid var(--color-hairline-strong);
+  border-radius: var(--radius-lg);
+}
+
+.lang-menu-panel a {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: 10px 12px;
+  font-size: 14px;
+  color: var(--color-ink-subtle);
+  text-decoration: none;
+  border-radius: var(--radius-md);
+}
+
+.lang-menu-panel a:hover,
+.lang-menu-panel a[aria-current="true"] {
+  color: var(--color-ink);
+  background: var(--color-surface-4);
+}
+
+.lang-code {
+  min-width: 2ch;
+  font-weight: 500;
+  color: var(--color-ink);
 }
 
 .nav-menu-panel {
@@ -1147,6 +1209,10 @@ td code {
   .nav-links,
   .nav-actions {
     display: none;
+  }
+
+  .nav-end {
+    margin-left: auto;
   }
 
   .nav-menu {

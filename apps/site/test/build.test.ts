@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { beforeAll, describe, expect, it } from "vitest";
 import { DOOR_10 } from "../../../packages/cli/test/door10.js";
 import { BASE, DIST, REPO_ROOT, SITE_ROOT, buildSite, dom, html, text, walk } from "./helpers";
-import { t } from "../src/lib/i18n";
+import { LANG_META, LANGS, t, type Lang } from "../src/lib/i18n";
 
 const registry = JSON.parse(readFileSync(join(REPO_ROOT, "skills-registry.json"), "utf8"));
 const categories = JSON.parse(readFileSync(join(REPO_ROOT, "skills", "_categories.json"), "utf8")) as Array<{
@@ -13,6 +13,25 @@ const categories = JSON.parse(readFileSync(join(REPO_ROOT, "skills", "_categorie
 }>;
 const names: string[] = registry.skills.map((s: { name: string }) => s.name);
 const REPO = "maiconsouza89/agents-skills";
+
+/** The header language switch: a disclosure that shows only the current code, named "Language: <code>", listing one link per language. */
+function expectLangSwitch(d: Document, lang: Lang, switchTo: string) {
+  const switches = d.querySelectorAll("[data-lang-switch]");
+  expect(switches).toHaveLength(1);
+  const menu = switches[0];
+  expect(menu.tagName).toBe("DETAILS");
+  const summary = menu.querySelector("summary")!;
+  expect(text(summary)).toBe(`${t(lang).language}: ${LANG_META[lang].code}`);
+  expect(text(summary.querySelector(":scope > .sr-only"))).toBe(`${t(lang).language}:`);
+  const links = [...menu.querySelectorAll("a")];
+  expect(links.map((a) => a.getAttribute("hreflang"))).toEqual(LANGS);
+  const current = links.find((a) => a.getAttribute("hreflang") === lang)!;
+  const other = links.find((a) => a.getAttribute("hreflang") !== lang)!;
+  expect(current.getAttribute("aria-current")).toBe("true");
+  expect(other.hasAttribute("aria-current")).toBe(false);
+  expect(other.getAttribute("href")).toBe(switchTo);
+  for (const [i, a] of links.entries()) expect(text(a)).toBe(`${LANG_META[LANGS[i]].code} ${LANG_META[LANGS[i]].name}`);
+}
 
 let files: string[] = [];
 beforeAll(() => {
@@ -101,7 +120,7 @@ describe("site build", () => {
       const options = [...d.querySelectorAll<HTMLInputElement>('input[type="radio"][name="category"]')].map((o) => o.getAttribute("value"));
       expect(options).toEqual(["", ...usedIds]);
       expect(d.querySelector<HTMLInputElement>('input[name="category"][value=""]')!.hasAttribute("checked")).toBe(true);
-      expect(d.querySelector("[data-lang-switch]")!.getAttribute("href")).toBe(switchTo);
+      expectLangSwitch(d, lang, switchTo);
     }
   });
 
@@ -233,7 +252,7 @@ describe("site build", () => {
       const current = d.querySelector('.nav-links a[aria-current="page"]')!;
       expect(text(current)).toBe(dict.nav.about);
       expect(current.getAttribute("href")).toBe(`${BASE}${lang === "en" ? "" : "pt-br/"}about/`);
-      expect(d.querySelector("[data-lang-switch]")!.getAttribute("href")).toBe(switchTo);
+      expectLangSwitch(d, lang, switchTo);
       expect(d.querySelector(`link[rel="alternate"]`)!.getAttribute("href")).toBe(switchTo);
       // The footer "Site" column follows the nav, so About is reachable from every page.
       expect([...d.querySelectorAll(".footer a")].map((a) => a.getAttribute("href"))).toContain(`${BASE}${lang === "en" ? "" : "pt-br/"}about/`);
