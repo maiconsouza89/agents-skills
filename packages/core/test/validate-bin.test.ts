@@ -1,13 +1,18 @@
-import { spawnSync } from "node:child_process";
-import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
+import { main } from "../src/bin/validate.js";
 import { makeRoot, makeSkill, validFrontmatter } from "./helpers.js";
 
-const BIN = fileURLToPath(new URL("../src/bin/validate.ts", import.meta.url));
-const REPO_ROOT = fileURLToPath(new URL("../../..", import.meta.url));
+function sink() {
+  let text = "";
+  return { write: (s: string) => (text += s), text: () => text };
+}
 
+// The bin runs in-process: `pnpm validate` inside `pnpm check` already exercises the process entry.
 function run(root: string) {
-  return spawnSync("pnpm", ["exec", "tsx", BIN, root], { cwd: REPO_ROOT, encoding: "utf8" });
+  const out = sink();
+  const err = sink();
+  const status = main([root], out, err);
+  return { status, stdout: out.text(), stderr: err.text() };
 }
 
 describe("validate bin", () => {

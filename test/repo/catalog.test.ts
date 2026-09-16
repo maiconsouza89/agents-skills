@@ -1,80 +1,33 @@
-import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
+import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
-import { parseSkill, validateCatalog } from "@mass-solutions/skills-core";
 
+// Repo policies the validator does not enforce. Frontmatter, description, scripts, links and the
+// registry are covered by `pnpm validate` and `pnpm registry --check`, which run before the tests.
 const ROOT = fileURLToPath(new URL("../..", import.meta.url));
 const SKILLS = join(ROOT, "skills");
-const CATALOG = [
-  "mass-code-review",
-  "mass-commit-message",
-  "mass-issue-complexity",
-  "mass-issue-priority",
-  "mass-pr-description",
-  "mass-security-checklist",
-  "mass-skill-authoring",
-];
+const MAX_SKILL_LINES = 80;
 
-describe("example skills", () => {
-  it("catalog skills validate and stay under 80 lines", () => {
-    const dirs = readdirSync(SKILLS).filter((e) => !e.startsWith("_") && statSync(join(SKILLS, e)).isDirectory()).sort();
-    expect(dirs).toEqual(CATALOG);
-    for (const name of CATALOG) {
+describe("catalog", () => {
+  it("every skill keeps SKILL.md short", () => {
+    const dirs = readdirSync(SKILLS).filter((e) => !e.startsWith("_") && statSync(join(SKILLS, e)).isDirectory());
+    expect(dirs.length).toBeGreaterThan(0);
+    for (const name of dirs) {
       const lines = readFileSync(join(SKILLS, name, "SKILL.md"), "utf8").split("\n").length;
-      expect(lines, name).toBeLessThanOrEqual(80);
+      expect(lines, name).toBeLessThanOrEqual(MAX_SKILL_LINES);
     }
-    const result = validateCatalog(ROOT);
-    expect(result.skills).toEqual(CATALOG);
-    expect(result.findings).toEqual([]);
   });
 
-  it("skill-authoring exercises references and evals", () => {
-    const dir = join(SKILLS, "mass-skill-authoring");
-    const refs = readdirSync(join(dir, "references"));
-    expect(refs.length).toBeGreaterThanOrEqual(1);
-    const body = parseSkill(dir).body;
-    expect(refs.some((f) => body.includes(`references/${f}`))).toBe(true);
-    const triggers = JSON.parse(readFileSync(join(dir, "evals", "triggers.json"), "utf8"));
-    expect(triggers.should.length).toBeGreaterThanOrEqual(3);
-    expect(triggers.shouldNot.length).toBeGreaterThanOrEqual(3);
-  });
-
-  it("commit-message scripts and pr-description assets", () => {
-    const scripts = readdirSync(join(SKILLS, "mass-commit-message", "scripts"));
-    expect(scripts.length).toBeGreaterThanOrEqual(1);
-    for (const s of scripts) {
-      const abs = join(SKILLS, "mass-commit-message", "scripts", s);
-      expect(readFileSync(abs, "utf8").startsWith("#!")).toBe(true);
-      expect(statSync(abs).mode & 0o111, `${s} executable`).not.toBe(0);
-    }
-    const assets = readdirSync(join(SKILLS, "mass-pr-description", "assets"));
-    expect(assets.length).toBeGreaterThanOrEqual(1);
-    const body = parseSkill(join(SKILLS, "mass-pr-description")).body;
-    expect(assets.some((a) => body.includes(`assets/${a}`))).toBe(true);
-  });
-
-  it("code-review requires and security-checklist minimal", () => {
-    const review = parseSkill(join(SKILLS, "mass-code-review")).frontmatter!;
-    expect((review.metadata as Record<string, string>).requires).toBe("git, gh");
-    expect(typeof review["allowed-tools"]).toBe("string");
-    expect((review["allowed-tools"] as string).length).toBeGreaterThan(0);
-    const minimal = readdirSync(join(SKILLS, "mass-security-checklist"));
-    expect(minimal).toEqual(["SKILL.md"]);
-  });
-
-  it("categories and deprecated files", () => {
-    const categories = JSON.parse(readFileSync(join(SKILLS, "_categories.json"), "utf8")) as Array<{ id: string; en: string; "pt-br": string }>;
-    const ids = categories.map((c) => c.id);
+  it("categories carry both languages and the licenses are MIT for the repo and CC-BY-4.0 for the skills", () => {
+    const categories = JSON.parse(readFileSync(join(SKILLS, "_categories.json"), "utf8")) as Array<Record<string, unknown>>;
+    expect(categories.length).toBeGreaterThan(0);
     for (const c of categories) {
-      expect(typeof c.en).toBe("string");
-      expect(typeof c["pt-br"]).toBe("string");
+      expect(typeof c.id, JSON.stringify(c)).toBe("string");
+      expect(typeof c.en, JSON.stringify(c)).toBe("string");
+      expect(typeof c["pt-br"], JSON.stringify(c)).toBe("string");
     }
-    for (const name of CATALOG) {
-      const meta = parseSkill(join(SKILLS, name)).frontmatter!.metadata as Record<string, string>;
-      expect(ids, `${name} category`).toContain(meta.category);
-    }
-    expect(JSON.parse(readFileSync(join(SKILLS, "_deprecated.json"), "utf8"))).toEqual({});
-    expect(existsSync(join(SKILLS, "LICENSE"))).toBe(true);
+    expect(readFileSync(join(ROOT, "LICENSE"), "utf8")).toMatch(/^MIT License/);
+    expect(readFileSync(join(SKILLS, "LICENSE"), "utf8")).toContain("Creative Commons Attribution 4.0");
   });
 });

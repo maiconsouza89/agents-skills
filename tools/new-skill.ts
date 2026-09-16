@@ -5,7 +5,9 @@ import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { formatFinding, NAME_RE, readCategories, todayIso, validateSkill } from "@mass-solutions/skills-core";
 
-export function main(argv: string[], out = process.stdout, err = process.stderr): number {
+type Writer = { write(s: string): unknown };
+
+export function main(argv: string[], out: Writer = process.stdout, err: Writer = process.stderr): number {
   const rootIdx = argv.indexOf("--root");
   const root = resolve(rootIdx >= 0 ? argv[rootIdx + 1] : process.cwd());
   const name = argv.filter((a, i) => !a.startsWith("-") && i !== rootIdx + 1)[0];
