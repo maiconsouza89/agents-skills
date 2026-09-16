@@ -1035,6 +1035,21 @@ td code {
   gap: var(--space-sm);
 }
 
+/* about */
+
+.maintainer {
+  display: inline-flex;
+  flex-direction: column;
+  gap: var(--space-xxs);
+  min-width: 280px;
+  text-decoration: none;
+  color: var(--color-ink);
+}
+
+.maintainer code {
+  color: var(--color-ink-subtle);
+}
+
 /* footer */
 
 .footer {

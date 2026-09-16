@@ -21,7 +21,7 @@ const dict = {
   en: {
     siteName: "Mass Solutions Skills",
     tagline: "Agent Skills for coding agents, validated in CI and installed with integrity checks.",
-    nav: { catalog: "Catalog", install: "Install", agents: "Agents", github: "GitHub" },
+    nav: { catalog: "Catalog", install: "Install", agents: "Agents", about: "About", github: "GitHub" },
     switchLang: "Português (BR)",
     searchLabel: "Search skills",
     searchPlaceholder: "name, description or tag",
@@ -107,11 +107,45 @@ const dict = {
     footerLanguages: "Language",
     footerSecurity: "Security policy",
     footerContributing: "Contributing",
+    aboutTitle: "About",
+    aboutIntro:
+      "Mass Solutions Skills is a small, verified catalog of Agent Skills for AI coding agents: open source, reviewed by hand and installed with an integrity check.",
+    aboutSections: [
+      {
+        title: "What it is",
+        body: "A curated set of skills that follow the open Agent Skills specification, so the same folder works in Claude Code, Cursor, Codex, Copilot and any other agent that reads SKILL.md. The code is MIT and the skills are CC-BY-4.0.",
+      },
+      {
+        title: "Why it exists",
+        body: "A skill installed into many agents is a supply-chain target. Every skill here has a declared author, a semver version and a review date, and nothing enters the catalog without an issue, a review and the validator.",
+      },
+    ],
+    aboutTrustTitle: "How trust is kept",
+    aboutTrust: [
+      {
+        title: "Validator in CI",
+        body: "Checks the frontmatter contract, secret patterns, dangerous shell, prompt-injection phrases and binaries on every pull request, with no external service.",
+      },
+      {
+        title: "Independent scan",
+        body: "Snyk Agent Scan reviews every skill on main. Accepted findings need a reason and an expiry date, and an expired entry fails CI.",
+      },
+      {
+        title: "Integrity at install time",
+        body: "The mass-skills CLI checks the sha256 of every file against the registry before writing anything and records what it installed in a lockfile.",
+      },
+    ],
+    aboutTeamTitle: "Who maintains it",
+    aboutTeamBody:
+      "The catalog is maintained by Mass Solutions. Maicon Souza owns the repository, reviews every skill that enters the catalog and answers security reports.",
+    aboutMaintainer: "Maintainer",
+    aboutCtaTitle: "Want to help?",
+    aboutCtaBody: "Propose a skill through an issue, or report a vulnerability through a private advisory.",
   },
   "pt-br": {
     siteName: "Mass Solutions Skills",
     tagline: "Agent Skills para agentes de código, validadas em CI e instaladas com verificação de integridade.",
-    nav: { catalog: "Catálogo", install: "Instalação", agents: "Agentes", github: "GitHub" },
+    nav: { catalog: "Catálogo", install: "Instalação", agents: "Agentes", about: "Sobre", github: "GitHub" },
     switchLang: "English",
     searchLabel: "Buscar skills",
     searchPlaceholder: "nome, descrição ou tag",
@@ -197,6 +231,40 @@ const dict = {
     footerLanguages: "Idioma",
     footerSecurity: "Política de segurança",
     footerContributing: "Como contribuir",
+    aboutTitle: "Sobre",
+    aboutIntro:
+      "Mass Solutions Skills é um catálogo pequeno e verificado de Agent Skills para agentes de código com IA: código aberto, revisado à mão e instalado com verificação de integridade.",
+    aboutSections: [
+      {
+        title: "O que é",
+        body: "Um conjunto curado de skills que segue a especificação aberta Agent Skills, então a mesma pasta funciona no Claude Code, Cursor, Codex, Copilot e em qualquer outro agente que leia SKILL.md. O código é MIT e as skills são CC-BY-4.0.",
+      },
+      {
+        title: "Por que existe",
+        body: "Uma skill instalada em muitos agentes é alvo de ataque à cadeia de suprimentos. Toda skill aqui tem autor declarado, versão semver e data de revisão, e nada entra no catálogo sem issue, revisão e validador.",
+      },
+    ],
+    aboutTrustTitle: "Como a confiança é mantida",
+    aboutTrust: [
+      {
+        title: "Validador em CI",
+        body: "Confere o contrato do frontmatter, padrões de segredo, shell perigoso, frases de prompt injection e binários em todo pull request, sem serviço externo.",
+      },
+      {
+        title: "Varredura independente",
+        body: "O Snyk Agent Scan revisa toda skill em main. Achados aceitos precisam de motivo e data de validade, e uma entrada vencida derruba o CI.",
+      },
+      {
+        title: "Integridade na instalação",
+        body: "O CLI mass-skills confere o sha256 de cada arquivo contra o registry antes de escrever qualquer coisa e registra o que instalou num lockfile.",
+      },
+    ],
+    aboutTeamTitle: "Quem mantém",
+    aboutTeamBody:
+      "O catálogo é mantido pela Mass Solutions. Maicon Souza é o dono do repositório, revisa toda skill que entra no catálogo e responde aos relatos de segurança.",
+    aboutMaintainer: "Mantenedor",
+    aboutCtaTitle: "Quer ajudar?",
+    aboutCtaBody: "Proponha uma skill por uma issue, ou relate uma vulnerabilidade por um advisory privado.",
   },
 } as const;
 
