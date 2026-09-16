@@ -354,6 +354,15 @@ main {
   padding: 10px 12px;
 }
 
+.nav-github {
+  gap: 0.375rem;
+}
+
+.nav-menu-panel a.nav-github {
+  display: flex;
+  align-items: center;
+}
+
 /* Buttons */
 
 .btn {
