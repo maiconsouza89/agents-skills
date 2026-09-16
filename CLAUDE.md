@@ -78,7 +78,7 @@ pnpm --filter @mass-solutions/skills-cli exec tsx src/bin.ts <args>   # CLI em d
 - Escrita no Project é feita por workflows com `PROJECT_TOKEN` (sessões web não alcançam a API de Projects).
 - **Ao começar uma issue, rode `pnpm start-issue <N>` antes de qualquer outra coisa.** Se esqueceu, rode assim que perceber.
 - **Sessão do Claude Code web** (`CLAUDE_CODE_REMOTE=true`): a sessão já nasce numa branch própria e o push só é permitido nela. Não crie nem troque de branch; `pnpm start-issue` detecta a sessão, mantém a branch atual e só atribui a issue. Dependências são instaladas pelo hook `SessionStart` em `.claude/settings.json`.
-- **Triagem:** `triage.yml` classifica a issue ao abrir e grava os três campos. Para triar de novo: `gh workflow run triage.yml -f issue=<N>`. Ajuste manual nos dropdowns do board.
+- **Triagem:** `triage.yml` roda quando uma issue é aberta. O `claude-code-action` classifica só com `Read` (a issue, as rubricas de `mass-issue-priority` e `mass-issue-complexity`, a regra de Area abaixo) e devolve JSON via `--json-schema`; um step valida os valores, grava os três campos e comenta `Triage: ...`. Para triar de novo: "Re-run workflow" na aba Actions ou `workflow_dispatch` (`gh workflow run triage.yml -f issue=<N>`). Ajuste manual nos dropdowns do board.
 - **Regra de Area** (prefixo do título): `cli:` → CLI; `core:` e `mcp:` → Core; `site:` → Site; `ci:` e `release:` → CI; `catalog:` e `skill:` → Catalog. Com `tools:`, `docs:` ou sem prefixo, decida pelos caminhos citados no corpo, contando `tools/` e `.github/` como CI.
 - Sem `gh`, os scripts de `tools/` caem para `fetch` com `GH_TOKEN`/`GITHUB_TOKEN`; sem nenhum, use o GitHub MCP.
 - PR com `Closes #N` (o template já traz). Merge por squash.
