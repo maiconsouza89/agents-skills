@@ -3,6 +3,11 @@
   "version": "0.1.0",
   "description": "Frontmatter contract, validation rules, hashing and registry generation for Mass Solutions skills",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/maiconsouza89/agents-skills.git",
+    "directory": "packages/core"
+  },
   "type": "module",
   "publishConfig": {
     "access": "public"

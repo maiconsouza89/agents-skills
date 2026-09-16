@@ -114,6 +114,13 @@ describe("workflows", () => {
     expect(workspaceGuard).toBeGreaterThan(index("pnpm build"));
     expect(workspaceGuard).toBeLessThan(publish);
     expect(r[tagGuard]).toContain('[ "$TAG" != "v$version" ]');
+    expect(r[workspaceGuard]).toContain("repository.url");
+    // npm rejects a provenance bundle unless package.json names this repo.
+    for (const pkg of ["cli", "core"]) {
+      const manifest = JSON.parse(read(`packages/${pkg}/package.json`));
+      expect(manifest.repository.url).toBe("git+https://github.com/maiconsouza89/agents-skills.git");
+      expect(manifest.repository.directory).toBe(`packages/${pkg}`);
+    }
     // The GitHub Release comes after publish and tolerates a rerun.
     const release = index('gh release create "$TAG" --generate-notes');
     expect(release).toBeGreaterThan(publish);
