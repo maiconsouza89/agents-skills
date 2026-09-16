@@ -8,7 +8,7 @@ export function href(path: string): string {
   return `${BASE}/${path.replace(/^\//, "")}`;
 }
 
-/** The same page in `lang`: `""` is the catalog, `"skills/x/"` a skill page. */
+/** The same page in `lang`: `""` is the home page, `"catalog/"` the catalog, `"skills/x/"` a skill page. */
 export function localized(lang: Lang, path = ""): string {
   return href(lang === "en" ? path : `pt-br/${path}`);
 }

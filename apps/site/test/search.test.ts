@@ -8,7 +8,7 @@ async function loadHome(page: string, entries?: unknown, query = ""): Promise<Do
   const index = entries === undefined ? html(DIST, "search-index.json") : JSON.stringify(entries);
   const dom = new JSDOM(html(DIST, page), {
     runScripts: "dangerously",
-    url: `https://maiconsouza89.github.io/agents-skills/${query}`,
+    url: `https://maiconsouza89.github.io/agents-skills/catalog/${query}`,
     beforeParse(window) {
       // The page fetches search-index.json; serve the built file.
       (window as unknown as { fetch: unknown }).fetch = async () => ({ ok: true, json: async () => JSON.parse(index) });
@@ -35,8 +35,8 @@ beforeAll(() => {
 describe("home search", () => {
   it("no match message names the term and keeps the field visible", async () => {
     for (const [page, message] of [
-      ["index.html", 'No skills match "zzz-nothing"'],
-      ["pt-br/index.html", 'Nenhuma skill corresponde a "zzz-nothing"'],
+      ["catalog/index.html", 'No skills match "zzz-nothing"'],
+      ["pt-br/catalog/index.html", 'Nenhuma skill corresponde a "zzz-nothing"'],
     ] as const) {
       const doc = await loadHome(page);
       const noMatch = doc.querySelector<HTMLElement>("[data-no-match]")!;
@@ -56,7 +56,7 @@ describe("home search", () => {
 
   it("search ignores accents in both the term and the indexed text", async () => {
     // The real catalog is written in English, so the accented entry is injected into the served index.
-    const doc = await loadHome("index.html", [
+    const doc = await loadHome("catalog/index.html", [
       { name: "mass-code-review", description: "Revisão crítica de código.", category: "quality", tags: ["revisão"], version: "1.0.0" },
     ]);
     const visible = () => [...doc.querySelectorAll<HTMLElement>("[data-skill]")].filter((li) => !li.hidden).map((li) => li.dataset.name);
@@ -67,7 +67,7 @@ describe("home search", () => {
   });
 
   it("reads the search term and the category from the URL", async () => {
-    const doc = await loadHome("index.html", undefined, "?q=commit&category=workflow");
+    const doc = await loadHome("catalog/index.html", undefined, "?q=commit&category=workflow");
     expect(doc.querySelector<HTMLInputElement>("input#q")!.value).toBe("commit");
     expect(doc.querySelector<HTMLInputElement>('input[name="category"]:checked')!.value).toBe("workflow");
     const visible = [...doc.querySelectorAll<HTMLElement>("[data-skill]")].filter((li) => !li.hidden).map((li) => li.dataset.name);
@@ -76,14 +76,15 @@ describe("home search", () => {
   });
 
   it("an unknown category falls back to all categories", async () => {
-    const doc = await loadHome("index.html", undefined, "?category=zzz-nothing");
+    const doc = await loadHome("catalog/index.html", undefined, "?category=zzz-nothing");
     expect(doc.querySelector<HTMLInputElement>('input[name="category"]:checked')!.value).toBe("");
     expect([...doc.querySelectorAll<HTMLElement>("[data-skill]")].every((li) => !li.hidden)).toBe(true);
+    expect(doc.defaultView!.location.pathname).toBe("/agents-skills/catalog/");
     expect(doc.defaultView!.location.search).toBe("");
   });
 
   it("writes the state back to the URL and clears it when both are empty", async () => {
-    const doc = await loadHome("index.html", undefined, "?q=commit");
+    const doc = await loadHome("catalog/index.html", undefined, "?q=commit");
     const win = doc.defaultView as Window & typeof globalThis;
     const radio = doc.querySelector<HTMLInputElement>('input[name="category"][value="workflow"]')!;
     radio.checked = true;
@@ -97,11 +98,11 @@ describe("home search", () => {
     all.checked = true;
     all.dispatchEvent(new win.Event("change", { bubbles: true }));
     expect(win.location.search).toBe("");
-    expect(win.location.href).toBe("https://maiconsouza89.github.io/agents-skills/");
+    expect(win.location.href).toBe("https://maiconsouza89.github.io/agents-skills/catalog/");
   });
 
   it("category pills filter the catalog and combine with the search term", async () => {
-    const doc = await loadHome("index.html");
+    const doc = await loadHome("catalog/index.html");
     const win = doc.defaultView as Window & typeof globalThis;
     const index: Array<{ name: string; description: string; tags: string[]; category: string }> = JSON.parse(html(DIST, "search-index.json"));
     const expected = (category: string, term: string) =>

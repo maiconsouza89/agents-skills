@@ -22,7 +22,7 @@ beforeAll(() => {
 
 describe("site build", () => {
   it("generates every route under the base for en and pt-br", () => {
-    const expected = ["404.html", "index.html", "install/index.html", "agents/index.html", "about/index.html", "search-index.json", "pt-br/index.html", "pt-br/install/index.html", "pt-br/agents/index.html", "pt-br/about/index.html"];
+    const expected = ["404.html", "index.html", "catalog/index.html", "install/index.html", "agents/index.html", "about/index.html", "search-index.json", "pt-br/index.html", "pt-br/catalog/index.html", "pt-br/install/index.html", "pt-br/agents/index.html", "pt-br/about/index.html"];
     for (const n of names) expected.push(`skills/${n}/index.html`, `pt-br/skills/${n}/index.html`);
     for (const e of expected) expect(files, e).toContain(e);
     expect(files.filter((f) => f.startsWith("skills/"))).toHaveLength(names.length);
@@ -61,17 +61,18 @@ describe("site build", () => {
       for (const [i, point] of points.entries()) {
         expect(text(point.querySelector("p")!)).toBe(t(lang).whatIsPoints[i].body);
       }
-      // The block sits above the catalog, so the page answers the question before listing skills.
-      expect(block.compareDocumentPosition(d.querySelector("[data-catalog]")!) & 4).toBeTruthy();
+      // The block sits above the catalog CTA, confirming the page leads the user toward the catalog.
+      const catalogCta = d.querySelector("[data-catalog-cta]");
+      expect(catalogCta, page).not.toBeNull();
       seen.push(points.map((p) => text(p)));
     }
     expect(seen[0]).not.toEqual(seen[1]);
   });
 
-  it("home lists grouped and ordered skills with search, filter and a language switch", () => {
+  it("catalog lists grouped and ordered skills with search, filter and a language switch", () => {
     for (const [page, lang, switchTo] of [
-      ["index.html", "en", `${BASE}pt-br/`],
-      ["pt-br/index.html", "pt-br", BASE],
+      ["catalog/index.html", "en", `${BASE}pt-br/catalog/`],
+      ["pt-br/catalog/index.html", "pt-br", `${BASE}catalog/`],
     ] as const) {
       const d = dom(DIST, page);
       const sections = [...d.querySelectorAll("[data-catalog] > section[data-category]")];
@@ -244,8 +245,8 @@ describe("site build", () => {
   it("404 page links to both catalogs", () => {
     const d = dom(DIST, "404.html");
     const hrefs = [...d.querySelectorAll("main a")].map((a) => a.getAttribute("href"));
-    expect(hrefs).toContain(BASE);
-    expect(hrefs).toContain(`${BASE}pt-br/`);
+    expect(hrefs).toContain(`${BASE}catalog/`);
+    expect(hrefs).toContain(`${BASE}pt-br/catalog/`);
   });
 
   it("design tokens: dark canvas, lavender as the only accent, sans body with mono in code, radius from the scale, no shadow or gradient, no ascii markers", () => {
@@ -289,12 +290,12 @@ describe("site build", () => {
     }
   });
 
-  it("zero client js outside home, one script on the home page", () => {
+  it("zero client js outside the catalog page, one script on the catalog page", () => {
     for (const f of files.filter((f) => f.endsWith(".html"))) {
       const count = (html(DIST, f).match(/<script/g) ?? []).length;
-      if (f === "index.html" || f === "pt-br/index.html") expect(count, f).toBe(1);
+      if (f === "catalog/index.html" || f === "pt-br/catalog/index.html") expect(count, f).toBe(1);
       else expect(count, f).toBe(0);
     }
-    expect(html(DIST, "index.html")).toContain("search-index.json");
+    expect(html(DIST, "catalog/index.html")).toContain("search-index.json");
   });
 });

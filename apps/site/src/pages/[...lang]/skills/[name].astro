@@ -42,7 +42,7 @@ const commands = [
 
 <Base lang={lang} title={name} path={`skills/${name}/`} description={entry?.data.description}>
   <header class="page-head">
-    <p class="eyebrow"><a class="subtle" href={localized(lang)}>{d.nav.catalog}</a>{meta.category && <> / {categoryLabel(meta.category, lang)}</>}</p>
+    <p class="eyebrow"><a class="subtle" href={localized(lang, "catalog/")}>{d.nav.catalog}</a>{meta.category && <> / {categoryLabel(meta.category, lang)}</>}</p>
     <h1 class="display-lg">{name}</h1>
     {
       entry && (
