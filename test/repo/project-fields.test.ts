@@ -158,6 +158,21 @@ describe("project-fields workflow", () => {
     expect(r.code).not.toBe(0);
   });
 
+  // 301 is the fourth status the labels endpoint documents; it reaches this code only when gh
+  // surfaces the redirect instead of following it, which happens on a renamed or transferred
+  // repository. Failing loudly is the wanted outcome - the alternative is deleting a label on a
+  // repository that is no longer the one the workflow was configured for.
+  it("fails when the label endpoint answers a redirect", () => {
+    const r = runWorkflow(WORKFLOW, {
+      label: "complexity:low",
+      labels: ["complexity:high", "complexity:low"],
+      failures: [notFound("301", "Moved Permanently")],
+    });
+    expect(deletes(r.calls)).toHaveLength(1);
+    expect(r.code).not.toBe(0);
+    expect(r.output).toContain("Could not remove 'complexity:high'");
+  });
+
   it("uses PROJECT_TOKEN for the project and github.token for labels", () => {
     const r = runWorkflow(WORKFLOW, { label: "priority:p2", labels: ["priority:p0", "priority:p2"] });
     expect(r.code, r.output).toBe(0);
