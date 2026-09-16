@@ -1,5 +1,6 @@
 import { hashFiles } from "@mass-solutions/skills-core";
 import { agentById, type ScopeOptions } from "../agents.js";
+import { audit } from "../audit.js";
 import { loadLock, loadRegistry, type Session } from "../context.js";
 import { installedDir, lockEntryFor, placeSkill, stageSkill } from "../installer.js";
 import { writeLock } from "../lockfile.js";
@@ -83,12 +84,28 @@ export async function update(s: Session, opts: UpdateOptions): Promise<number> {
       continue;
     }
     const remote = registry.skills.find((r) => r.name === name)!;
-    const staged = await stageSkill(s.ctx.env, s.opts.ref, remote, s.fetchImpl);
     const agents = agentsOf(entry);
-    placeSkill(staged, agents, scope);
+    let staged;
+    try {
+      staged = await stageSkill(s.ctx.env, s.opts.ref, remote, s.fetchImpl);
+      placeSkill(staged, agents, scope);
+    } catch (e) {
+      audit(s, { command: "update", skill: name, version: remote.version, ref: s.opts.ref, agents: agents.map((a) => a.id), result: "failed", error: e });
+      if (changed) writeLock(s.lockFile, lock);
+      throw e;
+    }
     lock.skills[name] = lockEntryFor(remote, s.opts.ref, agents, entry, s.now);
     changed = true;
     s.ctx.stdout.write(`${name}: ${state.kind === "locally-modified" ? "overwritten" : "updated"} to ${remote.version}\n`);
+    audit(s, {
+      command: "update",
+      skill: name,
+      version: remote.version,
+      contentHash: remote.contentHash,
+      ref: s.opts.ref,
+      agents: agents.map((a) => a.id),
+      result: "ok",
+    });
   }
   if (changed) writeLock(s.lockFile, lock);
   return EXIT_OK;

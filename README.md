@@ -173,6 +173,8 @@ Exit codes: `0` success, `1` execution failure (hash mismatch, deprecated skill,
 
 The lockfile is `mass-skills.lock.json` in the project, or `~/.config/mass-skills/lock.json` with `-g`. `MASS_SKILLS_BASE_URL` points the CLI at a mirror of the catalog.
 
+`install`, `update` and `remove` also append one JSON Lines entry per skill to an audit log — `mass-skills.audit.jsonl` next to the project lockfile, or `~/.config/mass-skills/audit.jsonl` with `-g`. Each line carries `ts`, `command`, `skill`, `version`, `contentHash`, `ref`, `agents`, `scope`, `result` and, when the run failed, a short `error`. Set `MASS_SKILLS_NO_AUDIT=1` to turn it off; a log that cannot be written is a warning on stderr and never changes the exit code.
+
 ## How it works
 
 1. **Resolve.** The CLI reads `skills-registry.json` at the requested ref (default is the release tag matching the installed CLI version, e.g. `v0.1.1`; override with `--ref`) and resolves every skill name and agent id before touching anything. A deprecated skill is refused with a pointer to its replacement.

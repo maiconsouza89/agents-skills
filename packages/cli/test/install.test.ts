@@ -14,8 +14,9 @@ beforeAll(async () => {
 });
 afterAll(() => fx.close());
 
+/** A failed run places no skill and writes no lockfile; the only file it may add is the audit log. */
 function untouched(project: { cwd: string; home: string }) {
-  const dirs = readdirSync(project.cwd).filter((e) => e !== ".claude");
+  const dirs = readdirSync(project.cwd).filter((e) => e !== ".claude" && e !== "mass-skills.audit.jsonl");
   expect(dirs, "project dir").toEqual([]);
   expect(readdirSync(join(project.cwd, ".claude"))).toEqual([]);
   expect(existsSync(join(project.cwd, "mass-skills.lock.json"))).toBe(false);
