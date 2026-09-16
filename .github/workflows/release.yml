@@ -39,18 +39,30 @@ jobs:
             echo "::error::Tag $TAG does not match packages/cli version $version; tag the commit that bumps the CLI as v$version"
             exit 1
           fi
-      - name: Assert the packed manifests have no workspace ranges
+      - name: Assert the packed manifests are publishable
         # CLI 0.1.0 shipped with a `workspace:*` dependency because it was
-        # published by hand from an unpacked tree. Inspect the exact tarballs
-        # that publish will upload.
+        # published by hand from an unpacked tree, and npm rejects a provenance
+        # bundle whose package.json `repository.url` does not name this repo.
+        # Inspect the exact tarballs that publish will upload.
+        env:
+          REPO_URL: https://github.com/${{ github.repository }}
         run: |
           set -euo pipefail
           out=$(mktemp -d)
           for dir in packages/*; do
             tarball=$(cd "$dir" && pnpm pack --out "$out/%s-%v.tgz" --json | node -p "JSON.parse(require('fs').readFileSync(0,'utf8')).filename")
-            if tar -xOf "$tarball" package/package.json | grep -q 'workspace:'; then
+            manifest=$(tar -xOf "$tarball" package/package.json)
+            if grep -q 'workspace:' <<<"$manifest"; then
               echo "::error::$tarball still contains a workspace: range"
-              tar -xOf "$tarball" package/package.json
+              echo "$manifest"
+              exit 1
+            fi
+            if ! node -e '
+              const m = JSON.parse(process.argv[1]);
+              const url = (m.repository && m.repository.url || "").replace(/^git\+/, "").replace(/\.git$/, "");
+              if (url !== process.env.REPO_URL) { console.error(`repository.url is "${url}", expected "${process.env.REPO_URL}"`); process.exit(1); }
+            ' "$manifest"; then
+              echo "::error::$tarball has no repository.url matching $REPO_URL; provenance verification would reject it"
               exit 1
             fi
             echo "$tarball: ok"
