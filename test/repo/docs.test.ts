@@ -5,8 +5,8 @@ import { describe, expect, it } from "vitest";
 
 const ROOT = fileURLToPath(new URL("../..", import.meta.url));
 const read = (p: string) => readFileSync(join(ROOT, p), "utf8");
-// Spelled indirectly so the repo-wide grep in triage-issue.test.ts keeps meaning something.
-const REMOVED_COMMAND = ["set", "complexity"].join("-");
+// Names of the label-based triage that triage.yml replaced; no document may still point at them.
+const REMOVED = ["set-complexity", "triage-issue", "project-fields", "tools/routines", "priority:", "area:", "complexity:"];
 
 function headingOrder(text: string, headings: string[]) {
   const idx = headings.map((h) => text.indexOf(`\n## ${h}`));
@@ -82,13 +82,12 @@ describe("documents", () => {
     expect(claude).toMatch(/[Ii]ngl[êe]s|English/);
   });
 
-  it("claude md describes the label triage flow", () => {
+  it("claude md describes the triage workflow and nothing of the label flow it replaced", () => {
     const section = read("CLAUDE.md").split("\n## ").find((s) => s.startsWith("Fluxo com o GitHub Project"))!;
-    for (const token of ["priority:", "area:", "complexity:", "project-fields.yml", "pnpm triage-issue <N>"]) {
+    for (const token of ["triage.yml", "claude-code-action", "`Read`", "--json-schema", "PROJECT_TOKEN", "workflow_dispatch", "Re-run workflow"]) {
       expect(section, token).toContain(token);
     }
-    expect(section).not.toContain(REMOVED_COMMAND);
-    expect(section).not.toMatch(/escopo `repo`\+`workflow`|`workflow`, além/);
+    for (const token of REMOVED) expect(section, token).not.toContain(token);
   });
 
   it("claude md carries the area rule", () => {
@@ -109,19 +108,11 @@ describe("documents", () => {
     expect(rule).toContain(".github/");
   });
 
-  it("claude md names the triage routine", () => {
-    const section = read("CLAUDE.md").split("\n## ").find((s) => s.startsWith("Fluxo com o GitHub Project"))!;
-    expect(section).toContain("Triage issue");
-    expect(section).toContain("tools/routines/triage-issue.md");
-    expect(section).toMatch(/colar o texto novo na rotina/);
-  });
-
   it("readme lists the maintainer commands", () => {
     const text = read("README.md");
-    expect(text).toMatch(/tools\/ +maintainer scripts \([^)]*triage-issue[^)]*\)/);
+    expect(text).toMatch(/tools\/ +maintainer scripts \(new-skill, stale, allowlist, start-issue\)/);
     const line = text.split("\n").find((l) => l.startsWith("Maintainer commands:"))!;
-    expect(line).toContain("pnpm triage-issue <number>");
-    for (const flag of ["--priority", "--area", "--complexity"]) expect(line, flag).toContain(flag);
-    expect(text).not.toContain(REMOVED_COMMAND);
+    for (const cmd of ["pnpm check", "pnpm registry", "pnpm new-skill", "pnpm start-issue <number>", "pnpm build"]) expect(line, cmd).toContain(cmd);
+    for (const token of REMOVED) expect(text, token).not.toContain(token);
   });
 });

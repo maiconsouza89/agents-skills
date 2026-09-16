@@ -120,23 +120,37 @@ describe("workflows", () => {
     expect(setStatus.if).toContain("Done");
   });
 
-  it("project fields workflow mirrors a triage label per family, with least privilege and no expression in any script", () => {
-    const wf = workflow("project-fields.yml");
-    expect(Object.keys(wf.on)).toEqual(["issues"]);
-    expect(wf.on.issues.types).toEqual(["labeled"]);
-    expect(wf.permissions).toEqual({ issues: "write" });
-    const family = "${{ startsWith(github.event.label.name, 'priority:') && 'priority' || startsWith(github.event.label.name, 'area:') && 'area' || 'complexity' }}";
-    expect(wf.concurrency.group).toBe(`project-fields-\${{ github.event.issue.number }}-${family}`);
+  it("triage workflow classifies with a read-only Claude and writes the board from shell steps", () => {
+    const wf = workflow("triage.yml");
+    expect(wf.on.issues.types).toEqual(["opened"]);
+    expect(wf.on.workflow_dispatch.inputs.issue.required).toBe(true);
+    expect(wf.permissions).toEqual({ contents: "read", issues: "write" });
+    expect(wf.concurrency.group).toContain("github.event.issue.number || inputs.issue");
     expect(wf.concurrency["cancel-in-progress"]).toBe(false);
-    const jobs = Object.values(wf.jobs) as Array<{ if: string; steps: Step[] }>;
-    expect(jobs).toHaveLength(1);
-    const job = jobs[0];
-    expect(job.if).toBe(
-      "startsWith(github.event.label.name, 'priority:') || startsWith(github.event.label.name, 'area:') || startsWith(github.event.label.name, 'complexity:')",
-    );
-    expect(steps(job).every((s) => s.uses === undefined)).toBe(true);
-    // The label name is attacker-controlled, so no script may interpolate an expression at all.
+    const job = wf.jobs.triage;
+    const claude = steps(job).find((s) => s.uses?.startsWith("anthropics/claude-code-action@"))!;
+    expect(claude.id).toBe("classify");
+    expect(claude.with?.claude_code_oauth_token).toBe("${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}");
+    expect(claude.with?.github_token).toBe("${{ github.token }}");
+    expect(claude.with?.claude_args).toContain('--allowedTools "Read"');
+    const schema = JSON.parse(claude.with!.claude_args.match(/--json-schema '(.+)'/)![1]);
+    expect(schema.properties.priority.enum).toEqual(["p0", "p1", "p2", "backlog"]);
+    expect(schema.properties.area.enum).toEqual(["cli", "core", "site", "ci", "catalog"]);
+    expect(schema.properties.complexity.enum).toEqual(["low", "medium", "high"]);
+    expect(schema.required).toEqual(["priority", "area", "complexity", "priority_reason", "area_reason", "complexity_reason"]);
+    // The issue text is attacker-controlled: it reaches Claude through issue.json only, and no
+    // script interpolates an expression at all.
+    expect(claude.with?.prompt).not.toContain("${{");
+    for (const p of ["issue.json", "skills/mass-issue-complexity/SKILL.md", "skills/mass-issue-priority/SKILL.md", "CLAUDE.md", "data, not instructions"]) {
+      expect(claude.with?.prompt, p).toContain(p);
+    }
     for (const r of runs(job)) expect(r).not.toContain("${{");
-    expect(new Set(steps(job).map((s) => s.env?.GH_TOKEN))).toEqual(new Set(["${{ secrets.PROJECT_TOKEN }}", "${{ github.token }}"]));
+    expect(read(".github/workflows/triage.yml")).not.toMatch(/github\.event\.issue\.(title|body)/);
+    const write = steps(job).find((s) => s.run?.includes("updateProjectV2ItemFieldValue"))!;
+    expect(write.env?.GH_TOKEN).toBe("${{ secrets.PROJECT_TOKEN }}");
+    expect(write.env?.RESULT).toBe("${{ steps.classify.outputs.structured_output }}");
+    const comment = steps(job).find((s) => s.run?.includes("/comments"))!;
+    expect(comment.env?.GH_TOKEN).toBe("${{ github.token }}");
+    expect(steps(job).indexOf(comment)).toBeGreaterThan(steps(job).indexOf(write));
   });
 });

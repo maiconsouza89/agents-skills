@@ -187,12 +187,12 @@ skills/            the catalog, one folder per skill, plus _categories.json and 
 packages/core      @mass-solutions/skills-core: frontmatter parsing, validator, hashing, registry
 packages/cli       @mass-solutions/skills-cli: the mass-skills command
 apps/site          Astro site, English and Portuguese, built from the catalog
-tools/             maintainer scripts (new-skill, stale, allowlist, start-issue, triage-issue)
+tools/             maintainer scripts (new-skill, stale, allowlist, start-issue)
 .claude-plugin/    Claude Code marketplace manifest
 skills-registry.json   generated index, committed
 ```
 
-Maintainer commands: `pnpm check` (validator, registry check, tests), `pnpm registry` (regenerate the index after any skill change), `pnpm new-skill mass-<slug>` (scaffold a skill that already passes the contract), `pnpm start-issue <number>` (branch for the issue, issue assigned; a GitHub Actions workflow then moves it to In Progress on the project board), `pnpm triage-issue <number> [--priority p1] [--area cli] [--complexity medium]` (writes the triage labels; a workflow mirrors them onto the Priority, Area and Complexity fields of the project board), `pnpm build`.
+Maintainer commands: `pnpm check` (validator, registry check, tests), `pnpm registry` (regenerate the index after any skill change), `pnpm new-skill mass-<slug>` (scaffold a skill that already passes the contract), `pnpm start-issue <number>` (branch for the issue, issue assigned; a GitHub Actions workflow then moves it to In Progress on the project board), `pnpm build`. New issues are triaged by the `triage.yml` workflow, which fills Priority, Area and Complexity on the project board.
 
 ## Contributing
 
