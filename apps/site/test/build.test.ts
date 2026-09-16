@@ -115,6 +115,44 @@ describe("site build", () => {
     expect(bodies[0]).toBe(bodies[1]);
   });
 
+  it("links every known mass-* reference in \"Do NOT use for\" to that skill's page in the current language", () => {
+    // Every mass-* token in the "Do NOT use for" part that names another skill in the catalog, in order.
+    const refs = (skill: { name: string; description: string }) =>
+      [...(skill.description.split("Do NOT use for")[1] ?? "").matchAll(/mass-[a-z0-9]+(?:-[a-z0-9]+)*/g)]
+        .map((m) => m[0])
+        .filter((n) => n !== skill.name && names.includes(n));
+    const withRefs = (registry.skills as Array<{ name: string; description: string }>).filter((s) => refs(s).length > 0);
+    expect(withRefs.length).toBeGreaterThan(0);
+    for (const [prefix, lang] of [["", "en"], ["pt-br/", "pt-br"]] as const) {
+      for (const skill of withRefs) {
+        const d = dom(DIST, `${prefix}skills/${skill.name}/index.html`);
+        const not = d.querySelector("[data-not]")!;
+        const expected = refs(skill);
+        const links = [...not.querySelectorAll("a[data-related]")];
+        expect(links.map((a) => a.textContent), `${lang} ${skill.name}`).toEqual(expected);
+        for (const a of links) {
+          expect(a.getAttribute("href")).toBe(`${BASE}${prefix}skills/${a.textContent}/`);
+        }
+        // The surrounding prose is untouched: the rendered text still matches the description formula.
+        expect(text(not)).toBe(skill.description.split("Do NOT use for")[1].trim().replace(/\.$/, ""));
+      }
+    }
+  });
+
+  it("splitSkillRefs keeps punctuation out of the reference and leaves unknown mass-* names as text", async () => {
+    process.env.MASS_CATALOG_ROOT ??= join(REPO_ROOT, "skills");
+    const { splitSkillRefs } = await import("../src/lib/catalog");
+    expect(splitSkillRefs("writing X (use mass-y).", ["mass-y"])).toEqual([
+      { text: "writing X (use " },
+      { text: "mass-y", skill: "mass-y" },
+      { text: ")." },
+    ]);
+    expect(splitSkillRefs("a (use mass-gone) or mass-y", ["mass-y"])).toEqual([
+      { text: "a (use mass-gone) or " },
+      { text: "mass-y", skill: "mass-y" },
+    ]);
+  });
+
   it("minimal skill omits extra files section and lists only SKILL.md; a skill with references/ shows it", () => {
     const minimal = dom(DIST, "skills/mass-security-checklist/index.html");
     expect(minimal.querySelector("[data-extra-files]")).toBeNull();

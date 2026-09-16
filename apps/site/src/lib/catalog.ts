@@ -52,3 +52,28 @@ export const searchIndex = registry.skills.map((s) => ({
   tags: s.tags,
   version: s.version,
 }));
+
+/** A piece of a rendered description: plain text, or a reference that links to `skill`'s page. */
+export type DescriptionSegment = { text: string; skill?: string };
+
+const SKILL_REF = /mass-[a-z0-9]+(?:-[a-z0-9]+)*/g;
+
+/**
+ * Split `text` into segments, marking every `mass-*` token that names a skill in `known`.
+ * Adjacent punctuation stays in the surrounding plain-text segments, so "(use mass-y)."
+ * yields "(use ", a reference to mass-y, and ").". A `mass-*` token that is not in the
+ * catalog (unknown or deprecated) stays plain text.
+ */
+export function splitSkillRefs(text: string, known: Iterable<string> = registry.skills.map((s) => s.name)): DescriptionSegment[] {
+  const names = new Set(known);
+  const segments: DescriptionSegment[] = [];
+  let cut = 0;
+  for (const m of text.matchAll(SKILL_REF)) {
+    if (!names.has(m[0])) continue;
+    if (m.index > cut) segments.push({ text: text.slice(cut, m.index) });
+    segments.push({ text: m[0], skill: m[0] });
+    cut = m.index + m[0].length;
+  }
+  if (cut < text.length) segments.push({ text: text.slice(cut) });
+  return segments;
+}
