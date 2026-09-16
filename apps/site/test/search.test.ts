@@ -4,11 +4,11 @@ import { beforeAll, describe, expect, it } from "vitest";
 import { JSDOM } from "jsdom";
 import { DIST, buildSite, html } from "./helpers";
 
-async function loadHome(page: string, entries?: unknown): Promise<Document> {
+async function loadHome(page: string, entries?: unknown, query = ""): Promise<Document> {
   const index = entries === undefined ? html(DIST, "search-index.json") : JSON.stringify(entries);
   const dom = new JSDOM(html(DIST, page), {
     runScripts: "dangerously",
-    url: "https://maiconsouza89.github.io/agents-skills/",
+    url: `https://maiconsouza89.github.io/agents-skills/${query}`,
     beforeParse(window) {
       // The page fetches search-index.json; serve the built file.
       (window as unknown as { fetch: unknown }).fetch = async () => ({ ok: true, json: async () => JSON.parse(index) });
@@ -64,6 +64,40 @@ describe("home search", () => {
       type(doc, term);
       expect(visible(), term).toEqual(["mass-code-review"]);
     }
+  });
+
+  it("reads the search term and the category from the URL", async () => {
+    const doc = await loadHome("index.html", undefined, "?q=commit&category=workflow");
+    expect(doc.querySelector<HTMLInputElement>("input#q")!.value).toBe("commit");
+    expect(doc.querySelector<HTMLInputElement>('input[name="category"]:checked')!.value).toBe("workflow");
+    const visible = [...doc.querySelectorAll<HTMLElement>("[data-skill]")].filter((li) => !li.hidden).map((li) => li.dataset.name);
+    expect(visible).toContain("mass-commit-message");
+    expect(visible).not.toContain("mass-code-review");
+  });
+
+  it("an unknown category falls back to all categories", async () => {
+    const doc = await loadHome("index.html", undefined, "?category=zzz-nothing");
+    expect(doc.querySelector<HTMLInputElement>('input[name="category"]:checked')!.value).toBe("");
+    expect([...doc.querySelectorAll<HTMLElement>("[data-skill]")].every((li) => !li.hidden)).toBe(true);
+    expect(doc.defaultView!.location.search).toBe("");
+  });
+
+  it("writes the state back to the URL and clears it when both are empty", async () => {
+    const doc = await loadHome("index.html", undefined, "?q=commit");
+    const win = doc.defaultView as Window & typeof globalThis;
+    const radio = doc.querySelector<HTMLInputElement>('input[name="category"][value="workflow"]')!;
+    radio.checked = true;
+    radio.dispatchEvent(new win.Event("change", { bubbles: true }));
+    expect(win.location.search).toBe("?q=commit&category=workflow");
+    type(doc, "review");
+    expect(win.location.search).toBe("?q=review&category=workflow");
+    type(doc, "");
+    expect(win.location.search).toBe("?category=workflow");
+    const all = doc.querySelector<HTMLInputElement>('input[name="category"][value=""]')!;
+    all.checked = true;
+    all.dispatchEvent(new win.Event("change", { bubbles: true }));
+    expect(win.location.search).toBe("");
+    expect(win.location.href).toBe("https://maiconsouza89.github.io/agents-skills/");
   });
 
   it("category pills filter the catalog and combine with the search term", async () => {
