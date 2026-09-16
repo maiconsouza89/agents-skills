@@ -1,6 +1,6 @@
 import { rmSync } from "node:fs";
 import { join } from "node:path";
-import { agentById, agentSkillsDir, type ScopeOptions } from "../agents.js";
+import { agentById, assertWritableSkillsDir, type ScopeOptions } from "../agents.js";
 import { audit } from "../audit.js";
 import { loadLock, type Session } from "../context.js";
 import { writeLock } from "../lockfile.js";
@@ -22,7 +22,7 @@ export async function remove(s: Session, names: string[]): Promise<number> {
       for (const id of entry.agents) {
         const agent = agentById(id);
         if (!agent) continue;
-        rmSync(join(agentSkillsDir(agent, scope), name), { recursive: true, force: true });
+        rmSync(join(assertWritableSkillsDir(agent, scope), name), { recursive: true, force: true });
       }
     } catch (e) {
       audit(s, { command: "remove", skill: name, version: entry.version, ref: entry.ref, agents: entry.agents, result: "failed", error: e });

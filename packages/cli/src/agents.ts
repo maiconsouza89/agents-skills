@@ -1,5 +1,5 @@
-import { existsSync } from "node:fs";
-import { join } from "node:path";
+import { existsSync, realpathSync } from "node:fs";
+import { dirname, isAbsolute, join, relative, resolve } from "node:path";
 import { CliError } from "./types.js";
 
 /** Plan door 10: agent ids with their project-scope and global-scope skill directories. */
@@ -70,4 +70,36 @@ export interface ScopeOptions {
 /** Absolute skills directory for an agent in the requested scope. */
 export function agentSkillsDir(agent: Agent, scope: ScopeOptions): string {
   return scope.global ? join(scope.home, agent.globalDir) : join(scope.cwd, agent.projectDir);
+}
+
+/** Real path of the deepest existing ancestor of `dir`, for a directory that may not exist yet. */
+function realBase(dir: string): string {
+  let p = resolve(dir);
+  for (;;) {
+    try {
+      return realpathSync(p);
+    } catch {
+      const parent = dirname(p);
+      if (parent === p) return p;
+      p = parent;
+    }
+  }
+}
+
+/** True when `dir` resolves to `root` or somewhere under it, following symlinks. */
+function isInside(dir: string, root: string): boolean {
+  const rel = relative(realBase(root), realBase(dir));
+  return rel === "" || (!rel.startsWith("..") && !isAbsolute(rel));
+}
+
+/**
+ * Refuse to create, replace or delete anything through a project-scope skills directory that a
+ * symlink puts outside the project. Global scope writes under the user's home on purpose.
+ */
+export function assertWritableSkillsDir(agent: Agent, scope: ScopeOptions): string {
+  const dir = agentSkillsDir(agent, scope);
+  if (!scope.global && !isInside(dir, scope.cwd)) {
+    throw new CliError(`Refusing to write to ${agent.projectDir}: it resolves to ${realBase(dir)}, outside the project at ${realBase(scope.cwd)}`, 1);
+  }
+  return dir;
 }

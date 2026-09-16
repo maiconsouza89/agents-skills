@@ -4,8 +4,8 @@ import { beforeAll, describe, expect, it } from "vitest";
 import { JSDOM } from "jsdom";
 import { DIST, buildSite, html } from "./helpers";
 
-async function loadHome(page: string): Promise<Document> {
-  const index = html(DIST, "search-index.json");
+async function loadHome(page: string, entries?: unknown): Promise<Document> {
+  const index = entries === undefined ? html(DIST, "search-index.json") : JSON.stringify(entries);
   const dom = new JSDOM(html(DIST, page), {
     runScripts: "dangerously",
     url: "https://maiconsouza89.github.io/agents-skills/",
@@ -51,6 +51,18 @@ describe("home search", () => {
       const visible = [...doc.querySelectorAll<HTMLElement>("[data-skill]")].filter((li) => !li.hidden).map((li) => li.dataset.name);
       expect(visible).toContain("mass-code-review");
       expect(visible).not.toContain("mass-commit-message");
+    }
+  });
+
+  it("search ignores accents in both the term and the indexed text", async () => {
+    // The real catalog is written in English, so the accented entry is injected into the served index.
+    const doc = await loadHome("index.html", [
+      { name: "mass-code-review", description: "Revisão crítica de código.", category: "quality", tags: ["revisão"], version: "1.0.0" },
+    ]);
+    const visible = () => [...doc.querySelectorAll<HTMLElement>("[data-skill]")].filter((li) => !li.hidden).map((li) => li.dataset.name);
+    for (const term of ["critica", "crítica", "revisao", "revisão"]) {
+      type(doc, term);
+      expect(visible(), term).toEqual(["mass-code-review"]);
     }
   });
 
