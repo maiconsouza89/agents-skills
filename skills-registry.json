@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-09-15T23:46:01.746Z",
+  "generatedAt": "2026-09-16T21:32:23.928Z",
   "repo": "maiconsouza89/agents-skills",
   "skills": [
     {
@@ -85,6 +85,42 @@
       ],
       "contentHash": "2a45b4c323df66a35ac2273f97a6470d2d6f1dba3176949c5a7392e670fd9675",
       "tokens": 781
+    },
+    {
+      "name": "mass-issue-implement",
+      "path": "skills/mass-issue-implement",
+      "description": "Implements a GitHub issue end to end. Starts the branch, reads the whole thread, checks every plan and comment against the code, researches what is still open, records the decisions and their evolution as comments on the issue and opens the pull request from the repository template. Use when \"implement issue 42\", \"work on issue 42 and open the PR\" or \"resolve this issue\". Do NOT use for classifying an issue (use mass-issue-priority or mass-issue-complexity), for writing only the PR text (use mass-pr-description) or for reviewing someone else's PR (use mass-code-review).",
+      "category": "workflow",
+      "tags": [
+        "issues",
+        "github",
+        "implementation",
+        "pull-request",
+        "workflow"
+      ],
+      "version": "0.1.0",
+      "reviewed": "2026-09-16",
+      "author": "mass-solutions",
+      "license": "CC-BY-4.0",
+      "files": [
+        {
+          "path": "SKILL.md",
+          "sha256": "20f5007145b83e94e998ac683cfc868b88807b5cea00ee53a2e92d0638b99ab1",
+          "bytes": 4228
+        },
+        {
+          "path": "references/issue-comments.md",
+          "sha256": "7653052fba196336ab2b4c484d746e87ebd9ec66eefe326dd0b6e145a9a5e4e3",
+          "bytes": 3875
+        },
+        {
+          "path": "references/thread-reading.md",
+          "sha256": "1a5140e8b9fe9c6817570093aedf0faeb011e38893f8b590a4df524adde3ed4b",
+          "bytes": 3647
+        }
+      ],
+      "contentHash": "5f7f50664c3ef15fc7979a2f9f94bda04cde9d33c14dacf27e9575a264cb6103",
+      "tokens": 1057
     },
     {
       "name": "mass-issue-priority",

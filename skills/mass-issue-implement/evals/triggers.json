@@ -1,0 +1,14 @@
+{
+  "should": [
+    "Implement issue #23 and open the PR. The comments already have a plan, check it against the code first.",
+    "Work on issue 10 (site SEO basics). Keep the site with zero client JS and record the decisions on the issue.",
+    "Resolve a issue #24 conforme os comentários e abre o PR ligado a ela",
+    "pega a #70, lê a thread, decide o que ficou em aberto e me entrega o PR"
+  ],
+  "shouldNot": [
+    "What priority is issue #42? p0, p1, p2 or backlog?",
+    "How complex is this ticket, low, medium or high?",
+    "Write the pull request description for this branch",
+    "Review PR #111 for bugs before I merge it"
+  ]
+}
