@@ -2,7 +2,7 @@ import { cpSync, existsSync, mkdirSync, mkdtempSync, renameSync, rmSync, writeFi
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { hashFiles, sha256, type Registry, type RegistrySkill } from "@mass-solutions/skills-core";
-import { agentSkillsDir, type Agent, type ScopeOptions } from "./agents.js";
+import { agentSkillsDir, assertWritableSkillsDir, type Agent, type ScopeOptions } from "./agents.js";
 import { fetchFile } from "./download.js";
 import { isSafeRelativePath, isSafeSkillName } from "./paths.js";
 import { CliError, type LockEntry } from "./types.js";
@@ -58,6 +58,7 @@ export async function stageSkill(env: NodeJS.ProcessEnv, ref: string, skill: Reg
 /** Copy a staged skill into `<agent skills dir>/<name>/` for each agent, replacing what was there. */
 export function placeSkill(staged: StagedSkill, agents: ReadonlyArray<Agent>, scope: ScopeOptions): string[] {
   const placed: string[] = [];
+  for (const agent of agents) assertWritableSkillsDir(agent, scope);
   for (const agent of agents) {
     const base = agentSkillsDir(agent, scope);
     mkdirSync(base, { recursive: true });

@@ -1,6 +1,6 @@
 export { run } from "./run.js";
 export type { RunOptions } from "./run.js";
-export { AGENTS, AGENT_IDS, resolveAgents, agentSkillsDir } from "./agents.js";
+export { AGENTS, AGENT_IDS, resolveAgents, agentSkillsDir, assertWritableSkillsDir } from "./agents.js";
 export { baseUrl, registryUrl, fileUrl, DEFAULT_BASE_URL, DEFAULT_REF } from "./download.js";
 export { lockPath, readLock, writeLock, PROJECT_LOCK } from "./lockfile.js";
 export { isSafeRelativePath, isSafeSkillName, compareSemver } from "./paths.js";

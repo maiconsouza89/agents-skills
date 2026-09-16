@@ -1,6 +1,6 @@
 import { rmSync } from "node:fs";
 import { join } from "node:path";
-import { agentById, agentSkillsDir, type ScopeOptions } from "../agents.js";
+import { agentById, assertWritableSkillsDir, type ScopeOptions } from "../agents.js";
 import { loadLock, type Session } from "../context.js";
 import { writeLock } from "../lockfile.js";
 import { CliError, EXIT_OK } from "../types.js";
@@ -16,7 +16,7 @@ export async function remove(s: Session, names: string[]): Promise<number> {
     for (const id of entry.agents) {
       const agent = agentById(id);
       if (!agent) continue;
-      rmSync(join(agentSkillsDir(agent, scope), name), { recursive: true, force: true });
+      rmSync(join(assertWritableSkillsDir(agent, scope), name), { recursive: true, force: true });
     }
     delete lock.skills[name];
     s.ctx.stdout.write(`${name}: removed from ${entry.agents.join(", ")}\n`);
