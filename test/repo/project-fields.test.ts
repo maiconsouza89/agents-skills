@@ -158,12 +158,15 @@ describe("project-fields workflow", () => {
     expect(r.code).not.toBe(0);
   });
 
-  // 301 is the fourth status the labels endpoint documents. Measured against gh 2.92.0 with a
-  // local server answering 301 + Location: gh follows the redirect, reissues it as a GET, and
-  // exits 0 with the label list unchanged. So the failure to catch is a call that succeeds and
-  // removes nothing - which is what this asserts, and it holds for any silent no-op, not only a
-  // redirect.
-  it("fails when the label endpoint answers a redirect", () => {
+  // A call that exits 0 having removed nothing. The exit code is not the evidence; the response
+  // is, because it carries the labels the issue still has.
+  //
+  // This does NOT cover a 301, and the earlier claim that it did was wrong twice. Measured over
+  // TLS against gh 2.92.0 and against api.github.com: gh follows the redirect and reissues it as
+  // a GET, and there is no GET route for a single label of an issue, so the target answers 404 -
+  // which the branch above swallows as "already removed". A 301 is out of scope: the URL is built
+  // from $GITHUB_REPOSITORY, which comes from the event and is never a stale repository name.
+  it("fails when the removal call succeeds without removing the label", () => {
     const r = runWorkflow(WORKFLOW, {
       label: "complexity:low",
       labels: ["complexity:high", "complexity:low"],
