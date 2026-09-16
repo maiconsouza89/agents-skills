@@ -42,7 +42,7 @@ const commands = [
 
 <Base lang={lang} title={name} path={`skills/${name}/`} description={entry?.data.description}>
   <header class="page-head">
-    <p class="eyebrow"><a class="subtle" href={localized(lang, "catalog/")}>{d.nav.catalog}</a>{meta.category && <> / {categoryLabel(meta.category, lang)}</>}</p>
+    <p class="eyebrow"><a class="subtle" href={localized(lang, "catalog/")}>{d.nav.catalog}</a>{meta.category && <> / <a class="subtle" href={localized(lang, `catalog/${meta.category}/`)} data-category-link={meta.category}>{categoryLabel(meta.category, lang)}</a></>}</p>
     <h1 class="display-lg">{name}</h1>
     {
       entry && (
@@ -124,7 +124,7 @@ const commands = [
               <dt>{d.reviewed}</dt>
               <dd>{meta.reviewed}</dd>
               <dt>{d.category}</dt>
-              <dd>{categoryLabel(meta.category, lang)}</dd>
+              <dd><a href={localized(lang, `catalog/${meta.category}/`)}>{categoryLabel(meta.category, lang)}</a></dd>
               <dt>{d.tags}</dt>
               <dd>{reg.tags.join(", ")}</dd>
               {meta.requires && (

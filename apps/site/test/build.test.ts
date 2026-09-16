@@ -14,6 +14,11 @@ const categories = JSON.parse(readFileSync(join(REPO_ROOT, "skills", "_categorie
 const names: string[] = registry.skills.map((s: { name: string }) => s.name);
 const REPO = "maiconsouza89/agents-skills";
 
+/** Category ids that have at least one skill, in `_categories.json` order. */
+function usedCategoryIds(): string[] {
+  return categories.map((c) => c.id).filter((id) => registry.skills.some((s: { category: string }) => s.category === id));
+}
+
 /** The header language switch: a disclosure that shows only the current code, named "Language: <code>", listing one link per language. */
 function expectLangSwitch(d: Document, lang: Lang, switchTo: string) {
   const switches = d.querySelectorAll("[data-lang-switch]");
@@ -43,6 +48,7 @@ describe("site build", () => {
   it("generates every route under the base for en and pt-br", () => {
     const expected = ["404.html", "index.html", "catalog/index.html", "install/index.html", "agents/index.html", "about/index.html", "search-index.json", "pt-br/index.html", "pt-br/catalog/index.html", "pt-br/install/index.html", "pt-br/agents/index.html", "pt-br/about/index.html"];
     for (const n of names) expected.push(`skills/${n}/index.html`, `pt-br/skills/${n}/index.html`);
+    for (const c of usedCategoryIds()) expected.push(`catalog/${c}/index.html`, `pt-br/catalog/${c}/index.html`);
     for (const e of expected) expect(files, e).toContain(e);
     expect(files.filter((f) => f.startsWith("skills/"))).toHaveLength(names.length);
     for (const f of files.filter((f) => f.endsWith(".html"))) {
@@ -121,6 +127,31 @@ describe("site build", () => {
       expect(options).toEqual(["", ...usedIds]);
       expect(d.querySelector<HTMLInputElement>('input[name="category"][value=""]')!.hasAttribute("checked")).toBe(true);
       expectLangSwitch(d, lang, switchTo);
+    }
+  });
+
+  it("category pages: one per used category, its skills sorted, linked from the catalog and the skill page, empty categories skipped", () => {
+    const used = usedCategoryIds();
+    expect(files.filter((f) => /^catalog\/[^/]+\/index\.html$/.test(f)).sort()).toEqual(used.map((c) => `catalog/${c}/index.html`).sort());
+    for (const lang of LANGS) {
+      const prefix = `${BASE}${lang === "en" ? "" : "pt-br/"}`;
+      for (const id of used) {
+        const d = dom(DIST, `${lang === "en" ? "" : "pt-br/"}catalog/${id}/index.html`);
+        const label = categories.find((c) => c.id === id)![lang];
+        expect(text(d.querySelector("h1"))).toBe(label);
+        const itemNames = [...d.querySelectorAll("[data-skill]")].map((li) => li.getAttribute("data-name"));
+        const inCategory = (registry.skills as Array<{ name: string; category: string }>).filter((s) => s.category === id).map((s) => s.name).sort();
+        expect(itemNames).toEqual(inCategory);
+        const pills = [...d.querySelectorAll("[data-category-links] a")];
+        expect(pills.map((a) => a.getAttribute("data-category-link"))).toEqual(used);
+        expect(pills.filter((a) => a.getAttribute("aria-current") === "page").map((a) => a.getAttribute("data-category-link"))).toEqual([id]);
+        expect(d.querySelector("[data-lang-switch] a:not([aria-current])")!.getAttribute("href")).toBe(`${BASE}${lang === "en" ? "pt-br/" : ""}catalog/${id}/`);
+      }
+      const catalog = dom(DIST, `${lang === "en" ? "" : "pt-br/"}catalog/index.html`);
+      for (const id of used) expect(catalog.querySelector(`h2 [data-category-link="${id}"]`)!.getAttribute("href")).toBe(`${prefix}catalog/${id}/`);
+      const skill = registry.skills.find((s: { name: string }) => s.name === "mass-code-review");
+      const page = dom(DIST, `${lang === "en" ? "" : "pt-br/"}skills/mass-code-review/index.html`);
+      expect(page.querySelector(".page-head [data-category-link]")!.getAttribute("href")).toBe(`${prefix}catalog/${skill.category}/`);
     }
   });
 

@@ -2,7 +2,7 @@
 import Base from "../../layouts/Base.astro";
 import SkillCard from "../../components/SkillCard.astro";
 import { groupedByCategory, registry } from "../../lib/catalog";
-import { href, langPaths, t, type Lang } from "../../lib/i18n";
+import { href, langPaths, localized, t, type Lang } from "../../lib/i18n";
 
 export function getStaticPaths() {
   return langPaths();
@@ -47,7 +47,7 @@ const noMatchTemplate = d.noMatch("__TERM__");
       {
         groups.map(({ category, skills }) => (
           <section class="category" data-category={category.id}>
-            <h2 class="subhead category-title">{category[lang]}</h2>
+            <h2 class="subhead category-title"><a href={localized(lang, `catalog/${category.id}/`)} data-category-link={category.id}>{category[lang]}</a></h2>
             <ul class="grid-2">
               {skills.map((s) => (
                 <SkillCard lang={lang} skill={s} />
