@@ -82,6 +82,23 @@ const dict = {
     skipToContent: "Skip to content",
     menu: "Menu",
     heroEyebrow: "Agent Skills catalog",
+    whatIsTitle: "What is an Agent Skill?",
+    whatIsLead:
+      "A folder with a SKILL.md at its root: short instructions a coding agent loads when the task calls for them, plus the reference material and scripts it needs.",
+    whatIsPoints: [
+      {
+        title: "A folder, not a prompt",
+        body: "SKILL.md holds the frontmatter and the short instructions. Long material lives in references/ and runnable steps in scripts/, so nothing is loaded until it is needed.",
+      },
+      {
+        title: "Picked from the description",
+        body: "Every description says what the skill does, when to use it and when not to. The agent chooses the right skill without you naming it.",
+      },
+      {
+        title: "One catalog, any agent",
+        body: "The CLI installs the same folder into Claude Code, Cursor, Codex, Copilot and the rest, checking every file against the registry before writing it.",
+      },
+    ],
     skillCount: (n: number) => `${n} skills`,
     terminalTitle: "mass-skills",
     terminalCaption: "Every file is checked against the sha256 in the registry before anything is written. A file that no longer matches stops the install.",
@@ -155,6 +172,23 @@ const dict = {
     skipToContent: "Pular para o conteúdo",
     menu: "Menu",
     heroEyebrow: "Catálogo de Agent Skills",
+    whatIsTitle: "O que é uma Agent Skill?",
+    whatIsLead:
+      "Uma pasta com um SKILL.md na raiz: instruções curtas que um agente de código carrega quando a tarefa pede, junto do material de referência e dos scripts de que ela precisa.",
+    whatIsPoints: [
+      {
+        title: "Uma pasta, não um prompt",
+        body: "O SKILL.md guarda o frontmatter e as instruções curtas. Material longo fica em references/ e passos executáveis em scripts/, então nada é carregado antes da hora.",
+      },
+      {
+        title: "Escolhida pela description",
+        body: "Toda description diz o que a skill faz, quando usar e quando não usar. O agente escolhe a skill certa sem você nomeá-la.",
+      },
+      {
+        title: "Um catálogo, qualquer agente",
+        body: "O CLI instala a mesma pasta no Claude Code, Cursor, Codex, Copilot e nos demais, conferindo cada arquivo contra o registry antes de escrever.",
+      },
+    ],
     skillCount: (n: number) => `${n} skills`,
     terminalTitle: "mass-skills",
     terminalCaption: "Cada arquivo é conferido contra o sha256 do registry antes de qualquer escrita. Um arquivo que não bate mais interrompe a instalação.",

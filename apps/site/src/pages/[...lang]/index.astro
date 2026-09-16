@@ -43,6 +43,23 @@ const session: TerminalLine[] = [
     <TerminalPanel title={d.terminalTitle} caption={d.terminalCaption} lines={session} />
   </div>
 
+  <section class="section" aria-labelledby="what-is-title" data-what-is>
+    <div class="page-head">
+      <h2 class="display-md" id="what-is-title">{d.whatIsTitle}</h2>
+      <p class="body-lg muted">{d.whatIsLead}</p>
+    </div>
+    <ul class="grid-3 section-tight">
+      {
+        d.whatIsPoints.map((point) => (
+          <li class="card" data-what-is-point>
+            <h3 class="card-title">{point.title}</h3>
+            <p class="body-sm muted">{point.body}</p>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
   <section class="section" aria-labelledby="catalog-title">
     <div class="page-head">
       <p class="eyebrow">{d.skillCount(registry.skills.length)}</p>

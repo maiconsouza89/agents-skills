@@ -3,6 +3,7 @@ import { join } from "node:path";
 import { beforeAll, describe, expect, it } from "vitest";
 import { DOOR_10 } from "../../../packages/cli/test/door10.js";
 import { BASE, DIST, REPO_ROOT, SITE_ROOT, buildSite, dom, html, text, walk } from "./helpers";
+import { t } from "../src/lib/i18n";
 
 const registry = JSON.parse(readFileSync(join(REPO_ROOT, "skills-registry.json"), "utf8"));
 const categories = JSON.parse(readFileSync(join(REPO_ROOT, "skills", "_categories.json"), "utf8")) as Array<{
@@ -43,6 +44,28 @@ describe("site build", () => {
     expect(astroConfig).toContain('process.env.MASS_CATALOG_ROOT ||= src("../../skills")');
     const copies = walk(SITE_ROOT).filter((f) => f.endsWith("SKILL.md") && !f.startsWith("node_modules/") && !f.startsWith("dist"));
     expect(copies).toEqual([]);
+  });
+
+  it("home explains what an Agent Skill is, in each language, without repeating the other language", () => {
+    const seen: string[][] = [];
+    for (const [page, lang] of [
+      ["index.html", "en"],
+      ["pt-br/index.html", "pt-br"],
+    ] as const) {
+      const d = dom(DIST, page);
+      const block = d.querySelector("[data-what-is]")!;
+      expect(block, page).toBeTruthy();
+      expect(text(block.querySelector("h2")!)).toBe(t(lang).whatIsTitle);
+      const points = [...block.querySelectorAll("[data-what-is-point]")];
+      expect(points.map((p) => text(p.querySelector("h3")!))).toEqual(t(lang).whatIsPoints.map((p) => p.title));
+      for (const [i, point] of points.entries()) {
+        expect(text(point.querySelector("p")!)).toBe(t(lang).whatIsPoints[i].body);
+      }
+      // The block sits above the catalog, so the page answers the question before listing skills.
+      expect(block.compareDocumentPosition(d.querySelector("[data-catalog]")!) & 4).toBeTruthy();
+      seen.push(points.map((p) => text(p)));
+    }
+    expect(seen[0]).not.toEqual(seen[1]);
   });
 
   it("home lists grouped and ordered skills with search, filter and a language switch", () => {
