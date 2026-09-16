@@ -56,6 +56,7 @@ const noMatchTemplate = d.noMatch("__TERM__");
           </section>
         ))
       }
+      <ul class="grid-2" data-results hidden></ul>
     </div>
   </section>
 
@@ -66,6 +67,7 @@ const noMatchTemplate = d.noMatch("__TERM__");
       const q = document.getElementById("q");
       const noMatch = document.querySelector("[data-no-match]");
       const catalog = document.querySelector("[data-catalog]");
+      const results = catalog.querySelector("[data-results]");
       const template = noMatch.getAttribute("data-template");
       let index = [];
       try {
@@ -76,8 +78,57 @@ const noMatchTemplate = d.noMatch("__TERM__");
       }
       const byName = new Map(index.map((s) => [s.name, s]));
       const items = Array.from(catalog.querySelectorAll("[data-skill]"));
+      // Each card remembers its category list, so clearing the term puts it back in name order.
+      const homes = new Map(items.map((li) => [li, li.parentElement]));
       // Search is accent-insensitive: "critica" matches "crítica" and the other way round.
       const fold = (s) => s.normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase();
+      const tokens = (s) => s.split(/[^\p{L}\p{N}]+/u).filter(Boolean);
+      // Category labels come from the headings, so the search matches the language on screen.
+      const labels = new Map(
+        Array.from(catalog.querySelectorAll("section[data-category]")).map((s) => [s.getAttribute("data-category"), s.querySelector("h2").textContent]),
+      );
+      // Points per term: a whole word beats a word prefix, which beats a substring; the name outweighs tags,
+      // tags outweigh the category and the category outweighs the description.
+      const WEIGHTS = [
+        ["name", 100, 60, 30],
+        ["tags", 40, 25, 12],
+        ["category", 30, 18, 9],
+        ["description", 10, 6, 3],
+      ];
+      // The whole query inside the name ("code review" in mass-code-review) ranks that skill first.
+      const PHRASE_BONUS = 200;
+      const fields = new Map(
+        items.map((li) => {
+          const name = li.getAttribute("data-name");
+          const entry = byName.get(name) || { name, description: "", tags: [], category: li.getAttribute("data-category") };
+          const values = {
+            name: entry.name,
+            tags: (entry.tags || []).join(" "),
+            category: `${entry.category} ${labels.get(entry.category) || ""}`,
+            description: entry.description,
+          };
+          const folded = Object.fromEntries(Object.entries(values).map(([k, v]) => [k, { text: fold(v), words: tokens(fold(v)) }]));
+          return [li, { entry, folded }];
+        }),
+      );
+      // 0 when any term is missing: every term must match somewhere.
+      const score = ({ folded }, terms) => {
+        let total = 0;
+        for (const term of terms) {
+          let points = 0;
+          for (const [field, exact, prefix, infix] of WEIGHTS) {
+            const { text, words } = folded[field];
+            if (words.includes(term)) points += exact;
+            else if (words.some((w) => w.startsWith(term))) points += prefix;
+            // A term under three letters only matches whole words or prefixes: "ci" must not hit "prin-ci-ples".
+            else if (term.length >= 3 && text.includes(term)) points += infix;
+          }
+          if (points === 0) return 0;
+          total += points;
+        }
+        if (terms.length > 1 && folded.name.text.includes(terms.join("-"))) total += PHRASE_BONUS;
+        return total;
+      };
       // The state is mirrored in the URL (?q=, ?category=) so a filtered view can be linked.
       const params = new URL(location.href).searchParams;
       const radios = Array.from(form.querySelectorAll('input[name="category"]'));
@@ -88,7 +139,7 @@ const noMatchTemplate = d.noMatch("__TERM__");
       q.value = params.get("q") || "";
       const apply = () => {
         const raw = q.value.trim();
-        const term = fold(raw);
+        const terms = tokens(fold(raw));
         const checked = form.querySelector('input[name="category"]:checked');
         const cat = checked ? checked.value : "";
         const url = new URL(location.href);
@@ -98,20 +149,28 @@ const noMatchTemplate = d.noMatch("__TERM__");
         }
         // replaceState, not pushState: typing must not add a history entry per keystroke.
         history.replaceState(null, "", url);
-        let visible = 0;
+        const ranked = [];
         for (const li of items) {
-          const name = li.getAttribute("data-name");
-          const entry = byName.get(name) || { name, description: "", tags: [], category: li.getAttribute("data-category") };
-          const hay = fold([entry.name, entry.description, ...(entry.tags || [])].join(" "));
-          const show = (!term || hay.includes(term)) && (!cat || entry.category === cat);
+          const data = fields.get(li);
+          const points = terms.length ? score(data, terms) : 1;
+          const show = points > 0 && (!cat || data.entry.category === cat);
           li.hidden = !show;
-          if (show) visible++;
+          if (show) ranked.push([li, points]);
         }
+        if (terms.length) {
+          // With a term the groups give way to one list, best match first and ties by name.
+          ranked.sort((a, b) => b[1] - a[1] || a[0].getAttribute("data-name").localeCompare(b[0].getAttribute("data-name")));
+          for (const [li] of ranked) results.append(li);
+          for (const li of items) if (li.hidden) results.append(li);
+        } else {
+          for (const li of items) homes.get(li).append(li);
+        }
+        results.hidden = !terms.length || ranked.length === 0;
         for (const section of catalog.querySelectorAll("section[data-category]")) {
-          section.hidden = Array.from(section.querySelectorAll("[data-skill]")).every((li) => li.hidden);
+          section.hidden = terms.length > 0 || Array.from(section.querySelectorAll("[data-skill]")).every((li) => li.hidden);
         }
-        noMatch.hidden = visible > 0;
-        noMatch.textContent = visible > 0 ? "" : template.replace("__TERM__", raw);
+        noMatch.hidden = ranked.length > 0;
+        noMatch.textContent = ranked.length > 0 ? "" : template.replace("__TERM__", raw);
       };
       q.addEventListener("input", apply);
       form.addEventListener("change", apply);
