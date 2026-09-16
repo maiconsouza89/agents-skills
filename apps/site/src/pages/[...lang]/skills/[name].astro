@@ -3,7 +3,7 @@ import { getCollection, render } from "astro:content";
 import Base from "../../../layouts/Base.astro";
 import Snippet from "../../../components/Snippet.astro";
 import { REPO } from "@mass-solutions/skills-core";
-import { extraFiles, registry, registrySkill, sourceUrl, splitDescription, categoryLabel } from "../../../lib/catalog";
+import { extraFiles, registry, registrySkill, sourceUrl, splitDescription, splitSkillRefs, categoryLabel } from "../../../lib/catalog";
 import { langPaths, localized, t, type Lang } from "../../../lib/i18n";
 
 export async function getStaticPaths() {
@@ -83,7 +83,17 @@ const commands = [
             </div>
             <div class="card">
               <dt class="eyebrow">{d.doNotUseFor}</dt>
-              <dd data-not>{parts.not}</dd>
+              <dd data-not>
+                {splitSkillRefs(parts.not).map((seg) =>
+                  seg.skill ? (
+                    <a data-related href={localized(lang, `skills/${seg.skill}/`)}>
+                      {seg.text}
+                    </a>
+                  ) : (
+                    seg.text
+                  ),
+                )}
+              </dd>
             </div>
           </dl>
 
