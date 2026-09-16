@@ -52,19 +52,42 @@ describe("workflows", () => {
     const wf = workflow("security-scan.yml");
     expect(wf.on.push.branches).toEqual(["main"]);
     expect("pull_request" in wf.on).toBe(true);
+    expect("workflow_dispatch" in wf.on).toBe(true);
+    // No `paths:` filter anywhere: `scan` is a required check, and a workflow skipped by a path
+    // filter never reports one, so the PR would never become mergeable.
+    expect(wf.on.push.paths).toBeUndefined();
+    expect(wf.on.pull_request?.paths).toBeUndefined();
     const job = wf.jobs.scan;
     expectNodeSetup(job);
     const allow = steps(job).find((s) => s.id === "allowlist")!;
     expect(allow.if).toBeUndefined();
     expect(allow.run).toContain("tools/allowlist.ts");
     const snyk = steps(job).find((s) => s.run?.includes("snyk-agent-scan"))!;
-    expect(snyk.run).toContain("uvx snyk-agent-scan@latest skills --ci");
+    expect(snyk.run).toContain("uvx snyk-agent-scan@latest $TARGETS --ci");
     expect(snyk.run).toContain("steps.allowlist.outputs.flags");
     expect(snyk.env?.SNYK_TOKEN).toBe("${{ secrets.SNYK_TOKEN }}");
-    const condition = "github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository";
+    expect(snyk.env?.TARGETS).toBe("${{ steps.targets.outputs.paths }}");
+    const condition =
+      "steps.targets.outputs.paths != '' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)";
     expect(snyk.if).toContain(condition);
     const uv = steps(job).find((s) => s.uses?.startsWith("astral-sh/setup-uv@"))!;
     expect(uv.if).toContain(condition);
+  });
+
+  it("security scan narrows a pull request to the skills it changed and keeps main and dispatch on the whole catalog", () => {
+    const job = workflow("security-scan.yml").jobs.scan;
+    const checkout = steps(job).find((s) => s.uses?.startsWith("actions/checkout@"))!;
+    expect(checkout.with?.["fetch-depth"]).toBe(0);
+    const targets = steps(job).find((s) => s.id === "targets")!;
+    expect(targets.if).toBeUndefined();
+    expect(targets.env?.BASE_SHA).toBe("${{ github.event.pull_request.base.sha }}");
+    expect(targets.run).toContain('if [ "${{ github.event_name }}" != "pull_request" ]');
+    expect(targets.run).toContain('echo "paths=skills" >> "$GITHUB_OUTPUT"');
+    expect(targets.run).toContain('git diff --name-only "$BASE_SHA" HEAD -- skills');
+    expect(targets.run).toContain("tools/changed-skills.ts --base");
+    // A base without a registry falls back to the whole catalog instead of scanning nothing.
+    expect(targets.run).toContain('git show "$BASE_SHA:skills-registry.json"');
+    expect(targets.run).toContain("scanning the whole catalog");
   });
 
   it("stale skills workflow runs weekly and on demand, and creates or updates the Stale skills issue from pnpm stale", () => {
