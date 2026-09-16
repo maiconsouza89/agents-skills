@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-09-15T17:29:46.881Z",
+  "generatedAt": "2026-09-15T23:46:01.746Z",
   "repo": "maiconsouza89/agents-skills",
   "skills": [
     {
@@ -59,13 +59,43 @@
     {
       "name": "mass-issue-complexity",
       "path": "skills/mass-issue-complexity",
-      "description": "Classifies the complexity of an issue or ticket as low, medium or high from its text and justifies the level with the signals found. Use when \"how complex is this issue\", \"classify the complexity of this ticket\" or \"is this issue low, medium or high\". Do NOT use for reviewing a diff or pull request (use mass-code-review) or for writing a pull request description (use mass-pr-description).",
+      "description": "Classifies the complexity of an issue or ticket as low, medium or high from its text and justifies the level with the signals found. Use when \"how complex is this issue\", \"classify the complexity of this ticket\" or \"is this issue low, medium or high\". Do NOT use for reviewing a diff or pull request (use mass-code-review), for deciding how urgent an issue is (use mass-issue-priority) or for writing a pull request description (use mass-pr-description).",
       "category": "workflow",
       "tags": [
         "issues",
         "triage",
         "estimation",
         "complexity"
+      ],
+      "version": "0.1.1",
+      "reviewed": "2026-09-15",
+      "author": "mass-solutions",
+      "license": "CC-BY-4.0",
+      "files": [
+        {
+          "path": "SKILL.md",
+          "sha256": "4ffe97abf2600995568bb9d897488e6fb11110f8a235fe1e776e9bfecaf9037e",
+          "bytes": 3123
+        },
+        {
+          "path": "references/rubric.md",
+          "sha256": "6b070fdce054f3239975029c8b9570a32659736ef1c6e84a882e2ab78f62f40e",
+          "bytes": 5797
+        }
+      ],
+      "contentHash": "2a45b4c323df66a35ac2273f97a6470d2d6f1dba3176949c5a7392e670fd9675",
+      "tokens": 781
+    },
+    {
+      "name": "mass-issue-priority",
+      "path": "skills/mass-issue-priority",
+      "description": "Classifies how urgent an issue or ticket is as p0, p1, p2 or backlog from the impact signals in its text, and justifies the level. Use when \"what priority is this issue\", \"is this a p0 or a p1\" or \"triage the priority of this ticket\". Do NOT use for sizing the work (use mass-issue-complexity) or for writing a pull request description (use mass-pr-description).",
+      "category": "workflow",
+      "tags": [
+        "issues",
+        "triage",
+        "prioritization",
+        "priority"
       ],
       "version": "0.1.0",
       "reviewed": "2026-09-15",
@@ -74,17 +104,17 @@
       "files": [
         {
           "path": "SKILL.md",
-          "sha256": "875abad62c32ddd84971c01c0df544085e8cfa45a55dc53d0b7e3b4de4574247",
-          "bytes": 3060
+          "sha256": "c67eae9547284db491e39f73e6d22781affca25cd33f14c9539e9f40709d58d5",
+          "bytes": 2803
         },
         {
           "path": "references/rubric.md",
-          "sha256": "6b070fdce054f3239975029c8b9570a32659736ef1c6e84a882e2ab78f62f40e",
-          "bytes": 5797
+          "sha256": "638876e128b6974a3b298fcc46b910faf951595e62d21cb3d90ae10aa1f145de",
+          "bytes": 4951
         }
       ],
-      "contentHash": "b0db7c3d2b127bb563b969ee0a1c22f3a08555f452b590bb4fe37348764b3042",
-      "tokens": 765
+      "contentHash": "1e233d64735db974fdb7f9f38ea2e35a994624f6f4138549458bc574b858334c",
+      "tokens": 701
     },
     {
       "name": "mass-pr-description",

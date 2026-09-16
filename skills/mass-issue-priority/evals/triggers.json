@@ -1,0 +1,14 @@
+{
+  "should": [
+    "What priority is issue #42? p0, p1, p2 or backlog?",
+    "Is this a p0 or a p1? The published CLI release installs and then fails on every command.",
+    "Triage the priority of this ticket: users can't reset their password when the email has uppercase letters",
+    "Qual a prioridade dessa issue? Justifica com os sinais do texto."
+  ],
+  "shouldNot": [
+    "How complex is this issue? Low, medium or high?",
+    "Write the pull request description for this branch",
+    "Review this diff for bugs before I merge",
+    "Break this epic into sub-issues with acceptance criteria"
+  ]
+}
