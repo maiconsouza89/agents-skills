@@ -40,6 +40,7 @@ Antes de instalar ou integrar novas dependências, funcionalidades ou tecnologia
 - `run(argv, { cwd, env, stdout, stderr })` em `packages/cli/src/run.ts` é a única entrada; nunca chama `process.exit`, devolve o exit code (`0` sucesso, `1` falha de execução, `2` uso).
 - `MASS_SKILLS_BASE_URL` troca a base de download (default `https://raw.githubusercontent.com/maiconsouza89/agents-skills/`); os testes sobem um `node:http` local servindo um catálogo de fixture e apontam essa variável para ele.
 - `install` baixa e verifica tudo num diretório temporário antes de escrever no agente ou no lockfile; `update` só sobrescreve edição local com `--force`; `remove` só apaga nos agentes registrados no lockfile.
+- `install`, `update` e `remove` acrescentam uma linha JSON Lines por skill em `packages/cli/src/audit.ts`: `mass-skills.audit.jsonl` no projeto ou `~/.config/mass-skills/audit.jsonl` com `-g`. Ligado por padrão, desligado com `MASS_SKILLS_NO_AUDIT=1`; falha de escrita vira aviso no stderr e nunca muda o exit code.
 
 ## Site `apps/site`
 

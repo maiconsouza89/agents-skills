@@ -13,11 +13,16 @@ export interface LockScope {
   global: boolean;
 }
 
+/** `$XDG_CONFIG_HOME/mass-skills/` (default `~/.config/mass-skills/`): where every global-scope file lives. */
+export function globalConfigDir(scope: LockScope): string {
+  const configHome = scope.env.XDG_CONFIG_HOME?.trim() || join(scope.home, ".config");
+  return join(configHome, GLOBAL_LOCK_DIR);
+}
+
 /** `mass-skills.lock.json` in the project, or `$XDG_CONFIG_HOME/mass-skills/lock.json` (default `~/.config/...`). */
 export function lockPath(scope: LockScope): string {
   if (!scope.global) return join(scope.cwd, PROJECT_LOCK);
-  const configHome = scope.env.XDG_CONFIG_HOME?.trim() || join(scope.home, ".config");
-  return join(configHome, GLOBAL_LOCK_DIR, GLOBAL_LOCK_FILE);
+  return join(globalConfigDir(scope), GLOBAL_LOCK_FILE);
 }
 
 export function emptyLock(): Lockfile {
