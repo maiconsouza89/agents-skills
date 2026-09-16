@@ -656,6 +656,57 @@ main {
   outline-offset: 2px;
 }
 
+/* Category links: pricing-tab pills that navigate instead of filtering */
+
+.category-links ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xxs);
+  margin: var(--space-sm) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pill-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  min-height: 36px;
+  padding: 6px 14px;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.2;
+  color: var(--color-ink-subtle);
+  text-decoration: none;
+  background: var(--color-canvas);
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--radius-pill);
+}
+
+.pill-link:hover,
+.pill-link[aria-current="page"] {
+  color: var(--color-ink);
+  background: var(--color-surface-2);
+}
+
+.pill-link:focus-visible {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+
+.pill-count {
+  font-size: 12px;
+  color: var(--color-ink-tertiary);
+}
+
+.category-title a {
+  text-decoration: none;
+}
+
+.category-title a:hover {
+  text-decoration: underline;
+}
+
 /* Code */
 
 .nowrap {

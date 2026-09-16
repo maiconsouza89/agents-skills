@@ -1,0 +1,28 @@
+---
+import { groupedByCategory } from "../lib/catalog";
+import { localized, t, type Lang } from "../lib/i18n";
+
+interface Props {
+  lang: Lang;
+  /** Category id of the current page, marked with aria-current. */
+  current?: string;
+}
+
+const { lang, current } = Astro.props;
+const d = t(lang);
+---
+
+<nav class="category-links" aria-label={d.browseByCategory} data-category-links>
+  <ul>
+    {
+      groupedByCategory().map(({ category, skills }) => (
+        <li>
+          <a class="pill-link" href={localized(lang, `catalog/${category.id}/`)} aria-current={category.id === current ? "page" : undefined} data-category-link={category.id}>
+            {category[lang]}
+            <span class="pill-count">{skills.length}</span>
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</nav>

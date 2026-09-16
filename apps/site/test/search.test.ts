@@ -132,4 +132,49 @@ describe("home search", () => {
     expect(visible()).toEqual(expected("", ""));
     expect(noMatch.hidden).toBe(true);
   });
+
+  it("ranks matches by field weight in a single list and restores the groups when the term is cleared", async () => {
+    // Controlled metadata for real cards: "review" sits in a name, a tag and a description.
+    const doc = await loadHome("catalog/index.html", [
+      { name: "mass-commit-message", description: "Mentions a review in passing.", category: "workflow", tags: ["git"], version: "1.0.0" },
+      { name: "mass-pr-description", description: "Writes the PR text.", category: "workflow", tags: ["review"], version: "1.0.0" },
+      { name: "mass-code-review", description: "Checks a diff.", category: "quality", tags: ["quality"], version: "1.0.0" },
+    ]);
+    const ranked = () => [...doc.querySelectorAll<HTMLElement>("[data-results] [data-skill]")].filter((li) => !li.hidden).map((li) => li.dataset.name);
+    type(doc, "review");
+    expect(ranked()).toEqual(["mass-code-review", "mass-pr-description", "mass-commit-message"]);
+    expect(doc.querySelector<HTMLElement>("[data-results]")!.hidden).toBe(false);
+    expect([...doc.querySelectorAll<HTMLElement>("section[data-category]")].every((s) => s.hidden)).toBe(true);
+    type(doc, "");
+    expect(doc.querySelector<HTMLElement>("[data-results]")!.hidden).toBe(true);
+    expect(doc.querySelectorAll("[data-results] [data-skill]")).toHaveLength(0);
+    const quality = [...doc.querySelectorAll<HTMLElement>('section[data-category="quality"] [data-skill]')].map((li) => li.dataset.name);
+    expect(quality).toContain("mass-code-review");
+  });
+
+  it("every term must match, and the whole query inside a name ranks that skill first", async () => {
+    const doc = await loadHome("catalog/index.html", [
+      { name: "mass-code-review", description: "Reviews code.", category: "quality", tags: [], version: "1.0.0" },
+      { name: "mass-skill-authoring", description: "Code review of a skill: review, code, review.", category: "authoring", tags: ["code", "review"], version: "1.0.0" },
+      { name: "mass-commit-message", description: "Writes code.", category: "workflow", tags: [], version: "1.0.0" },
+    ]);
+    const ranked = () => [...doc.querySelectorAll<HTMLElement>("[data-results] [data-skill]")].filter((li) => !li.hidden).map((li) => li.dataset.name);
+    type(doc, "code review");
+    expect(ranked()).toEqual(["mass-code-review", "mass-skill-authoring"]);
+  });
+
+  it("short terms match whole words or prefixes only, and category labels match in the page language", async () => {
+    const doc = await loadHome("catalog/index.html", [
+      { name: "mass-code-review", description: "Follows principles.", category: "quality", tags: [], version: "1.0.0" },
+      { name: "mass-commit-message", description: "Runs in CI.", category: "workflow", tags: [], version: "1.0.0" },
+    ]);
+    const ranked = () => [...doc.querySelectorAll<HTMLElement>("[data-results] [data-skill]")].filter((li) => !li.hidden).map((li) => li.dataset.name);
+    type(doc, "ci");
+    expect(ranked()).toEqual(["mass-commit-message"]);
+    const pt = await loadHome("pt-br/catalog/index.html");
+    type(pt, "qualidade");
+    const names = [...pt.querySelectorAll<HTMLElement>("[data-results] [data-skill]")].filter((li) => !li.hidden).map((li) => li.dataset.name);
+    expect(names).toContain("mass-code-review");
+    expect(names).not.toContain("mass-commit-message");
+  });
 });

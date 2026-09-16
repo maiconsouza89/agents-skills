@@ -1,0 +1,36 @@
+---
+import Base from "../../../layouts/Base.astro";
+import SkillCard from "../../../components/SkillCard.astro";
+import CategoryLinks from "../../../components/CategoryLinks.astro";
+import { groupedByCategory } from "../../../lib/catalog";
+import { langPaths, localized, t, type Lang } from "../../../lib/i18n";
+import type { Category, RegistrySkill } from "@mass-solutions/skills-core";
+
+// One page per category that has skills; an empty category would only add empty navigation.
+export function getStaticPaths() {
+  return langPaths().flatMap(({ params, props }) =>
+    groupedByCategory().map((group) => ({ params: { ...params, category: group.category.id }, props: { ...props, ...group } })),
+  );
+}
+
+const { lang, category, skills } = Astro.props as { lang: Lang; category: Category; skills: RegistrySkill[] };
+const d = t(lang);
+const label = category[lang];
+---
+
+<Base lang={lang} title={label} path={`catalog/${category.id}/`} description={d.categoryIntro(label)}>
+  <section aria-labelledby="category-title" data-category-page={category.id}>
+    <header class="page-head">
+      <p class="eyebrow"><a class="subtle" href={localized(lang, "catalog/")}>{d.nav.catalog}</a> / {d.skillCount(skills.length)}</p>
+      <h1 class="display-lg" id="category-title">{label}</h1>
+      <p class="body-lg muted">{d.categoryIntro(label)}</p>
+    </header>
+    <ul class="grid-2 section-tight">
+      {skills.map((s) => <SkillCard lang={lang} skill={s} />)}
+    </ul>
+  </section>
+  <section class="section" aria-labelledby="browse-title">
+    <h2 class="eyebrow" id="browse-title">{d.browseByCategory}</h2>
+    <CategoryLinks lang={lang} current={category.id} />
+  </section>
+</Base>
