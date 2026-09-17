@@ -1052,6 +1052,57 @@ main {
   margin-right: var(--space-xs);
 }
 
+/* Verification badges: a status-badge that links to its explanation on /security */
+
+.badges {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+a.status-badge {
+  text-decoration: none;
+  transition: border-color 120ms ease;
+}
+
+a.status-badge:hover {
+  border-color: var(--color-hairline-strong);
+  color: var(--color-ink);
+}
+
+.allowlist-notes {
+  display: grid;
+  gap: var(--space-xxs);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.allowlist-notes code {
+  font-size: 12px;
+}
+
+/* Security page */
+
+.scan-status {
+  display: grid;
+  gap: var(--space-md);
+  max-width: 880px;
+}
+
+.scan-status .actions {
+  align-items: center;
+}
+
+.scan-status .aside-title {
+  margin-bottom: 0;
+}
+
+td.wrap {
+  white-space: normal;
+  min-width: 320px;
+}
+
 /* Prose: rendered SKILL.md bodies */
 
 .prose {
