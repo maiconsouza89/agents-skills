@@ -1,7 +1,17 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { REGISTRY_FILE, REPO, readCategories, type Category, type Registry, type RegistrySkill } from "@mass-solutions/skills-core";
-import { REPO_ROOT } from "./paths";
+import {
+  estimateTokens,
+  listFiles,
+  REGISTRY_FILE,
+  REPO,
+  readCategories,
+  type Category,
+  type Registry,
+  type RegistryFile,
+  type RegistrySkill,
+} from "@mass-solutions/skills-core";
+import { CATALOG_ROOT, REPO_ROOT } from "./paths";
 
 export const registry: Registry = JSON.parse(readFileSync(join(REPO_ROOT, REGISTRY_FILE), "utf8"));
 export const categories: Category[] = readCategories(REPO_ROOT);
@@ -34,15 +44,37 @@ export function categoryLabel(id: string, lang: "en" | "pt-br"): string {
   return categories.find((c) => c.id === id)?.[lang] ?? id;
 }
 
-/** Files other than SKILL.md, grouped by their top-level folder (references/, scripts/, assets/, ...). */
-export function extraFiles(skill: RegistrySkill): Array<{ folder: string; files: RegistrySkill["files"] }> {
-  const groups = new Map<string, RegistrySkill["files"]>();
-  for (const f of skill.files) {
-    if (f.path === "SKILL.md") continue;
-    const folder = f.path.includes("/") ? f.path.split("/")[0] : ".";
-    groups.set(folder, [...(groups.get(folder) ?? []), f]);
-  }
-  return [...groups.entries()].map(([folder, files]) => ({ folder, files }));
+/** A shipped file with its text and the token estimate of that text (`estimateTokens`, the registry's heuristic). */
+export interface SkillFile extends RegistryFile {
+  text: string;
+  tokens: number;
+  markdown: boolean;
+}
+
+/**
+ * Every file in the registry entry, in registry order, read from the catalog on disk. Text and tokens come
+ * from the same `estimateTokens` that fills `tokens` in the registry, so `SKILL.md` shows the registry number.
+ * The validator refuses binaries, so every shipped file is text.
+ */
+export function skillFiles(skill: RegistrySkill): SkillFile[] {
+  return skill.files.map((f) => {
+    const text = readFileSync(join(CATALOG_ROOT, skill.name, f.path), "utf8");
+    return { ...f, text, tokens: estimateTokens(text), markdown: f.path.endsWith(".md") };
+  });
+}
+
+/** Files on disk that the registry does not ship (`evals/**`): the CLI never installs them and `contentHash` ignores them. */
+export function maintainerFiles(skill: RegistrySkill): Array<{ path: string; bytes: number }> {
+  const shipped = new Set(skill.files.map((f) => f.path));
+  const dir = join(CATALOG_ROOT, skill.name);
+  return listFiles(dir)
+    .filter((path) => !shipped.has(path))
+    .map((path) => ({ path, bytes: readFileSync(join(dir, path)).length }));
+}
+
+/** Stable element id for a file's rendered block: `references/rubric.md` -> `file-references-rubric-md`. */
+export function fileAnchor(path: string): string {
+  return `file-${path.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
 }
 
 export const searchIndex = registry.skills.map((s) => ({
