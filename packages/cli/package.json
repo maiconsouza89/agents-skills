@@ -1,6 +1,6 @@
 {
   "name": "@mass-solutions/skills-cli",
-  "version": "0.1.3",
+  "version": "0.2.0",
   "description": "mass-skills: install Mass Solutions skills with integrity verification and a lockfile",
   "license": "MIT",
   "repository": {

@@ -1,5 +1,15 @@
 # @mass-solutions/skills-cli
 
+## 0.2.0
+
+### Minor Changes
+
+- 1d8a181: `install`, `update` and `remove` append a JSON Lines audit entry per skill to `mass-skills.audit.jsonl` (or `~/.config/mass-skills/audit.jsonl` with `-g`), which `MASS_SKILLS_NO_AUDIT=1` turns off.
+
+### Patch Changes
+
+- 20e3689: Refuse to install, update or remove through a project-scope agent skills directory that a symlink puts outside the project.
+
 ## 0.1.3
 
 ### Patch Changes
