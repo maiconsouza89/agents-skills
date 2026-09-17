@@ -1022,6 +1022,105 @@ main {
   overflow-wrap: anywhere;
 }
 
+/* Skill page: token badges, file tree and rendered bundled files */
+
+.tokens {
+  margin-top: var(--space-xs);
+}
+
+.file-tree .file-folder code {
+  color: var(--color-ink-subtle);
+}
+
+.file-tree .file-nested {
+  padding-left: var(--space-md);
+}
+
+.file-tree .file-nested a {
+  color: var(--color-ink-muted);
+}
+
+[data-maintainer-files] {
+  margin-bottom: var(--space-md);
+}
+
+[data-maintainer-files] .eyebrow {
+  margin-bottom: var(--space-xs);
+}
+
+.file-block {
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-2);
+}
+
+.file-block + .file-block {
+  margin-top: var(--space-sm);
+}
+
+.file-block summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-xs) var(--space-md);
+  padding: var(--space-sm) var(--space-md);
+  cursor: pointer;
+  list-style: none;
+}
+
+.file-block summary::-webkit-details-marker {
+  display: none;
+}
+
+.file-block summary::before {
+  content: "";
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-right: var(--space-xs);
+  border-right: 1.5px solid var(--color-ink-subtle);
+  border-bottom: 1.5px solid var(--color-ink-subtle);
+  transform: translateY(-2px) rotate(-45deg);
+  transition: transform 120ms ease;
+}
+
+.file-block[open] summary::before {
+  transform: translateY(-3px) rotate(45deg);
+}
+
+.file-block summary:hover {
+  background: var(--color-surface-3);
+  border-radius: var(--radius-lg);
+}
+
+.file-block summary:focus-visible {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: -2px;
+  border-radius: var(--radius-lg);
+}
+
+.file-block .file-path {
+  font-size: 13px;
+  color: var(--color-ink);
+}
+
+.file-block .file-meta {
+  margin: 0;
+  padding: 0 var(--space-md);
+  overflow-wrap: anywhere;
+}
+
+.file-block .file-meta code {
+  color: var(--color-ink-tertiary);
+}
+
+.file-block > .prose {
+  padding: var(--space-md);
+  border-top: 1px solid var(--color-hairline);
+  margin-top: var(--space-sm);
+}
+
 .hash {
   margin-bottom: var(--space-md);
 }

@@ -1,9 +1,20 @@
 ---
-import { getCollection, render } from "astro:content";
+import { getCollection, getEntry, render } from "astro:content";
 import Base from "../../../layouts/Base.astro";
 import Snippet from "../../../components/Snippet.astro";
 import { REPO } from "@mass-solutions/skills-core";
-import { extraFiles, registry, registrySkill, sourceUrl, splitDescription, splitSkillRefs, categoryLabel } from "../../../lib/catalog";
+import {
+  categoryLabel,
+  fileAnchor,
+  maintainerFiles,
+  registry,
+  registrySkill,
+  skillFiles,
+  sourceUrl,
+  splitDescription,
+  splitSkillRefs,
+  type SkillFile,
+} from "../../../lib/catalog";
 import { absLocalized, langPaths, localized, t, type Lang } from "../../../lib/i18n";
 import { CATALOG_REF, allowlistFor, refUrl, scanDate, scanStatus, validatorErrors } from "../../../lib/security";
 
@@ -32,7 +43,6 @@ const name = entry?.id ?? deprecated!.name;
 const reg = entry ? registrySkill(entry.id) : undefined;
 const parts = entry ? splitDescription(entry.data.description) : undefined;
 const Content = entry ? (await render(entry)).Content : undefined;
-const extras = reg ? extraFiles(reg) : [];
 const meta = entry?.data.metadata ?? {};
 // Verification badges: what this build checked for the skill, each linking to its explanation on /security.
 const errors = entry ? validatorErrors(name) : [];
@@ -44,6 +54,27 @@ const scanLabel = !scanStatus
     : scanStatus.result === "failed"
       ? d.badgeScanFailed(scanDate(scanStatus))
       : d.badgeScanSkipped(scanDate(scanStatus), scanStatus.reason);
+
+// Shipped files in registry order, grouped by top-level folder ("." for the root) for the tree; Markdown
+// ones render through the `skillFiles` collection, the rest as plain code blocks.
+const files: SkillFile[] = reg ? skillFiles(reg) : [];
+const skillMd = files.find((f) => f.path === "SKILL.md");
+const folderTokens = files.reduce((sum, f) => sum + f.tokens, 0);
+const tree: Array<{ folder: string; files: SkillFile[] }> = [];
+for (const f of files) {
+  const folder = f.path.includes("/") ? f.path.split("/")[0] : ".";
+  const group = tree.find((g) => g.folder === folder);
+  if (group) group.files.push(f);
+  else tree.push({ folder, files: [f] });
+}
+const bundled = files.filter((f) => f.path !== "SKILL.md");
+const rendered = new Map<string, Awaited<ReturnType<typeof render>>["Content"]>();
+for (const f of bundled.filter((f) => f.markdown)) {
+  const fileEntry = await getEntry("skillFiles", `${name}/${f.path}`);
+  if (fileEntry) rendered.set(f.path, (await render(fileEntry)).Content);
+}
+const extras = reg ? maintainerFiles(reg) : [];
+const num = new Intl.NumberFormat(lang === "en" ? "en-US" : "pt-BR");
 const commands = [
   `npx @mass-solutions/skills-cli install ${name} -a <agent>`,
   `npx skills add ${REPO} --skill ${name}`,
@@ -135,6 +166,20 @@ const skillJsonLd: unknown[] | undefined =
         </ul>
       )
     }
+    {
+      skillMd && (
+        <p class="actions tokens" data-tokens title={d.tokensNote}>
+          <span class="status-badge" data-tokens-skill={skillMd.tokens}>
+            {d.tokensSkill} ≈ {num.format(skillMd.tokens)} {d.tokens}
+          </span>
+          {bundled.length > 0 && (
+            <span class="status-badge" data-tokens-folder={folderTokens}>
+              {d.tokensFolder} ≈ {num.format(folderTokens)} {d.tokens}
+            </span>
+          )}
+        </p>
+      )
+    }
     {parts && <p class="body-lg muted" data-what>{parts.what}</p>}
   </header>
 
@@ -180,10 +225,34 @@ const skillJsonLd: unknown[] | undefined =
             </div>
           </dl>
 
-          <section class="panel skill-body" data-skill-body lang="en">
+          <section class="panel skill-body" id="skill-body" data-skill-body lang="en">
             <h2 class="eyebrow">{d.skillBody}</h2>
             <div class="prose" data-content>{Content && <Content />}</div>
           </section>
+
+          {bundled.length > 0 && (
+            <section class="panel skill-body" data-file-contents lang="en">
+              <h2 class="eyebrow">{d.bundledFiles}</h2>
+              <p class="body-sm muted">{d.bundledFilesIntro} {d.tokensNote}</p>
+              {bundled.map((f) => {
+                const Rendered = rendered.get(f.path);
+                return (
+                  <details class="file-block" id={fileAnchor(f.path)} data-file-content={f.path}>
+                    <summary>
+                      <code class="file-path">{f.path}</code>
+                      <span class="caption subtle">
+                        {num.format(f.bytes)} {d.bytes} · ≈ {num.format(f.tokens)} {d.tokens}
+                      </span>
+                    </summary>
+                    <p class="caption subtle file-meta">
+                      sha256 <code>{f.sha256}</code> · <a href={sourceUrl(name, f.path)}>{d.openOnGithub}</a>
+                    </p>
+                    <div class="prose">{Rendered ? <Rendered /> : <pre><code>{f.text}</code></pre>}</div>
+                  </details>
+                );
+              })}
+            </section>
+          )}
         </div>
 
         <aside class="skill-aside">
@@ -227,27 +296,47 @@ const skillJsonLd: unknown[] | undefined =
 
           <section class="card" data-files>
             <h2 class="aside-title">{d.files}</h2>
-            <ul class="row-list">
-              {reg.files.map((f) => (
-                <li class="row" data-file={f.path}>
-                  <a class="mono" href={sourceUrl(name, f.path)}>{f.path}</a>
-                  <span class="caption subtle">
-                    {f.bytes} {d.bytes}
-                  </span>
-                </li>
-              ))}
-            </ul>
-            {extras.length > 0 && (
-              <div data-extra-files>
-                <h3 class="eyebrow">{d.extraFiles}</h3>
-                <ul class="row-list">
-                  {extras.map((g) => (
-                    <li class="row">
+            <ul class="row-list file-tree">
+              {tree.map((g) => (
+                <>
+                  {g.folder !== "." && (
+                    <li class="row file-folder" data-folder={g.folder}>
                       <code>{g.folder}/</code>
                       <span class="caption subtle">{g.files.length}</span>
                     </li>
+                  )}
+                  {g.files.map((f) => (
+                    <li class:list={["row", { "file-nested": g.folder !== "." }]} data-file={f.path} title={`sha256 ${f.sha256}`}>
+                      <a class="mono" href={f.path === "SKILL.md" ? "#skill-body" : `#${fileAnchor(f.path)}`}>
+                        {f.path === "SKILL.md" ? f.path : f.path.slice(g.folder.length + 1)}
+                      </a>
+                      <span class="caption subtle">
+                        {f.bytes} {d.bytes} · ≈ {num.format(f.tokens)} {d.tokens}
+                      </span>
+                    </li>
+                  ))}
+                </>
+              ))}
+            </ul>
+            {bundled.length > 0 && (
+              <p class="caption subtle" data-extra-files>
+                {d.extraFiles}: {tree.filter((g) => g.folder !== ".").map((g) => `${g.folder}/`).join(", ")}
+              </p>
+            )}
+            {extras.length > 0 && (
+              <div data-maintainer-files>
+                <h3 class="eyebrow">{d.maintainerFiles}</h3>
+                <ul class="row-list">
+                  {extras.map((f) => (
+                    <li class="row">
+                      <a class="mono" href={sourceUrl(name, f.path)}>{f.path}</a>
+                      <span class="caption subtle">
+                        {f.bytes} {d.bytes}
+                      </span>
+                    </li>
                   ))}
                 </ul>
+                <p class="caption subtle">{d.maintainerFilesNote}</p>
               </div>
             )}
             <p class="caption subtle hash">

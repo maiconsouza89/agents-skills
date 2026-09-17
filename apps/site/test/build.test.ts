@@ -1,8 +1,9 @@
-import { readFileSync } from "node:fs";
+import { mkdtempSync, readFileSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { beforeAll, describe, expect, it } from "vitest";
 import { DOOR_10 } from "../../../packages/cli/test/door10.js";
-import { BASE, DIST, REPO_ROOT, SITE_ROOT, buildSite, dom, html, text, walk } from "./helpers";
+import { BASE, REPO_ROOT, SITE_ROOT, buildSite, dom, html, text, walk } from "./helpers";
 import { LANG_META, LANGS, t, type Lang } from "../src/lib/i18n";
 
 const registry = JSON.parse(readFileSync(join(REPO_ROOT, "skills-registry.json"), "utf8"));
@@ -39,9 +40,12 @@ function expectLangSwitch(d: Document, lang: Lang, switchTo: string) {
   for (const [i, a] of links.entries()) expect(text(a)).toBe(`${LANG_META[LANGS[i]].code} ${LANG_META[LANGS[i]].name}`);
 }
 
+// A build test file gets its own outDir: other test files build in parallel, and a shared
+// directory would let one file's build clobber another file's still-running assertions.
+const DIST = mkdtempSync(join(tmpdir(), "mass-site-"));
 let files: string[] = [];
 beforeAll(() => {
-  buildSite();
+  buildSite(DIST);
   files = walk(DIST);
 });
 
@@ -231,9 +235,61 @@ describe("site build", () => {
   it("minimal skill omits extra files section and lists only SKILL.md; a skill with references/ shows it", () => {
     const minimal = dom(DIST, "skills/mass-security-checklist/index.html");
     expect(minimal.querySelector("[data-extra-files]")).toBeNull();
+    expect(minimal.querySelector("[data-file-contents]")).toBeNull();
+    expect(minimal.querySelector("[data-tokens-folder]")).toBeNull();
     expect([...minimal.querySelectorAll("[data-file]")].map((r) => r.getAttribute("data-file"))).toEqual(["SKILL.md"]);
     const rich = dom(DIST, "skills/mass-skill-authoring/index.html");
     expect(text(rich.querySelector("[data-extra-files]"))).toContain("references/");
+  });
+
+  it("token estimates: SKILL.md shows the registry number, every file ceil(chars / 4), the folder badge their sum, formatted per locale", () => {
+    const estimate = (name: string, path: string) => Math.ceil(readFileSync(join(REPO_ROOT, "skills", name, path), "utf8").length / 4);
+    for (const [prefix, locale] of [["", "en-US"], ["pt-br/", "pt-BR"]] as const) {
+      for (const skill of registry.skills as Array<{ name: string; tokens: number; files: Array<{ path: string }> }>) {
+        const d = dom(DIST, `${prefix}skills/${skill.name}/index.html`);
+        const badge = d.querySelector("[data-tokens-skill]")!;
+        expect(Number(badge.getAttribute("data-tokens-skill")), skill.name).toBe(skill.tokens);
+        expect(text(badge)).toContain(new Intl.NumberFormat(locale).format(skill.tokens));
+        let total = 0;
+        for (const f of skill.files) {
+          const tokens = estimate(skill.name, f.path);
+          total += tokens;
+          expect(text(d.querySelector(`[data-file="${f.path}"]`)), `${skill.name} ${f.path}`).toContain(`≈ ${new Intl.NumberFormat(locale).format(tokens)}`);
+        }
+        const folder = d.querySelector("[data-tokens-folder]");
+        if (skill.files.length === 1) expect(folder).toBeNull();
+        else expect(Number(folder!.getAttribute("data-tokens-folder")), skill.name).toBe(total);
+      }
+    }
+  });
+
+  it("bundled files render on the page: markdown as prose, scripts as code, each in a closed details block linked from the tree", () => {
+    const rich = dom(DIST, "skills/mass-issue-complexity/index.html");
+    const block = rich.querySelector('[data-file-content="references/rubric.md"]')!;
+    expect(block.tagName).toBe("DETAILS");
+    expect(block.hasAttribute("open")).toBe(false);
+    expect(block.closest("[data-file-contents]")!.getAttribute("lang")).toBe("en");
+    expect(block.querySelector(".prose h1, .prose h2")).not.toBeNull();
+    expect(text(block.querySelector("summary"))).toContain("references/rubric.md");
+    expect(rich.querySelector('[data-file="references/rubric.md"] a')!.getAttribute("href")).toBe(`#${block.id}`);
+    expect(rich.querySelector('[data-file="SKILL.md"] a')!.getAttribute("href")).toBe("#skill-body");
+    expect(rich.querySelector("#skill-body")).not.toBeNull();
+    const script = dom(DIST, "pt-br/skills/mass-commit-message/index.html").querySelector('[data-file-content="scripts/suggest-scope.sh"]')!;
+    expect(script.querySelector(".prose pre code")!.textContent).toBe(readFileSync(join(REPO_ROOT, "skills", "mass-commit-message", "scripts", "suggest-scope.sh"), "utf8"));
+    expect(script.querySelector(".prose h1, .prose h2")).toBeNull();
+    // Rendered files stay out of the search index: its entries keep the five catalog fields only.
+    const index = JSON.parse(html(DIST, "search-index.json")) as Array<Record<string, unknown>>;
+    for (const entry of index) expect(Object.keys(entry).sort()).toEqual(["category", "description", "name", "tags", "version"]);
+  });
+
+  it("evals/ is listed as maintainer files, never as an installed file, and skills without it show no such section", () => {
+    const withEvals = dom(DIST, "skills/mass-issue-complexity/index.html");
+    const section = withEvals.querySelector("[data-maintainer-files]")!;
+    expect(text(section)).toContain("evals/triggers.json");
+    expect(section.querySelector("a")!.getAttribute("href")).toBe(`https://github.com/${REPO}/blob/main/skills/mass-issue-complexity/evals/triggers.json`);
+    expect(withEvals.querySelector('[data-file="evals/triggers.json"]')).toBeNull();
+    expect(withEvals.querySelector('[data-file-content="evals/triggers.json"]')).toBeNull();
+    expect(dom(DIST, "skills/mass-code-review/index.html").querySelector("[data-maintainer-files]")).toBeNull();
   });
 
   it("install and agents pages: three paths in order with what each verifies, and the eight agents with both paths", () => {
