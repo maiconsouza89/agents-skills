@@ -24,6 +24,8 @@ Never open a public issue for a vulnerability: a skill installed into many agent
 
 **Integrity at install time**: `skills-registry.json` carries a `sha256` per file and a `contentHash` per skill. The `mass-skills` CLI refuses a download whose hash differs and writes nothing into the agent directory. `npx skills add` and the Claude Code marketplace do not verify hashes.
 
+**Visible on the site**: every skill page shows what the build verified (validator, the scan of that commit with its date and result, recorded hashes, accepted findings, the catalog ref the CLI pins), and `/security/` explains each signal. The site deploys after the scan of the same commit finishes, so the scan badge is never one commit behind; a skipped scan (daily quota) is shown as skipped, not hidden.
+
 ## Allowlist for false positives
 
 `security-scan-allowlist.yaml` at the root lists accepted Snyk findings, each with `risk`, `skill`, `reason` and a **required** `expiresAt`. An expired entry fails CI until it is renewed or removed, so no exception becomes permanent by being forgotten.

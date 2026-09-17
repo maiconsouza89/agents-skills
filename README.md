@@ -70,6 +70,7 @@ A skill installed into many agents is a supply-chain target. This repository tre
 | **Integrity at install time** | `sha256` per file and `contentHash` per skill, recorded in `skills-registry.json`; the CLI refuses a download whose hash differs and writes nothing | `mass-skills install` |
 | **Lockfile** | What was installed, from which ref, into which agents; `update` never overwrites a skill you edited unless you pass `--force` | `mass-skills.lock.json` |
 | **Expiring allowlist** | Accepted scanner findings need a reason and an `expiresAt`; an expired entry fails CI | `security-scan-allowlist.yaml` |
+| **Verification badges** | Each skill page shows the validator result, the scan of that commit with its date, recorded hashes, accepted findings and the catalog ref the CLI pins; `/security/` explains each signal | [site](https://maiconsouza89.github.io/agents-skills/security/) |
 | **Governance** | Protected `main`, code owners, issue before pull request, weekly report of skills not reviewed in 90 days | `CODEOWNERS`, `stale-skills.yml` |
 
 Only the `mass-skills` CLI verifies hashes. `npx skills add` and the Claude Code marketplace install whatever the repository serves at that moment.

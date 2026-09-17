@@ -61,13 +61,14 @@ pnpm --filter @mass-solutions/skills-cli exec tsx src/bin.ts <args>   # CLI em d
 - Catálogo lido de `../../skills`; `MASS_CATALOG_ROOT` aponta para outro. Rode `pnpm registry` antes de construir.
 - Chrome traduzido em `src/lib/i18n.ts`; corpo das skills em inglês nas duas rotas.
 - Único JavaScript: busca e filtro do catálogo sobre `search-index.json` (`<script is:inline>`).
+- Badges de verificação e `/security/` vêm de `src/lib/security.ts`: validador rodado no build, `security-status.json` ao lado do registry (ausente fora do `pages.yml`), `security-scan-allowlist.yaml` e a versão do CLI. Tudo tolera ausência de arquivo.
 - Os testes constroem o site de verdade (`apps/site/test/helpers.ts`).
 
 ## CI e release
 
 - `ci.yml` (PR e `main`): `pnpm check`, `pnpm build`, `plugin validate`. Sem secrets.
-- `pages.yml` (`main`): deploy do site no GitHub Pages.
-- `security-scan.yml`: `tools/allowlist.ts` sempre; Snyk Agent-Scan nas skills alteradas (`tools/changed-skills.ts`) em PR e no catálogo inteiro em `main`. Erro `X007` (limite diário do Snyk) não bloqueia.
+- `pages.yml` (`workflow_run` de `security-scan` em `main`, ou `workflow_dispatch`): baixa o artefato `security-status` do run que o disparou para a raiz do repo e faz o deploy do site no GitHub Pages a partir do commit escaneado. Sem artefato, o site sai com "not scanned in this build".
+- `security-scan.yml`: `tools/allowlist.ts` sempre; Snyk Agent-Scan nas skills alteradas (`tools/changed-skills.ts`) em PR e no catálogo inteiro em `main`. Erro `X007` (limite diário do Snyk) não bloqueia. Fora de PR, grava `security-status.json` (`tools/security-status.ts`: `passed`, `failed` ou `skipped` com `reason`) mesmo quando o scan falha, e sobe como artefato para o site.
 - `stale-skills.yml` (segunda 09:00 UTC): alimenta a issue `Stale skills`.
 - `release.yml` (tag `v*`): `pnpm check`, `pnpm build`, publica os pacotes no npm via trusted publishing (OIDC, `--provenance`) e cria o GitHub Release. Aborta se a tag não bater com `packages/cli/package.json` ou se algum tarball contiver `workspace:`. Rerun da mesma tag é seguro.
 - Fluxo de release: `pnpm changeset version`, `pnpm check`, `pnpm build`, PR com o bump mergeado em `main`, depois `git tag v<versão> && git push origin v<versão>`.
