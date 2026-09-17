@@ -51,7 +51,7 @@ beforeAll(() => {
 
 describe("site build", () => {
   it("generates every route under the base for en and pt-br", () => {
-    const expected = ["404.html", "index.html", "catalog/index.html", "install/index.html", "agents/index.html", "about/index.html", "search-index.json", "pt-br/index.html", "pt-br/catalog/index.html", "pt-br/install/index.html", "pt-br/agents/index.html", "pt-br/about/index.html"];
+    const expected = ["404.html", "index.html", "catalog/index.html", "install/index.html", "agents/index.html", "security/index.html", "about/index.html", "search-index.json", "pt-br/index.html", "pt-br/catalog/index.html", "pt-br/install/index.html", "pt-br/agents/index.html", "pt-br/security/index.html", "pt-br/about/index.html"];
     for (const n of names) expected.push(`skills/${n}/index.html`, `pt-br/skills/${n}/index.html`);
     for (const c of usedCategoryIds()) expected.push(`catalog/${c}/index.html`, `pt-br/catalog/${c}/index.html`);
     for (const e of expected) expect(files, e).toContain(e);

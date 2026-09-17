@@ -3,7 +3,7 @@ import { registry, categories } from "../lib/catalog";
 import { AGENT_IDS } from "@mass-solutions/skills-cli/agents";
 
 /** Static pages (path without locale prefix). */
-const STATIC_PATHS = ["", "catalog/", "install/", "agents/", "about/"];
+const STATIC_PATHS = ["", "catalog/", "install/", "agents/", "security/", "about/"];
 
 function urlEntry(loc: string): string {
   return `  <url><loc>${loc}</loc></url>`;

@@ -16,6 +16,7 @@ import {
   type SkillFile,
 } from "../../../lib/catalog";
 import { absLocalized, langPaths, localized, t, type Lang } from "../../../lib/i18n";
+import { CATALOG_REF, allowlistFor, refUrl, scanDate, scanStatus, validatorErrors } from "../../../lib/security";
 
 export async function getStaticPaths() {
   const entries = await getCollection("skills");
@@ -43,6 +44,16 @@ const reg = entry ? registrySkill(entry.id) : undefined;
 const parts = entry ? splitDescription(entry.data.description) : undefined;
 const Content = entry ? (await render(entry)).Content : undefined;
 const meta = entry?.data.metadata ?? {};
+// Verification badges: what this build checked for the skill, each linking to its explanation on /security.
+const errors = entry ? validatorErrors(name) : [];
+const accepted = entry ? allowlistFor(name) : [];
+const scanLabel = !scanStatus
+  ? d.badgeScanNone
+  : scanStatus.result === "passed"
+    ? d.badgeScanPassed(scanDate(scanStatus))
+    : scanStatus.result === "failed"
+      ? d.badgeScanFailed(scanDate(scanStatus))
+      : d.badgeScanSkipped(scanDate(scanStatus), scanStatus.reason);
 
 // Shipped files in registry order, grouped by top-level folder ("." for the root) for the tree; Markdown
 // ones render through the `skillFiles` collection, the rest as plain code blocks.
@@ -109,6 +120,50 @@ const skillJsonLd: unknown[] | undefined =
           <span class="status-badge">{d.version} {meta.version}</span>
           <span class="status-badge">{d.reviewed} {meta.reviewed}</span>
         </div>
+      )
+    }
+    {
+      entry && reg && (
+        <ul class="actions badges" data-verification aria-label={d.verification}>
+          <li>
+            <a class:list={["status-badge", { "status-badge--success": errors.length === 0 }]} href={localized(lang, "security/#validator")} data-badge="validator" data-state={errors.length === 0 ? "passed" : "failed"}>
+              {errors.length === 0 ? d.badgeValidatorPassed : d.badgeValidatorErrors(errors.length)}
+            </a>
+          </li>
+          <li>
+            <a class:list={["status-badge", { "status-badge--success": scanStatus?.result === "passed" }]} href={localized(lang, "security/#scan")} data-badge="scan" data-state={scanStatus?.result ?? "none"}>
+              {scanLabel}
+            </a>
+          </li>
+          <li>
+            <a class="status-badge status-badge--success" href={localized(lang, "security/#integrity")} data-badge="hash" data-state="recorded">
+              {d.badgeHash}
+            </a>
+          </li>
+          {accepted.length > 0 && (
+            <li>
+              <a class="status-badge" href={localized(lang, "security/#allowlist")} data-badge="allowlist" data-state={String(accepted.length)}>
+                {d.badgeAllowlist(accepted.length)}
+              </a>
+            </li>
+          )}
+          <li>
+            <a class="status-badge" href={refUrl(name)} data-badge="ref" data-state={CATALOG_REF}>
+              {d.badgeRef(CATALOG_REF)}
+            </a>
+          </li>
+        </ul>
+      )
+    }
+    {
+      accepted.length > 0 && (
+        <ul class="allowlist-notes" data-allowlist>
+          {accepted.map((e) => (
+            <li class="caption subtle" data-allowlist-entry={e.risk}>
+              <code>{e.risk}</code> · {d.allowlistReason}: {e.reason} · {d.allowlistExpires} <time datetime={e.expiresAt}>{e.expiresAt}</time>
+            </li>
+          ))}
+        </ul>
       )
     }
     {

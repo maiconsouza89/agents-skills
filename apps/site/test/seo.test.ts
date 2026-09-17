@@ -31,7 +31,7 @@ describe("SEO basics", () => {
     expect(content).toContain(`${SITE_URL}${BASE}skills/${firstName}/`);
     expect(content).toContain(`${SITE_URL}${BASE}pt-br/skills/${firstName}/`);
     // Static pages
-    for (const path of ["catalog/", "install/", "agents/", "about/"]) {
+    for (const path of ["catalog/", "install/", "agents/", "security/", "about/"]) {
       expect(content).toContain(`${SITE_URL}${BASE}${path}`);
       expect(content).toContain(`${SITE_URL}${BASE}pt-br/${path}`);
     }

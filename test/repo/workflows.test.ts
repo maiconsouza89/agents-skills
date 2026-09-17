@@ -34,12 +34,28 @@ describe("workflows", () => {
     expect(read(".github/workflows/ci.yml")).not.toContain("secrets.");
   });
 
-  it("pages workflow deploys the astro site from apps/site with the nvmrc node version", () => {
+  it("pages workflow deploys the astro site after security-scan on main, from that run's commit, with its status artifact", () => {
     const wf = workflow("pages.yml");
-    expect(wf.on.push.branches).toEqual(["main"]);
+    // Not `push`: the site must carry the scan of the commit it was built from, so it waits for the scan.
+    expect(wf.on.push).toBeUndefined();
+    expect(wf.on.workflow_run).toEqual({ workflows: ["security-scan"], types: ["completed"], branches: ["main"] });
+    expect("workflow_dispatch" in wf.on).toBe(true);
     expect(wf.permissions.pages).toBe("write");
     expect(wf.permissions["id-token"]).toBe("write");
-    const astro = steps(wf.jobs.build).find((s) => s.uses?.startsWith("withastro/action@"))!;
+    expect(wf.permissions.actions).toBe("read");
+    const build = wf.jobs.build;
+    const checkout = steps(build).find((s) => s.uses?.startsWith("actions/checkout@"))!;
+    expect(checkout.with?.ref).toBe("${{ github.event.workflow_run.head_sha || github.sha }}");
+    const download = steps(build).find((s) => s.uses?.startsWith("actions/download-artifact@"))!;
+    expect(download.with?.name).toBe("security-status");
+    expect(download.with?.["run-id"]).toBe("${{ github.event.workflow_run.id }}");
+    expect(download.with?.["github-token"]).toBe("${{ github.token }}");
+    expect(download.with?.path).toBeUndefined();
+    // A missing artifact (dispatch, or a scan that never wrote one) builds the site without a status.
+    expect((download as { "continue-on-error"?: boolean })["continue-on-error"]).toBe(true);
+    expect(download.if).toBe("${{ github.event_name == 'workflow_run' }}");
+    const astro = steps(build).find((s) => s.uses?.startsWith("withastro/action@"))!;
+    expect(steps(build).indexOf(download)).toBeLessThan(steps(build).indexOf(astro));
     expect(astro.with?.path).toBe("apps/site");
     expect(astro.with?.["package-manager"]).toBe("pnpm@11");
     expect(astro.with?.["node-version"]).toContain("steps.node.outputs.version");
@@ -72,6 +88,33 @@ describe("workflows", () => {
     expect(snyk.if).toContain(condition);
     const uv = steps(job).find((s) => s.uses?.startsWith("astral-sh/setup-uv@"))!;
     expect(uv.if).toContain(condition);
+  });
+
+  it("security scan records its status for the site on every non-PR run, even a failed one, and uploads it", () => {
+    const job = workflow("security-scan.yml").jobs.scan;
+    const snyk = steps(job).find((s) => s.id === "snyk")!;
+    for (const line of ['echo "result=passed" >> "$GITHUB_OUTPUT"', 'echo "result=failed" >> "$GITHUB_OUTPUT"', 'echo "result=skipped" >> "$GITHUB_OUTPUT"', 'echo "reason=quota" >> "$GITHUB_OUTPUT"']) {
+      expect(snyk.run).toContain(line);
+    }
+    // The version is the only scanner output that is recorded: line-anchored, strict shape.
+    expect(snyk.run).toContain("grep -oE -m1 '^Snyk Agent Scan v[0-9]+\\.[0-9]+\\.[0-9]+$'");
+    const record = steps(job).find((s) => s.run?.includes("tools/security-status.ts"))!;
+    const always = "${{ always() && github.event_name != 'pull_request' }}";
+    expect(record.if).toBe(always);
+    expect(record.env?.RESULT).toBe("${{ steps.snyk.outputs.result }}");
+    expect(record.env?.REASON).toBe("${{ steps.snyk.outputs.reason }}");
+    expect(record.env?.VERSION).toBe("${{ steps.snyk.outputs.version }}");
+    expect(record.env?.RUN_URL).toBe("${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}");
+    expect(record.run).toContain('--result "${RESULT:-failed}"');
+    expect(record.run).toContain('--commit "$GITHUB_SHA"');
+    expect(record.run).not.toContain("${{");
+    const upload = steps(job).find((s) => s.uses?.startsWith("actions/upload-artifact@"))!;
+    expect(upload.if).toBe(always);
+    expect(upload.with?.name).toBe("security-status");
+    expect(upload.with?.path).toBe("security-status.json");
+    expect(upload.with?.["if-no-files-found"]).toBe("error");
+    expect(steps(job).indexOf(snyk)).toBeLessThan(steps(job).indexOf(record));
+    expect(steps(job).indexOf(record)).toBeLessThan(steps(job).indexOf(upload));
   });
 
   it("security scan narrows a pull request to the skills it changed and keeps main and dispatch on the whole catalog", () => {

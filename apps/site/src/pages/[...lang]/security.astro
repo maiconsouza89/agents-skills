@@ -1,0 +1,140 @@
+---
+import Base from "../../layouts/Base.astro";
+import { GITHUB_URL } from "../../lib/catalog";
+import { langPaths, localized, t, type Lang } from "../../lib/i18n";
+import { CATALOG_REF, allowlist, commitUrl, refUrl, scanDate, scanStatus } from "../../lib/security";
+
+export function getStaticPaths() {
+  return langPaths();
+}
+
+const { lang } = Astro.props as { lang: Lang };
+const d = t(lang);
+const ADVISORY_URL = `${GITHUB_URL}/security/advisories/new`;
+const POLICY_URL = `${GITHUB_URL}/blob/main/SECURITY.md`;
+const ALLOWLIST_URL = `${GITHUB_URL}/blob/main/security-scan-allowlist.yaml`;
+---
+
+<Base lang={lang} title={d.securityTitle} path="security/" description={d.securityIntro}>
+  <article data-security>
+    <header class="page-head">
+      <p class="eyebrow">{d.siteName}</p>
+      <h1 class="display-lg">{d.securityTitle}</h1>
+      <p class="body-lg muted">{d.securityIntro}</p>
+    </header>
+
+    <section class="panel section-tight scan-status" aria-labelledby="scan-status-title" data-scan-status data-state={scanStatus?.result ?? "none"}>
+      <h2 class="aside-title" id="scan-status-title">{d.scanStatusTitle}</h2>
+      {
+        scanStatus ? (
+          <>
+            <p class="actions">
+              <span class:list={["status-badge", { "status-badge--success": scanStatus.result === "passed" }]} data-scan-result>
+                {d.scanResult[scanStatus.result]}
+              </span>
+              {scanStatus.reason && <span class="body-sm muted" data-scan-reason>{d.scanReason[scanStatus.reason] ?? scanStatus.reason}</span>}
+            </p>
+            <dl class="meta-list">
+              <dt>{d.scanDate}</dt>
+              <dd><time datetime={scanStatus.scannedAt} data-scan-date>{scanDate(scanStatus)}</time></dd>
+              <dt>{d.scanCommit}</dt>
+              <dd><a class="mono" href={commitUrl(scanStatus.commit)} data-scan-commit>{scanStatus.commit.slice(0, 7)}</a></dd>
+              <dt>{d.scanRun}</dt>
+              <dd><a href={scanStatus.runUrl} data-scan-run>{scanStatus.runUrl.replace(/^https:\/\/github\.com\//, "")}</a></dd>
+              <dt>{d.scanScanner}</dt>
+              <dd data-scan-scanner>{scanStatus.scanner}{scanStatus.scannerVersion && ` ${scanStatus.scannerVersion}`}</dd>
+            </dl>
+          </>
+        ) : (
+          <p class="body-sm muted" data-scan-none>{d.scanStatusNone}</p>
+        )
+      }
+    </section>
+
+    <div class="grid-2 section-tight">
+      {
+        d.securitySignals.map((s) => (
+          <section class="card" id={s.id} data-signal={s.id}>
+            <h2 class="card-title">{s.title}</h2>
+            <p class="body-sm muted">{s.body}</p>
+            {s.id === "ref" && (
+              <p class="body-sm">
+                <a class="mono" href={refUrl()} data-catalog-ref>{CATALOG_REF}</a>
+              </p>
+            )}
+            {s.id === "allowlist" && (
+              <p class="body-sm">
+                <a class="mono" href={ALLOWLIST_URL}>security-scan-allowlist.yaml</a>
+              </p>
+            )}
+          </section>
+        ))
+      }
+    </div>
+
+    <section class="section" aria-labelledby="allowlist-title" data-allowlist-table>
+      <div class="page-head">
+        <h2 class="display-md" id="allowlist-title">{d.securityAllowlistTitle}</h2>
+      </div>
+      {
+        allowlist.length > 0 ? (
+          <div class="panel table-panel section-tight">
+            <table>
+              <thead>
+                <tr>
+                  <th scope="col">{d.allowlistSkill}</th>
+                  <th scope="col">{d.allowlistRisk}</th>
+                  <th scope="col">{d.allowlistReason}</th>
+                  <th scope="col">{d.allowlistExpires}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {allowlist.map((e) => (
+                  <tr data-allowlist-row={e.skill}>
+                    <td><a href={localized(lang, `skills/${e.skill}/`)}>{e.skill}</a></td>
+                    <td><code>{e.risk}</code></td>
+                    <td class="wrap">{e.reason}</td>
+                    <td><time datetime={e.expiresAt}>{e.expiresAt}</time></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <p class="body muted section-tight" data-allowlist-empty>{d.securityAllowlistNone}</p>
+        )
+      }
+    </section>
+
+    <section class="section" aria-labelledby="install-paths-title" data-security-install>
+      <div class="page-head">
+        <h2 class="display-md" id="install-paths-title">{d.securityInstallTitle}</h2>
+      </div>
+      <ul class="grid-3 section-tight">
+        {
+          d.securityInstall.map((p) => (
+            <li class:list={["card", "install-path", { "card--featured": p.verifies }]} data-install-path data-verifies={String(p.verifies)}>
+              <div class="install-path-head">
+                <h3 class="card-title">{p.title}</h3>
+                <span class:list={["status-badge", { "status-badge--success": p.verifies }]}>{p.verifies ? d.verifiesHashes : d.noHashCheck}</span>
+              </div>
+              <p class="body-sm subtle">{p.body}</p>
+            </li>
+          ))
+        }
+      </ul>
+      <p class="body-sm section-tight"><a href={localized(lang, "install/")}>{d.installTitle} →</a></p>
+    </section>
+
+    <div class="cta-banner section" data-security-cta>
+      <div>
+        <p class="headline">{d.securityCtaTitle}</p>
+        <p class="body muted">{d.securityCtaBody}</p>
+      </div>
+      <div class="actions">
+        <a class="btn btn-primary" href={ADVISORY_URL}>{d.reportVulnerability}</a>
+        <a class="btn btn-secondary" href={POLICY_URL}>{d.footerSecurity}</a>
+      </div>
+    </div>
+  </article>
+</Base>

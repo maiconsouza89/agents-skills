@@ -43,6 +43,12 @@ export default defineConfig({
         // Read the workspace packages from source: no build step before the site, one parser for everything.
         "@mass-solutions/skills-core": src("../../packages/core/src/index.ts"),
         "@mass-solutions/skills-cli/agents": src("../../packages/cli/src/agents.ts"),
+        // The CLI pins the catalog at `v<its version>` (DEFAULT_REF in packages/cli/src/download.ts, which
+        // reads the manifest through import.meta.url and cannot be bundled); the site reads the manifest itself.
+        "@mass-solutions/skills-cli/package.json": src("../../packages/cli/package.json"),
+        // Repo tooling the /security page and the skill badges share with CI: one reader per file.
+        "@mass-solutions/tools/allowlist": src("../../tools/allowlist.ts"),
+        "@mass-solutions/tools/security-status": src("../../tools/security-status.ts"),
       },
     },
   },

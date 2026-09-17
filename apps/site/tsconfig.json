@@ -3,8 +3,12 @@
   "compilerOptions": {
     "paths": {
       "@mass-solutions/skills-core": ["../../packages/core/src/index.ts"],
-      "@mass-solutions/skills-cli/agents": ["../../packages/cli/src/agents.ts"]
-    }
+      "@mass-solutions/skills-cli/agents": ["../../packages/cli/src/agents.ts"],
+      "@mass-solutions/skills-cli/package.json": ["../../packages/cli/package.json"],
+      "@mass-solutions/tools/allowlist": ["../../tools/allowlist.ts"],
+      "@mass-solutions/tools/security-status": ["../../tools/security-status.ts"]
+    },
+    "resolveJsonModule": true
   },
   "include": [".astro/types.d.ts", "src/**/*"],
   "exclude": ["dist"]
