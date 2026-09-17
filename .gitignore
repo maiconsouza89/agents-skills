@@ -14,6 +14,5 @@ apps/site/dist/
 # written by security-scan.yml and downloaded by pages.yml before the site build; never committed
 security-status.json
 
-docs/
 .specs/
 .design/
