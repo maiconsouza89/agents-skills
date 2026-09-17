@@ -49,12 +49,12 @@ pnpm exec tsx packages/cli/src/bin.ts <args>   # CLI em desenvolvimento, sempre 
 - Design do site segue [@DESIGN.md](./DESIGN.md); tokens em `apps/site/src/styles/global.css` com os mesmos nomes.
 - Nunca publicar no npm à mão: a publicação é feita só por `release.yml`.
 
-## Dogfooding
+## Dogfooding e skills em desenvolvimento
 
-- O repositório usa as próprias skills: as 8 `mass-*` do catálogo estão instaladas pelo `mass-skills` em `.claude/skills/` (Claude Code) e `.agents/skills/` (Cursor, Codex, Copilot, OpenCode, Gemini CLI, Cline), rastreadas em `mass-skills.lock.json`. As três coisas são commitadas;
+- O repositório usa as próprias skills: as 8 `mass-*` do catálogo estão instaladas pelo `mass-skills` em `.claude/skills/` (Claude Code) e `.agents/skills/` (Cursor, Codex, Copilot, OpenCode, Gemini CLI, Cline), rastreadas em `mass-skills.lock.json`. As três coisas são commitadas.
 - Nunca instale nada nessas pastas com `npx skills add` nem à mão. Use o pacote publicado, a partir da raiz: `npx @mass-solutions/skills-cli install <skill>` para adicionar ou reinstalar, `npx @mass-solutions/skills-cli update` depois de um release, `npx @mass-solutions/skills-cli doctor` para conferir. Skill ainda fora da última tag: acrescente `--ref main`.
-- `test/repo/dogfood.test.ts` (em `pnpm check`) exige que o lockfile cubra exatamente as skills de `skills/`, que cada uma exista nas duas pastas com o `contentHash` do lockfile e que não haja pasta fora do lockfile. Uma skill nova no catálogo só passa no check depois de instalada aqui.
-- Skills pessoais (fora do catálogo) vão para `~/.claude/skills`, não para o projeto.
+- **Skill nova nasce em `.claude/skills/<name>/`**, dentro do repositório e commitada, mesmo antes de entrar no catálogo. É ali que ela é testada (skill-creator, evals em `evals/`). Quando estiver pronta, publicar = copiar a pasta para `skills/<name>/`, passar no validador, `pnpm registry`, PR; depois do release, reinstalar em `.claude/skills/` e `.agents/skills/` com o CLI para o lockfile acompanhá-la.
+- Não há teste que exija paridade entre `skills/`, o lockfile e as pastas instaladas (o antigo `test/repo/dogfood.test.ts` foi removido em 2026-09-17 para permitir esse fluxo); `npx @mass-solutions/skills-cli doctor` é a conferência.
 
 ## CLI `mass-skills`
 
