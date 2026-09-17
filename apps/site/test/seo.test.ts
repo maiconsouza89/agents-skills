@@ -1,16 +1,20 @@
-import { readFileSync } from "node:fs";
+import { mkdtempSync, readFileSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { JSDOM } from "jsdom";
 import { beforeAll, describe, expect, it } from "vitest";
-import { BASE, DIST, REPO_ROOT, buildSite, dom, html, walk } from "./helpers";
+import { BASE, REPO_ROOT, buildSite, dom, html, walk } from "./helpers";
 import { LANGS, type Lang } from "../src/lib/i18n";
 
 const SITE_URL = "https://maiconsouza89.github.io";
 const registry = JSON.parse(readFileSync(join(REPO_ROOT, "skills-registry.json"), "utf8"));
 
+// Own outDir: other test files build in parallel, and a shared directory would let one
+// file's build clobber another file's still-running assertions.
+const DIST = mkdtempSync(join(tmpdir(), "mass-site-"));
 let files: string[] = [];
 beforeAll(() => {
-  buildSite();
+  buildSite(DIST);
   files = walk(DIST);
 });
 
