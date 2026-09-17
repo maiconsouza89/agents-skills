@@ -1,8 +1,9 @@
-import { readFileSync } from "node:fs";
+import { mkdtempSync, readFileSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { beforeAll, describe, expect, it } from "vitest";
 import { DOOR_10 } from "../../../packages/cli/test/door10.js";
-import { BASE, DIST, REPO_ROOT, SITE_ROOT, buildSite, dom, html, text, walk } from "./helpers";
+import { BASE, REPO_ROOT, SITE_ROOT, buildSite, dom, html, text, walk } from "./helpers";
 import { LANG_META, LANGS, t, type Lang } from "../src/lib/i18n";
 
 const registry = JSON.parse(readFileSync(join(REPO_ROOT, "skills-registry.json"), "utf8"));
@@ -39,9 +40,12 @@ function expectLangSwitch(d: Document, lang: Lang, switchTo: string) {
   for (const [i, a] of links.entries()) expect(text(a)).toBe(`${LANG_META[LANGS[i]].code} ${LANG_META[LANGS[i]].name}`);
 }
 
+// A build test file gets its own outDir: other test files build in parallel, and a shared
+// directory would let one file's build clobber another file's still-running assertions.
+const DIST = mkdtempSync(join(tmpdir(), "mass-site-"));
 let files: string[] = [];
 beforeAll(() => {
-  buildSite();
+  buildSite(DIST);
   files = walk(DIST);
 });
 

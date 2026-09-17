@@ -1,8 +1,15 @@
 // Runs in the node environment: the page is loaded into an explicit JSDOM with scripts enabled,
 // which is what executes the search script; a jsdom test environment would break the file URL helpers.
+import { mkdtempSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { beforeAll, describe, expect, it } from "vitest";
 import { JSDOM } from "jsdom";
-import { DIST, buildSite, html } from "./helpers";
+import { buildSite, html } from "./helpers";
+
+// Own outDir: other test files build in parallel, and a shared directory would let one
+// file's build clobber another file's still-running assertions.
+const DIST = mkdtempSync(join(tmpdir(), "mass-site-"));
 
 async function loadHome(page: string, entries?: unknown, query = ""): Promise<Document> {
   const index = entries === undefined ? html(DIST, "search-index.json") : JSON.stringify(entries);
@@ -29,7 +36,7 @@ function type(doc: Document, value: string) {
 }
 
 beforeAll(() => {
-  buildSite();
+  buildSite(DIST);
 });
 
 describe("home search", () => {
