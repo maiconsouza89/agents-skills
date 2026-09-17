@@ -1,6 +1,9 @@
-# development tooling installed per maintainer with `npx skills add` - not part of the catalog
-.claude/skills/
-skills-lock.json
+# Dogfooding: the catalog's own skills, installed by `mass-skills` and tracked in
+# mass-skills.lock.json, are committed (.claude/skills/ and .agents/skills/). Only the CLI's
+# audit log and per-machine Claude Code files stay out.
+mass-skills.audit.jsonl
+.claude/settings.local.json
+.claude/worktrees/
 
 node_modules/
 dist/
@@ -14,4 +17,3 @@ security-status.json
 docs/
 .specs/
 .design/
-mass-skills.lock.json
