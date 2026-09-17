@@ -20,4 +20,16 @@ const skills = defineCollection({
   }),
 });
 
-export const collections = { skills };
+// Every other Markdown file a skill ships (references/, assets/, ...), rendered on the skill page.
+// `evals/` is excluded like in the registry (`SHIPPED_EXCLUDES`): the CLI never installs it. The id is
+// the path relative to the catalog, so `skills/<name>/references/x.md` is found by `<name>/references/x.md`.
+const skillFiles = defineCollection({
+  loader: glob({
+    pattern: ["*/**/*.md", "!*/SKILL.md", "!*/evals/**"],
+    base: CATALOG_ROOT,
+    generateId: ({ entry }) => entry,
+  }),
+  schema: z.object({}).passthrough(),
+});
+
+export const collections = { skills, skillFiles };
