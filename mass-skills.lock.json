@@ -1,0 +1,125 @@
+{
+  "version": 1,
+  "skills": {
+    "mass-code-review": {
+      "version": "0.1.0",
+      "contentHash": "50b647e61af4e6fbd30837e66472401132766f7ef550649e03345a0c6de96c97",
+      "ref": "main",
+      "agents": [
+        "claude-code",
+        "cursor",
+        "codex",
+        "github-copilot",
+        "opencode",
+        "gemini-cli",
+        "cline"
+      ],
+      "installedAt": "2026-09-17T20:23:45.755Z"
+    },
+    "mass-commit-message": {
+      "version": "0.1.0",
+      "contentHash": "b788e3e426c8dee4a1a9ddf24ab48ba6599c6070e8051f9c817ffaf7126f3518",
+      "ref": "main",
+      "agents": [
+        "claude-code",
+        "cursor",
+        "codex",
+        "github-copilot",
+        "opencode",
+        "gemini-cli",
+        "cline"
+      ],
+      "installedAt": "2026-09-17T20:23:45.755Z"
+    },
+    "mass-issue-complexity": {
+      "version": "0.1.1",
+      "contentHash": "2a45b4c323df66a35ac2273f97a6470d2d6f1dba3176949c5a7392e670fd9675",
+      "ref": "main",
+      "agents": [
+        "claude-code",
+        "cursor",
+        "codex",
+        "github-copilot",
+        "opencode",
+        "gemini-cli",
+        "cline"
+      ],
+      "installedAt": "2026-09-17T20:23:45.755Z"
+    },
+    "mass-issue-implement": {
+      "version": "0.1.0",
+      "contentHash": "5f7f50664c3ef15fc7979a2f9f94bda04cde9d33c14dacf27e9575a264cb6103",
+      "ref": "main",
+      "agents": [
+        "claude-code",
+        "cursor",
+        "codex",
+        "github-copilot",
+        "opencode",
+        "gemini-cli",
+        "cline"
+      ],
+      "installedAt": "2026-09-17T20:23:45.755Z"
+    },
+    "mass-issue-priority": {
+      "version": "0.1.0",
+      "contentHash": "1e233d64735db974fdb7f9f38ea2e35a994624f6f4138549458bc574b858334c",
+      "ref": "main",
+      "agents": [
+        "claude-code",
+        "cursor",
+        "codex",
+        "github-copilot",
+        "opencode",
+        "gemini-cli",
+        "cline"
+      ],
+      "installedAt": "2026-09-17T20:23:45.755Z"
+    },
+    "mass-pr-description": {
+      "version": "0.1.0",
+      "contentHash": "b093b862357889bc0a9c792a462fce2670232fc2d3ffe2204908b32e7803df65",
+      "ref": "main",
+      "agents": [
+        "claude-code",
+        "cursor",
+        "codex",
+        "github-copilot",
+        "opencode",
+        "gemini-cli",
+        "cline"
+      ],
+      "installedAt": "2026-09-17T20:23:45.755Z"
+    },
+    "mass-security-checklist": {
+      "version": "0.1.0",
+      "contentHash": "623452ff40251d0b243693c92809997c97fc94655f6680af2e84d1e0d89d95ba",
+      "ref": "main",
+      "agents": [
+        "claude-code",
+        "cursor",
+        "codex",
+        "github-copilot",
+        "opencode",
+        "gemini-cli",
+        "cline"
+      ],
+      "installedAt": "2026-09-17T20:23:45.755Z"
+    },
+    "mass-skill-authoring": {
+      "version": "0.1.0",
+      "contentHash": "ad38c36c9276279fc38c80d5711a9a2dad0e1c8966244dabc0aed706426aa246",
+      "ref": "main",
+      "agents": [
+        "claude-code",
+        "cursor",
+        "codex",
+        "github-copilot",
+        "opencode",
+        "gemini-cli",
+        "cline"
+      ],
+      "installedAt": "2026-09-17T20:23:45.755Z"
+    }
+  }
+}

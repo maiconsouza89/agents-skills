@@ -31,7 +31,7 @@ pnpm new-skill                  # scaffold de skill
 pnpm stale --days 90            # skills sem revisão
 pnpm start-issue <N>            # cria/reaproveita branch e atribui a issue (move o board para In Progress)
 pnpm changeset                  # registra bump de versão dos pacotes
-pnpm --filter @mass-solutions/skills-cli exec tsx src/bin.ts <args>   # CLI em desenvolvimento
+pnpm exec tsx packages/cli/src/bin.ts <args>   # CLI em desenvolvimento, sempre a partir da raiz (lockfile e agentes são os do cwd)
 ```
 
 ## Regras do catálogo
@@ -48,6 +48,13 @@ pnpm --filter @mass-solutions/skills-cli exec tsx src/bin.ts <args>   # CLI em d
 - Antes de instalar ou integrar dependências, funcionalidades ou tecnologias: consultar a documentação oficial via Context7 (`mcp__context7__query-docs`); usar web search se faltar informação recente.
 - Design do site segue [@DESIGN.md](./DESIGN.md); tokens em `apps/site/src/styles/global.css` com os mesmos nomes.
 - Nunca publicar no npm à mão: a publicação é feita só por `release.yml`.
+
+## Dogfooding
+
+- O repositório usa as próprias skills: as 8 `mass-*` do catálogo estão instaladas pelo `mass-skills` em `.claude/skills/` (Claude Code) e `.agents/skills/` (Cursor, Codex, Copilot, OpenCode, Gemini CLI, Cline), rastreadas em `mass-skills.lock.json`. As três coisas são commitadas;
+- Nunca instale nada nessas pastas com `npx skills add` nem à mão. Use o pacote publicado, a partir da raiz: `npx @mass-solutions/skills-cli install <skill>` para adicionar ou reinstalar, `npx @mass-solutions/skills-cli update` depois de um release, `npx @mass-solutions/skills-cli doctor` para conferir. Skill ainda fora da última tag: acrescente `--ref main`.
+- `test/repo/dogfood.test.ts` (em `pnpm check`) exige que o lockfile cubra exatamente as skills de `skills/`, que cada uma exista nas duas pastas com o `contentHash` do lockfile e que não haja pasta fora do lockfile. Uma skill nova no catálogo só passa no check depois de instalada aqui.
+- Skills pessoais (fora do catálogo) vão para `~/.claude/skills`, não para o projeto.
 
 ## CLI `mass-skills`
 
@@ -71,16 +78,16 @@ pnpm --filter @mass-solutions/skills-cli exec tsx src/bin.ts <args>   # CLI em d
 - `security-scan.yml`: `tools/allowlist.ts` sempre; Snyk Agent-Scan nas skills alteradas (`tools/changed-skills.ts`) em PR e no catálogo inteiro em `main`. Erro `X007` (limite diário do Snyk) não bloqueia. Fora de PR, grava `security-status.json` (`tools/security-status.ts`: `passed`, `failed` ou `skipped` com `reason`) mesmo quando o scan falha, e sobe como artefato para o site.
 - `stale-skills.yml` (segunda 09:00 UTC): alimenta a issue `Stale skills`.
 - `release.yml` (tag `v*`): `pnpm check`, `pnpm build`, publica os pacotes no npm via trusted publishing (OIDC, `--provenance`) e cria o GitHub Release. Aborta se a tag não bater com `packages/cli/package.json` ou se algum tarball contiver `workspace:`. Rerun da mesma tag é seguro.
-- Fluxo de release: `pnpm changeset version`, `pnpm check`, `pnpm build`, PR com o bump mergeado em `main`, depois `git tag v<versão> && git push origin v<versão>`.
+- Fluxo de release: `pnpm changeset version`, `pnpm check`, `pnpm build`, PR com o bump mergeado em `main`, depois `git tag v<versão> && git push origin v<versão>`. Depois da tag, `npx @mass-solutions/skills-cli update` e commit de `mass-skills.lock.json` com as pastas instaladas, para o dogfooding acompanhar o catálogo.
 
 ## Fluxo com o GitHub Project
 
 - Roadmap: [Project #5](https://github.com/users/maiconsouza89/projects/5), campos `Priority` (P0/P1/P2/Backlog), `Area` (CLI/Core/Site/CI/Catalog) e `Complexity` (Low/Medium/High). Trabalho grande vira sub-issues com *blocked by*.
 - Escrita no Project é feita por workflows com `PROJECT_TOKEN` (sessões web não alcançam a API de Projects).
 - **Ao começar uma issue, rode `pnpm start-issue <N>` antes de qualquer outra coisa.** Se esqueceu, rode assim que perceber.
-- **Para implementar uma issue, use a skill `/mass-issue-implement`.** Se ela não estiver disponível na sessão, instale antes de começar com `npx skills add maiconsouza89/agents-skills --skill mass-issue-implement -a claude-code -y` e siga o `SKILL.md` instalado. Não implemente a issue sem a skill.
-- **Sessão do Claude Code web** (`CLAUDE_CODE_REMOTE=true`): a sessão já nasce numa branch própria e o push só é permitido nela. Não crie nem troque de branch; `pnpm start-issue` detecta a sessão, mantém a branch atual e só atribui a issue. Dependências são instaladas pelo hook `SessionStart` em `.claude/settings.json`.
-- **No Claude Code web a skill `/mass-issue-implement` é obrigatória.** O ambiente é efêmero: a skill não vem instalada, o chat se perde quando a sessão acaba e só o que está na issue e no PR sobrevive. Confira se a skill está disponível no início da sessão e, se não estiver, instale com o comando `npx` acima antes de qualquer outra ação. É ela que grava plano, decisões e entrega como comentários na issue.
+- **Para implementar uma issue, use a skill `/mass-issue-implement`.** Ela vem no checkout (`.claude/skills/mass-issue-implement`); siga o `SKILL.md`. Não implemente a issue sem a skill. Se a pasta faltar, reinstale com `npx @mass-solutions/skills-cli install mass-issue-implement` (ver Dogfooding), nunca com `npx skills add`.
+- **Sessão do Claude Code web** (`CLAUDE_CODE_REMOTE=true`): a sessão já nasce numa branch própria e o push só é permitido nela. Não crie nem troque de branch; `pnpm start-issue` detecta a sessão, mantém a branch atual e só atribui a issue. Dependências são instaladas pelo hook `SessionStart` em `.claude/settings.json`; as skills já estão no checkout.
+- **No Claude Code web a skill `/mass-issue-implement` é obrigatória.** O ambiente é efêmero: o chat se perde quando a sessão acaba e só o que está na issue e no PR sobrevive. É ela que grava plano, decisões e entrega como comentários na issue.
 - **Triagem:** `triage.yml` roda quando uma issue é aberta. O `claude-code-action` classifica só com `Read` (a issue, as rubricas de `mass-issue-priority` e `mass-issue-complexity`, a regra de Area abaixo) e devolve JSON via `--json-schema`; um step valida os valores, grava os três campos e comenta `Triage: ...`. Para triar de novo: "Re-run workflow" na aba Actions ou `workflow_dispatch` (`gh workflow run triage.yml -f issue=<N>`). Ajuste manual nos dropdowns do board.
 - **Regra de Area** (prefixo do título): `cli:` → CLI; `core:` e `mcp:` → Core; `site:` → Site; `ci:` e `release:` → CI; `catalog:` e `skill:` → Catalog. Com `tools:`, `docs:` ou sem prefixo, decida pelos caminhos citados no corpo, contando `tools/` e `.github/` como CI.
 - Sem `gh`, os scripts de `tools/` caem para `fetch` com `GH_TOKEN`/`GITHUB_TOKEN`; sem nenhum, use o GitHub MCP.
