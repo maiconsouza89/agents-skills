@@ -52,6 +52,7 @@ jobs:
       - uses: astral-sh/setup-uv@v10.1.0
         if: ${{ steps.targets.outputs.paths != '' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) }}
       - name: Snyk Agent Scan
+        id: snyk
         if: ${{ steps.targets.outputs.paths != '' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) }}
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
@@ -66,11 +67,16 @@ jobs:
         # The check is deliberately narrow (exact tool-emitted sentence, both must match, fixed-string grep)
         # rather than a bare `grep X007`: skill content is attacker-controlled, and a loose substring match
         # on scan output could let a crafted skill spoof the quota message and suppress real findings.
+        # `result` and `version` feed security-status.json below. The version is the first line the
+        # scanner prints ("Snyk Agent Scan v0.6.3"), matched at line start with a strict shape; the
+        # rest of the output echoes skill content and is never recorded.
         run: |
           set +e
           output=$(uvx snyk-agent-scan@latest $TARGETS --ci --dangerously-run-mcp-servers ${{ steps.allowlist.outputs.flags }} 2>&1)
           code=$?
           echo "$output"
+          version=$(printf '%s\n' "$output" | grep -oE -m1 '^Snyk Agent Scan v[0-9]+\.[0-9]+\.[0-9]+$' | sed 's/^Snyk Agent Scan v//')
+          echo "version=$version" >> "$GITHUB_OUTPUT"
           # The CLI hard-wraps its own text at terminal width, so the quota sentence can be split across
           # lines; collapse all whitespace/newlines before matching so the wrap point doesn't defeat the grep.
           squashed=$(printf '%s' "$output" | tr '\n' ' ' | tr -s ' ')
@@ -78,6 +84,27 @@ jobs:
             && printf '%s' "$squashed" | grep -qF "[X007 info]: Daily usage limit reached for the public version of Agent-Scan." \
             && printf '%s' "$squashed" | grep -qF "no mcp servers or skills found"; then
             echo "::warning::Snyk Agent Scan hit its public-tier daily usage limit (X007) before scanning anything; treating as non-blocking."
+            echo "result=skipped" >> "$GITHUB_OUTPUT"
+            echo "reason=quota" >> "$GITHUB_OUTPUT"
             exit 0
           fi
+          if [ "$code" -eq 0 ]; then echo "result=passed" >> "$GITHUB_OUTPUT"; else echo "result=failed" >> "$GITHUB_OUTPUT"; fi
           exit "$code"
+      # The site shows this run per skill and on /security, so it is recorded even when the scan
+      # failed or never started (an empty result means a step before it failed). Pull requests are
+      # left out: they scan only the skills they changed, and the site is built from main alone.
+      - name: Record the scan status for the site
+        if: ${{ always() && github.event_name != 'pull_request' }}
+        env:
+          RESULT: ${{ steps.snyk.outputs.result }}
+          REASON: ${{ steps.snyk.outputs.reason }}
+          VERSION: ${{ steps.snyk.outputs.version }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: pnpm exec tsx tools/security-status.ts --result "${RESULT:-failed}" --reason "$REASON" --commit "$GITHUB_SHA" --run-url "$RUN_URL" --scanner-version "$VERSION"
+      - uses: actions/upload-artifact@v7
+        if: ${{ always() && github.event_name != 'pull_request' }}
+        with:
+          name: security-status
+          path: security-status.json
+          if-no-files-found: error
+          retention-days: 90

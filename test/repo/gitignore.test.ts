@@ -12,7 +12,7 @@ describe(".gitignore", () => {
       .split("\n")
       .map((l) => l.trim())
       .filter((l) => l && !l.startsWith("#"));
-    for (const entry of [".claude/skills/", "skills-lock.json", "node_modules/", "apps/site/dist/", ".astro/"]) {
+    for (const entry of [".claude/skills/", "skills-lock.json", "node_modules/", "apps/site/dist/", ".astro/", "security-status.json"]) {
       expect(lines, entry).toContain(entry);
     }
     const tracked = execFileSync("git", ["-C", ROOT, "ls-files", "--", ".claude/skills", "skills-lock.json"], { encoding: "utf8" }).trim();

@@ -1,13 +1,21 @@
 name: pages
 
+# The site carries the Snyk Agent Scan status of the commit it was built from, so it deploys after
+# security-scan finishes on main (whatever its conclusion) and builds that run's commit. A push that
+# never reaches the scan never deploys; `workflow_dispatch` is the manual way out, and it builds
+# without a status ("not scanned in this build").
 on:
-  push:
+  workflow_run:
+    workflows: [security-scan]
+    types: [completed]
     branches: [main]
+  workflow_dispatch:
 
 permissions:
   contents: read
   pages: write
   id-token: write
+  actions: read
 
 concurrency:
   group: pages
@@ -18,9 +26,22 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
       - name: Read the Node version from .nvmrc
         id: node
         run: echo "version=$(cat .nvmrc)" >> "$GITHUB_OUTPUT"
+      # Written by security-scan.yml (tools/security-status.ts) next to skills-registry.json, where
+      # apps/site reads it. A missing artifact is not an error: the step fails when the artifact
+      # does not exist, and the site then renders every scan badge as "not scanned in this build".
+      - name: Download the security status of this commit
+        if: ${{ github.event_name == 'workflow_run' }}
+        uses: actions/download-artifact@v8
+        continue-on-error: true
+        with:
+          name: security-status
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ github.token }}
       - uses: withastro/action@v6
         with:
           path: apps/site
