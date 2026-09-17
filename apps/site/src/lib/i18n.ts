@@ -152,6 +152,8 @@ const dict = {
     aboutMaintainer: "Maintainer",
     aboutCtaTitle: "Want to help?",
     aboutCtaBody: "Propose a skill through an issue, or report a vulnerability through a private advisory.",
+    feedTitle: "Mass Skills: recently reviewed skills",
+    feedSubtitle: "Every skill in the catalog, most recently reviewed first. Deprecated skills appear once with their notice.",
   },
   "pt-br": {
     siteName: "Mass Skills",
@@ -281,6 +283,8 @@ const dict = {
     aboutMaintainer: "Mantenedor",
     aboutCtaTitle: "Quer ajudar?",
     aboutCtaBody: "Proponha uma skill por uma issue, ou relate uma vulnerabilidade por um advisory privado.",
+    feedTitle: "Mass Skills: skills revisadas recentemente",
+    feedSubtitle: "Toda skill do catálogo, da revisão mais recente para a mais antiga. Skills descontinuadas aparecem uma vez com o aviso.",
   },
 } as const;
 
