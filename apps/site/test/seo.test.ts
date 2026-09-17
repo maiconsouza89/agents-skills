@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
+import { JSDOM } from "jsdom";
 import { beforeAll, describe, expect, it } from "vitest";
 import { BASE, DIST, REPO_ROOT, buildSite, dom, html, walk } from "./helpers";
 import { LANGS, type Lang } from "../src/lib/i18n";
@@ -121,6 +122,56 @@ describe("SEO basics", () => {
     expect(types).toContain("WebSite");
     expect(types).not.toContain("SoftwareSourceCode");
     expect(types).not.toContain("BreadcrumbList");
+  });
+
+  for (const [path, prefix, title] of [
+    ["feed.xml", "", "Mass Skills: recently reviewed skills"],
+    ["pt-br/feed.xml", "pt-br/", "Mass Skills: skills revisadas recentemente"],
+  ] as const) {
+    it(`${path}: well-formed Atom with one entry per skill, most recently reviewed first`, () => {
+      expect(files).toContain(path);
+      // Parsing as XML throws on malformed markup, which is the well-formedness check.
+      const d = new JSDOM(html(DIST, path), { contentType: "application/xml" }).window.document;
+      const feed = d.documentElement;
+      expect(feed.tagName).toBe("feed");
+      expect(feed.getAttribute("xmlns")).toBe("http://www.w3.org/2005/Atom");
+      expect(feed.querySelector(":scope > title")?.textContent).toBe(title);
+      expect(feed.querySelector(":scope > id")?.textContent).toBe(`${SITE_URL}${BASE}${path}`);
+      expect(feed.querySelector(':scope > link[rel="self"]')?.getAttribute("href")).toBe(`${SITE_URL}${BASE}${path}`);
+      expect(feed.querySelector(':scope > link[rel="alternate"]')?.getAttribute("href")).toBe(`${SITE_URL}${BASE}${prefix}catalog/`);
+
+      const skills = registry.skills as Array<{ name: string; reviewed: string; category: string; description: string }>;
+      const entries = [...feed.querySelectorAll(":scope > entry")];
+      expect(entries).toHaveLength(skills.length);
+      const dates = entries.map((e) => e.querySelector("updated")!.textContent!);
+      expect(dates).toEqual([...dates].sort().reverse());
+      for (const date of dates) expect(date).toMatch(/^\d{4}-\d{2}-\d{2}T00:00:00Z$/);
+      expect(feed.querySelector(":scope > updated")?.textContent).toBe(dates[0]);
+
+      const first = entries[0];
+      const name = first.querySelector("title")!.textContent!;
+      const skill = skills.find((s) => s.name === name)!;
+      expect(skill, `feed entry ${name} is not in the registry`).toBeDefined();
+      expect(first.querySelector("id")?.textContent).toBe(`${SITE_URL}${BASE}${prefix}skills/${name}/`);
+      expect(first.querySelector("link")?.getAttribute("href")).toBe(`${SITE_URL}${BASE}${prefix}skills/${name}/`);
+      expect(first.querySelector("updated")?.textContent).toBe(`${skill.reviewed}T00:00:00Z`);
+      expect(first.querySelector("category")?.getAttribute("term")).toBe(skill.category);
+      expect(first.querySelector("summary")?.textContent).toBe(skill.description);
+    });
+  }
+
+  it("every page advertises the Atom feed of its own language", () => {
+    for (const [page, path] of [
+      ["index.html", "feed.xml"],
+      ["pt-br/index.html", "pt-br/feed.xml"],
+      ["skills/mass-code-review/index.html", "feed.xml"],
+      ["pt-br/skills/mass-code-review/index.html", "pt-br/feed.xml"],
+    ]) {
+      const links = dom(DIST, page).querySelectorAll('link[rel="alternate"][type="application/atom+xml"]');
+      expect(links, page).toHaveLength(1);
+      expect(links[0].getAttribute("href")).toBe(`${SITE_URL}${BASE}${path}`);
+      expect(links[0].getAttribute("title")).toBeTruthy();
+    }
   });
 
   it("sitemap.xml lists all skill pages and all static pages", () => {
