@@ -5,10 +5,10 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { validateSkill } from "@mass-solutions/skills-core";
-import { main } from "../../tools/new-skill";
+import { main } from "../../dev/tools/new-skill";
 
 const REPO_ROOT = fileURLToPath(new URL("../..", import.meta.url));
-const TOOL = join(REPO_ROOT, "tools", "new-skill.ts");
+const TOOL = join(REPO_ROOT, "dev", "tools", "new-skill.ts");
 
 function makeRoot(): string {
   const root = mkdtempSync(join(tmpdir(), "mass-new-skill-"));

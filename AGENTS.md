@@ -12,7 +12,8 @@ pnpm monorepo:
 - `packages/core` — `@mass-solutions/skills-core`: parse, validation, hash, registry
 - `packages/cli` — `mass-skills`
 - `apps/site` — Astro, EN and PT
-- `tools/` — repository scripts
+- `tools/` — scripts the workflows and the site build depend on
+- `dev/tools/` — scripts used only in local development (`new-skill`, `stale`, `start-issue`)
 - `dev/docs/` — maintainer docs (index in `dev/docs/README.md`)
 - `dev/docs/adr/` — Architecture Decision Records (MADR), maintained with the `mass-adr-lifecycle` skill
 - `.claude-plugin/` — Claude Code marketplace
@@ -58,6 +59,7 @@ pnpm exec tsx packages/cli/src/bin.ts <args>   # CLI in development, always from
 | CLI internals, exit codes, env vars, pinned ref | `dev/docs/cli.md` |
 | Site internals, i18n, badges | `dev/docs/site.md` |
 | Workflows and release flow | `dev/docs/ci-and-release.md` |
+| Scripts in `tools/` and `dev/tools/`, where a new one goes | `dev/docs/tools.md` |
 | Installed skills and skills in development | `dev/docs/dogfooding.md` |
 | Issues, Project board, triage, Area rule, web sessions | `dev/docs/github-project.md` |
 | Architecture decisions | `dev/docs/adr/README.md` |

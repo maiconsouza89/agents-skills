@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { branchName, main, ownerAndName, type FetchLike } from "../../tools/start-issue.js";
+import { branchName, main, ownerAndName, type FetchLike } from "../../dev/tools/start-issue.js";
 import { ENOENT, fakeExec, fakeFetch, unusedFetch } from "./lib/gh-fakes.js";
 
 const ISSUE = {

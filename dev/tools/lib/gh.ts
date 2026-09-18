@@ -1,4 +1,4 @@
-// Shared git/GitHub helpers for the maintainer scripts in tools/, so they work the same way
+// Shared git/GitHub helpers for the maintainer scripts in dev/tools/, so they work the same way
 // locally and in a Claude Code web session, where GraphQL is blocked (see ghApi below) and gh
 // itself is sometimes missing from PATH.
 import { execFileSync } from "node:child_process";

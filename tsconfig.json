@@ -6,5 +6,5 @@
       "@mass-solutions/skills-core": ["./packages/core/src/index.ts"]
     }
   },
-  "include": ["tools", "test", "vitest.config.ts"]
+  "include": ["tools", "dev/tools", "test", "vitest.config.ts"]
 }

@@ -190,7 +190,8 @@ skills/            the catalog, one folder per skill, plus _categories.json and 
 packages/core      @mass-solutions/skills-core: frontmatter parsing, validator, hashing, registry
 packages/cli       @mass-solutions/skills-cli: the mass-skills command
 apps/site          Astro site, English and Portuguese, built from the catalog
-tools/             maintainer scripts (new-skill, stale, allowlist, start-issue)
+tools/             scripts the workflows and the site build run (allowlist, changed-skills, security-status)
+dev/tools/         scripts for local development only (new-skill, stale, start-issue)
 dev/docs/          maintainer docs and architecture decision records
 .claude-plugin/    Claude Code marketplace manifest
 skills-registry.json   generated index, committed
@@ -212,7 +213,7 @@ Use the repository's [private security advisory](https://github.com/maiconsouza8
 
 ## License and attribution
 
-- **Code** (`packages/`, `apps/`, `tools/`): [MIT](LICENSE).
+- **Code** (`packages/`, `apps/`, `tools/`, `dev/tools/`): [MIT](LICENSE).
 - **Skill content** (`skills/`): [Creative Commons Attribution 4.0 (CC-BY-4.0)](skills/LICENSE). Reuse it freely, keep the attribution to Mass Solutions.
 
 If you are the author of any content included here and want it updated or removed, [open an issue](https://github.com/maiconsouza89/agents-skills/issues/new/choose).
