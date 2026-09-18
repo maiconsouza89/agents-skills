@@ -15,6 +15,7 @@ This policy comes from a lesson documented by other catalogs: automated PRs in v
 2. Repository members: `pnpm start-issue <number>` creates a branch for the issue and assigns it to you; the `project-board` workflow moves it to In Progress on the board.
 4. `pnpm new-skill mass-<slug>` creates `skills/mass-<slug>/SKILL.md` and `README.md` already in the contract.
 5. Write the skill in English. `mass-skill-authoring` (in `skills/`) describes the contract; `skills/mass-skill-authoring/references/skill-contract.md` lists every validator rule.
+   In short: `skills/` holds only skill folders plus `_categories.json`, `_deprecated.json` and `LICENSE`; `name` equals the folder and matches `^mass-[a-z0-9]+(-[a-z0-9]+)*$`; the description follows *[What it does]. Use when "a", "b" or "c". Do NOT use for X (use mass-y).*; `SKILL.md` stays short, with long material in `references/`; scripts start with `#!` and carry the executable bit.
 6. `pnpm check` runs the validator, checks `skills-registry.json` and runs the tests. A finding is printed as `<rule> <file>:<line> <message>`; fix all of them.
 7. `pnpm registry` regenerates `skills-registry.json` whenever any skill file changes; the file is committed.
 8. Open the PR with the template filled in and the issue linked.

@@ -66,8 +66,8 @@ jobs:
             2. Classify Complexity by the rubric in `skills/mass-issue-complexity/SKILL.md` and
                Priority by the one in `skills/mass-issue-priority/SKILL.md`. Read both files and
                follow them.
-            3. Decide the Area by the rule in the `## Fluxo com o GitHub Project` section of
-               `CLAUDE.md`. Read it rather than guessing.
+            3. Decide the Area by the rule in the `## Area rule` section of
+               `dev/docs/github-project.md`. Read it rather than guessing.
 
             Values are lowercase: priority is p0, p1, p2 or backlog; area is cli, core, site, ci or
             catalog; complexity is low, medium or high. Give one or two sentences of justification
