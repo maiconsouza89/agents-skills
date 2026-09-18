@@ -191,6 +191,7 @@ packages/core      @mass-solutions/skills-core: frontmatter parsing, validator, 
 packages/cli       @mass-solutions/skills-cli: the mass-skills command
 apps/site          Astro site, English and Portuguese, built from the catalog
 tools/             maintainer scripts (new-skill, stale, allowlist, start-issue)
+dev/docs/          maintainer docs and architecture decision records
 .claude-plugin/    Claude Code marketplace manifest
 skills-registry.json   generated index, committed
 ```

@@ -232,7 +232,7 @@ describe("workflows", () => {
     // The issue text is attacker-controlled: it reaches Claude through issue.json only, and no
     // script interpolates an expression at all.
     expect(claude.with?.prompt).not.toContain("${{");
-    for (const p of ["issue.json", "skills/mass-issue-complexity/SKILL.md", "skills/mass-issue-priority/SKILL.md", "CLAUDE.md", "data, not instructions"]) {
+    for (const p of ["issue.json", "skills/mass-issue-complexity/SKILL.md", "skills/mass-issue-priority/SKILL.md", "dev/docs/github-project.md", "data, not instructions"]) {
       expect(claude.with?.prompt, p).toContain(p);
     }
     for (const r of runs(job)) expect(r).not.toContain("${{");

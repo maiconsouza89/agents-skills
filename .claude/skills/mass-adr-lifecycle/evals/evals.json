@@ -1,0 +1,53 @@
+{
+  "skill_name": "mass-adr-lifecycle",
+  "evals": [
+    {
+      "id": 0,
+      "prompt": "We just settled on Zod for validating environment variables in this repo (we looked at envalid and at hand-written checks in config.ts too, Zod won because we already use it for request bodies). Can you write an ADR for that? We do not have any ADRs yet.",
+      "expected_output": "docs/adr/ bootstrapped in English with README, template, 0001 example, 0002 Zod ADR (accepted, three real options), index.md; audit passes",
+      "files": [],
+      "assertions": [
+        "docs/adr/ exists with README.md, template.md and index.md",
+        "A NNNN-*.md ADR about Zod exists with an active-voice kebab-case name",
+        "Zod ADR is status accepted (decision already in force)",
+        "Front-matter has no `layer` key and keeps supersedes/superseded-by",
+        "Zod ADR lists envalid and hand-written checks as considered options",
+        "Section headings are English (## Context and problem)",
+        "adr.py audit exits 0 on the resulting archive",
+        "No layers.md in the archive"
+      ]
+    },
+    {
+      "id": 1,
+      "prompt": "Cria um ADR em português, salvando em docs/decisoes/, registrando que escolhemos pnpm como gerenciador de pacotes deste monorepo em vez de npm e yarn (workspaces mais rápidos e store compartilhado). A decisão já está valendo desde a semana passada.",
+      "expected_output": "docs/decisoes/ bootstrapped in pt-BR, archive path declared in CLAUDE.md or AGENTS.md, 0002 pnpm ADR accepted with pt-BR prose and English front-matter keys; audit passes",
+      "files": [],
+      "assertions": [
+        "docs/decisoes/ exists with README.md, template.md and index.md",
+        "CLAUDE.md or AGENTS.md at the repo root gained one line pointing to docs/decisoes; no .adr-dir file was created",
+        "A NNNN-*.md ADR about pnpm exists",
+        "pnpm ADR is accepted, front-matter keys in English",
+        "Prose is Portuguese (## Contexto e problema, Opções consideradas)",
+        "pnpm ADR names npm and yarn as considered options",
+        "Nothing was written to docs/adr/",
+        "adr.py audit exits 0 on docs/decisoes"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "ADR 0002 in docs/adr says our public API is REST, but we moved it to tRPC last sprint because the only consumers left are our own TypeScript apps (partners were migrated off). Supersede that ADR properly and then check that the whole ADR folder is consistent, tell me anything wrong you find.",
+      "expected_output": "0004 tRPC ADR with supersedes 0002; 0002 superseded + superseded-by 0004; bodies of accepted ADRs untouched; report names the 0003 dead-end chain and stale index",
+      "files": [],
+      "assertions": [
+        "A 0004-*.md ADR exists (next number, none reused)",
+        "0004 declares supersedes 0002 and status accepted",
+        "0002 is superseded with superseded-by 0004 and a new date",
+        "Bodies of 0001 and 0002 are untouched (only front-matter changed)",
+        "0004 mentions tRPC and explains what changed since 0002",
+        "Reply reports the 0003 dead-end supersede chain (superseded without superseded-by)",
+        "index.md regenerated and lists 0003 and 0004",
+        "0003 body untouched"
+      ]
+    }
+  ]
+}
