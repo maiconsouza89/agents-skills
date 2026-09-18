@@ -11,6 +11,7 @@ Monorepo pnpm:
 - `packages/cli` — `mass-skills`
 - `apps/site` — Astro, EN e PT
 - `tools/` — scripts do repo
+- `dev/docs/adr/` — Architecture Decision Records (MADR), mantidos com a skill `mass-adr-lifecycle`
 - `.claude-plugin/` — marketplace do Claude Code
 - `skills-registry.json` — gerado e commitado
 

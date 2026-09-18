@@ -20,13 +20,18 @@ re-proposes the rejected options because nothing told them those were already we
 
 | Parameter | How the user passes it | Resolution when absent |
 |---|---|---|
-| `dir` | `dir=docs/decisions`, or in prose ("save them under docs/decisions") | `.adr-dir` file at the repo root → `docs/adr/` if it exists → `docs/adr/` (bootstrap) |
+| `dir` | `dir=docs/decisions`, or in prose ("save them under docs/decisions") | the archive path declared in `CLAUDE.md` or `AGENTS.md` at the repo root (see below) → `docs/adr/` if it exists → `docs/adr/` (bootstrap) |
 | `lang` | `lang=pt-BR`, or in prose ("in Portuguese") | language of the existing archive's `template.md` → `en` |
 
-Paths are relative to the repo root (`git rev-parse --show-toplevel`). An archive split across
-two folders or two languages is worse than either parameter ignored, so: an explicit `dir`
-that differs from an existing `.adr-dir` and an explicit `lang` that differs from an existing
-archive are both flagged in one line, and the existing archive wins unless the user insists.
+Paths are relative to the repo root (`git rev-parse --show-toplevel`). The repo declares where
+its ADRs live in the agent instructions file it already has, `CLAUDE.md` first, then
+`AGENTS.md`: the first line mentioning ADRs or decision records that also contains a path is
+the declaration, and the path is the archive (`grep -inE 'adr|decision record' CLAUDE.md
+AGENTS.md`). No dedicated dotfile: an agent reads `CLAUDE.md`/`AGENTS.md` anyway, and a
+`.adr-dir` nobody opens is one more file to drift. An archive split across two folders or two
+languages is worse than either parameter ignored, so: an explicit `dir` that differs from the
+declared path and an explicit `lang` that differs from an existing archive are both flagged in
+one line, and the existing archive wins unless the user insists.
 Front-matter keys, `status` values and file names are always English/ASCII; only prose changes
 with `lang`.
 
@@ -106,11 +111,15 @@ did not read. Nothing external in play → delete the section.
 2. Copy `assets/<lang>/` (`template.md`, `README.md`, the `0001-*` example ADR) into it. For a
    language without a folder under `assets/`, translate the three `en` files, keeping the
    structure, the front-matter keys and the `NNNN`/`YYYY-MM-DD` placeholders untouched.
-3. Replace `YYYY-MM-DD` with today's date in the `0001-*` file (not in `template.md`), and
-   `<skill-dir>` in `README.md` with the real path of this skill folder, relative to the repo
-   root when it lives inside the repo.
-4. If `dir` is not `docs/adr`, write the path into `.adr-dir` at the repo root, one line, so
-   the next session finds the archive.
+3. Replace `YYYY-MM-DD` with today's date in the `0001-*` file (not in `template.md`), and in
+   `README.md` replace `<skill-dir>` with the real path of this skill folder (relative to the
+   repo root when it lives inside the repo) and `docs/adr` with the real `dir`.
+4. Declare the archive in the repo's agent instructions so the next session finds it: add one
+   line to `CLAUDE.md` if it exists, else to `AGENTS.md`, else create `AGENTS.md` with that line.
+   The line names the folder and the skill, in the file's own language, for example
+   `- dev/docs/adr/ — Architecture Decision Records (MADR), maintained with mass-adr-lifecycle`.
+   Put it where the file lists the repo layout when it has such a list. Skip when a line
+   already declares that path.
 5. `adr.py index DIR`. Nothing else: no status folders, no changelog, no hand-written index.
 
 ## New
@@ -153,7 +162,7 @@ did not read. Nothing external in play → delete the section.
 When an expensive-to-reverse decision is being made in the conversation and nothing records
 it, offer once, in one line, at a natural pause after the work lands:
 
-> This meets the ADR bar (expensive to reverse). Want me to record it in `docs/adr`?
+> This meets the ADR bar (expensive to reverse). Want me to record it in `<dir>`?
 
 If the answer is no, drop it and do not raise it again for that decision. Interrupting delivery
 to campaign for documentation is how documentation gets rejected.

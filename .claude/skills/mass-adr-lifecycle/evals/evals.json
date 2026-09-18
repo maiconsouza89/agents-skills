@@ -20,11 +20,11 @@
     {
       "id": 1,
       "prompt": "Cria um ADR em português, salvando em docs/decisoes/, registrando que escolhemos pnpm como gerenciador de pacotes deste monorepo em vez de npm e yarn (workspaces mais rápidos e store compartilhado). A decisão já está valendo desde a semana passada.",
-      "expected_output": "docs/decisoes/ bootstrapped in pt-BR, .adr-dir at root, 0002 pnpm ADR accepted with pt-BR prose and English front-matter keys; audit passes",
+      "expected_output": "docs/decisoes/ bootstrapped in pt-BR, archive path declared in CLAUDE.md or AGENTS.md, 0002 pnpm ADR accepted with pt-BR prose and English front-matter keys; audit passes",
       "files": [],
       "assertions": [
         "docs/decisoes/ exists with README.md, template.md and index.md",
-        ".adr-dir at repo root points to docs/decisoes",
+        "CLAUDE.md or AGENTS.md at the repo root gained one line pointing to docs/decisoes; no .adr-dir file was created",
         "A NNNN-*.md ADR about pnpm exists",
         "pnpm ADR is accepted, front-matter keys in English",
         "Prose is Portuguese (## Contexto e problema, Opções consideradas)",

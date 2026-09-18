@@ -105,8 +105,8 @@ A consequence must be **falsifiable**: something someone could later find out is
 
 ```bash
 ADR=.claude/skills/mass-adr-lifecycle/scripts/adr.py   # the folder holding this skill's SKILL.md
-python3 $ADR audit  docs/adr                     # names, front-matter, numbering, chains, index
-python3 $ADR index  docs/adr                     # regenerate index.md after any change
-python3 $ADR new    docs/adr "Use X instead of Y" --status accepted [--supersedes 0003]
-python3 $ADR status docs/adr 0003 deprecated
+python3 $ADR audit  dev/docs/adr                     # names, front-matter, numbering, chains, index
+python3 $ADR index  dev/docs/adr                     # regenerate index.md after any change
+python3 $ADR new    dev/docs/adr "Use X instead of Y" --status accepted [--supersedes 0003]
+python3 $ADR status dev/docs/adr 0003 deprecated
 ```
