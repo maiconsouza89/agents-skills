@@ -53,7 +53,8 @@ The Area follows the prefix of the issue title:
 | `catalog:`, `skill:` | Catalog |
 
 With `tools:`, `docs:` or no prefix, decide by the paths mentioned in the body, counting
-`tools/` and `.github/` as CI.
+`tools/` and `.github/` as CI. `tools/` holds only what the workflows and the site build run;
+`dev/` (`dev/tools/`, `dev/docs/`) is maintainer-only and does not decide the Area by itself.
 
 ## Pull requests
 
@@ -61,5 +62,5 @@ Pull requests carry `Closes #N` (the template already does). Merge by squash.
 
 ## Without `gh`
 
-The scripts in `tools/` fall back to `fetch` with `GH_TOKEN`/`GITHUB_TOKEN`; with neither, use
+The scripts in `dev/tools/` fall back to `fetch` with `GH_TOKEN`/`GITHUB_TOKEN`; with neither, use
 the GitHub MCP.

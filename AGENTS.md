@@ -12,7 +12,8 @@ pnpm monorepo:
 - `packages/core` — `@mass-solutions/skills-core`: parse, validation, hash, registry
 - `packages/cli` — `mass-skills`
 - `apps/site` — Astro, EN and PT
-- `tools/` — repository scripts
+- `tools/` — scripts the workflows and the site build depend on
+- `dev/tools/` — scripts used only in local development (`new-skill`, `stale`, `start-issue`)
 - `dev/docs/` — maintainer docs (index in `dev/docs/README.md`)
 - `dev/docs/adr/` — Architecture Decision Records (MADR), maintained with the `mass-adr-lifecycle` skill
 - `.claude-plugin/` — Claude Code marketplace
