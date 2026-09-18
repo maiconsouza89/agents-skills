@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { makeRoot, makeSkill, validFrontmatter } from "../../packages/core/test/helpers.js";
-import { main } from "../../tools/stale";
+import { main } from "../../dev/tools/stale";
 
 function run(argv: string[]) {
   let out = "";

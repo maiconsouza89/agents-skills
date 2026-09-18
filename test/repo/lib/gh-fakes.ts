@@ -1,5 +1,5 @@
-// Shared fakes for tools that use tools/lib/gh.ts's Exec and FetchLike.
-import type { Exec, FetchLike } from "../../../tools/lib/gh.js";
+// Shared fakes for tools that use dev/tools/lib/gh.ts's Exec and FetchLike.
+import type { Exec, FetchLike } from "../../../dev/tools/lib/gh.js";
 
 export const ENOENT = () => Object.assign(new Error("spawnSync gh ENOENT"), { code: "ENOENT" });
 

@@ -16,9 +16,9 @@
     "build": "pnpm -r --if-present build",
     "test": "vitest run",
     "scan": "uvx snyk-agent-scan@latest skills --ci",
-    "new-skill": "tsx tools/new-skill.ts",
-    "stale": "tsx tools/stale.ts",
-    "start-issue": "tsx tools/start-issue.ts"
+    "new-skill": "tsx dev/tools/new-skill.ts",
+    "stale": "tsx dev/tools/stale.ts",
+    "start-issue": "tsx dev/tools/start-issue.ts"
   },
   "devDependencies": {
     "@changesets/cli": "^3.0.3",
