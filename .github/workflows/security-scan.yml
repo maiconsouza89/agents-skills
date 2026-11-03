@@ -49,7 +49,7 @@ jobs:
           echo "Scan targets: ${paths:-<none>}"
           echo "paths=$paths" >> "$GITHUB_OUTPUT"
       # Snyk needs SNYK_TOKEN, which forks do not receive: push to main and same-repo PRs only.
-      - uses: astral-sh/setup-uv@v10.1.0
+      - uses: astral-sh/setup-uv@v10.3.3
         if: ${{ steps.targets.outputs.paths != '' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) }}
       - name: Snyk Agent Scan
         id: snyk
